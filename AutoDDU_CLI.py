@@ -21,6 +21,8 @@ ddu_zip_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "DDU.exe")
 seven_zip = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "7z.exe")
 ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 
+exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
+
 #Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
 FERMI_NVIDIA = "GF108","GF108","GF108-300-A1","GF106","GF106-250","GF116-200","GF104-225-A1","GF104","GF104-300-KB-A1","GF114","GF100-030-A3","GF100-275-A3","GF100-375-A3","GF119","GF108","GF118","GF116","GF116-400","GF114-200-KB-A1","GF114-325-A1","GF114-400-A1","GF110","GF110-270-A1","GF110-275-A1","GF110-375-A1","2x GF110-351-A1","GF100","GF108","GF106","GF106","GF108","GF119-300-A1","GF108-100-KB-A1","GF108-400-A1","GF119 (N13M-GE)","GF117 (N13M-GS)","GF108 (N13P-GL)","GF117","GF106 (N12E-GE2)","GF116","GF108","GF114 (N13E-GS1-LP)","GF114 (N13E-GS1)","GF117","GF108","GF117","GF108",""
 
@@ -54,8 +56,8 @@ yourself manually.
 """
 
 def makepersist():
-  #  'REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "My App" /t REG_SZ /F /D "C:\MyAppPath\MyApp.exe"'
-    subprocess.call('REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "AutoDDU_CLI" /t REG_SZ /F /D "{directory}"', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
+    subprocess.call('REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "AutoDDU_CLI" /t REG_SZ /F /D "{directory}"'.format(directory=exe_location), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
 
 def autologin():
@@ -607,7 +609,8 @@ turn off and shortly after reboot.
             safemode(1)
             enable_internet(False)
             changepersistent(2)
-            time.sleep(2) 
+            time.sleep(2)
+            makepersist()
             subprocess.call('shutdown /r -t 5', shell=True)
             exit()
         if getpersistent() == 2:  
@@ -643,6 +646,11 @@ Will restart in 15 seconds.
                   from subprocess import CREATE_NEW_CONSOLE
                   subprocess.Popen('powershell.exe Remove-LocalUser -Name "DDU"', 
                              shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate()
+              except:  
+                  pass
+              try:
+                  subprocess.Popen('reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v AutoDDU_CLI /f', 
+                             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
               except:  
                   pass
               time.sleep(5)
