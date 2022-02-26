@@ -72,6 +72,37 @@ def autologin():
         login_or_not = """
         You will need to login manually to the DDU
         profile account we created."""
+def workaroundwindowsissues():
+    from subprocess import CREATE_NEW_CONSOLE
+    # Windows does not create the folders of a user until you login: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon
+    # This basically adds a 1234 password to the previously created DDU account, then logins in via command line so Windows is forced to create the directories.
+    # After this we can download the .exe to the desktop folder of the account.
+    
+    # So here I am basically stuck between a rock and a hard place.
+    
+    # I can either do the very risky workaround of this: https://superuser.com/questions/154686/autostart-program-in-safe-mode
+    # Which involves directly editing how Windows behaves at boot to make it launch AutoDDU even in safe mode automatically
+    
+    # Or fiddle around with the above, but that introduces another serious problem, Windows designers are a bunch of retards and did this: 
+    # https://stackoverflow.com/questions/16107381/how-to-complete-the-runas-command-in-one-line
+    
+    # So now what do I do? I think this is the least worst option. Seriously, fuck you Microsoft.
+    subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL, creationflags=CREATE_NEW_CONSOLE)
+    import pexpect
+    child = pexpect.spawn('runas /env /profile /user:DDU cmd.exe', timeout=120)
+    time.sleep(5)
+    child.sendline("1234")
+    child.send('\r')
+    
+    time.sleep(5) 
+    child.close()
+    subprocess.call('NET USER "DDU" ""', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    #TODO: this is dumb
+    
+    #TODO: investigate this workaround later: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon?page=1#entry-6915365
+    
+    
+
 def getsupportstatus():
     controllers = wmi.WMI().Win32_VideoController()
     gpu_dictionary = dict() # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer] 
@@ -610,7 +641,10 @@ turn off and shortly after reboot.
             enable_internet(False)
             changepersistent(2)
             time.sleep(2)
+            print("May seem frozen for a bit, do not worry, we're working in the background.")
+            workaroundwindowsissues() # TODO: this is REALLY FUCKING STUPID
             makepersist()
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
             subprocess.call('shutdown /r -t 5', shell=True)
             exit()
         if getpersistent() == 2:  
@@ -650,7 +684,7 @@ Will restart in 15 seconds.
                   pass
               try:
                   subprocess.Popen('reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v AutoDDU_CLI /f', 
-                             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+                             shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).communicate()
               except:  
                   pass
               time.sleep(5)
