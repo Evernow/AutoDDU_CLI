@@ -11,8 +11,8 @@ import requests
 from win32com.shell import shell, shellcon
 import shutil
 import platform
-import pexpect
-
+#import wexpect
+import zipfile
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
 Appdata_AutoDDU_CLI = os.path.join(Appdata, "AutoDDU_CLI")
 Persistent_File_location = os.path.join(Appdata, "AutoDDU_CLI", "PersistentDDU_Log.txt")
@@ -23,6 +23,7 @@ seven_zip = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "7z.exe")
 ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
+
 
 #Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
 FERMI_NVIDIA = "GF108","GF108","GF108-300-A1","GF106","GF106-250","GF116-200","GF104-225-A1","GF104","GF104-300-KB-A1","GF114","GF100-030-A3","GF100-275-A3","GF100-375-A3","GF119","GF108","GF118","GF116","GF116-400","GF114-200-KB-A1","GF114-325-A1","GF114-400-A1","GF110","GF110-270-A1","GF110-275-A1","GF110-375-A1","2x GF110-351-A1","GF100","GF108","GF106","GF106","GF108","GF119-300-A1","GF108-100-KB-A1","GF108-400-A1","GF119 (N13M-GE)","GF117 (N13M-GS)","GF108 (N13P-GL)","GF117","GF106 (N12E-GE2)","GF116","GF108","GF114 (N13E-GS1-LP)","GF114 (N13E-GS1)","GF117","GF108","GF117","GF108",""
@@ -35,7 +36,7 @@ Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS"]
 
 Exceptions_laptops = "710A","745A","760A","805A","810A","810A","730A","740A" # Kepler laptops GPUs with no M in the name.
 
-EOL_AMD = "16899-0" , "18800-1" , "28800-5" , "28800-6" , "Broadway" , "CW16800-A" , "CW16800-B" , "Cedar" , "Cypress" , "ES1000" , "Flipper" , "Hemlock" , "Hollywood" , "IBM" , "Juniper" , "M1" , "M10" , "M11" , "M12" , "M18" , "M22" , "M24" , "M26" , "M28" , "M3" , "M4" , "M52" , "M54" , "M56" , "M58" , "M6" , "M62" , "M64" , "M66" , "M68" , "M7" , "M71" , "M72" , "M74" , "M76" , "M82" , "M86" , "M88" , "M9" , "M9+" , "M92" , "M93" , "M96" , "M97" , "M98" , "Mach32" , "Mach64" , "Mach64 GT" , "Mach64 GT-B" , "Mach64 LT" , "Mach8" , "Madison" , "Park" , "Pinewood" , "R100" , "R200" , "R250" , "R300" , "R350" , "R360" , "R420" , "R423" , "R430" , "R480" , "R481" , "R520" , "R580" , "R580+" , "R600" , "R680" , "R700" , "RC1000" , "RC300" , "RC410" , "RS100" , "RS200" , "RS250" , "RS300" , "RS350" , "RS400" , "RS480" , "RS482" , "RS485" , "RS600" , "RS690" , "RS740" , "RS780" , "RS880" , "RV100" , "RV200" , "RV250" , "RV280" , "RV350" , "RV370" , "RV380" , "RV410" , "RV505" , "RV515" , "RV516" , "RV530" , "RV535" , "RV560" , "RV570" , "RV610" , "RV620" , "RV630" , "RV635" , "RV670" , "RV710" , "RV730" , "RV740" , "RV770" , "RV790" , "Rage 2" , "Rage 3" , "Rage 3 Turbo" , "Rage 4" , "Rage 4 PRO" , "Rage 6" , "Rage Mobility" , "Redwood" , "Turks" , "Xenos Corona" , "Xenos Falcon" , "Xenos Jasper" , "Xenos Vejle" , "Xenos Xenon"
+EOL_AMD = "16899-0" , "Tahiti", "Tahiti XT" "Malta",  "18800-1" , "28800-5" , "28800-6" , "Broadway" , "CW16800-A" , "CW16800-B" , "Cedar" , "Cypress" , "ES1000" , "Flipper" , "Hemlock" , "Hollywood" , "IBM" , "Juniper" , "M1" , "M10" , "M11" , "M12" , "M18" , "M22" , "M24" , "M26" , "M28" , "M3" , "M4" , "M52" , "M54" , "M56" , "M58" , "M6" , "M62" , "M64" , "M66" , "M68" , "M7" , "M71" , "M72" , "M74" , "M76" , "M82" , "M86" , "M88" , "M9" , "M9+" , "M92" , "M93" , "M96" , "M97" , "M98" , "Mach32" , "Mach64" , "Mach64 GT" , "Mach64 GT-B" , "Mach64 LT" , "Mach8" , "Madison" , "Park" , "Pinewood" , "R100" , "R200" , "R250" , "R300" , "R350" , "R360" , "R420" , "R423" , "R430" , "R480" , "R481" , "R520" , "R580" , "R580+" , "R600" , "R680" , "R700" , "RC1000" , "RC300" , "RC410" , "RS100" , "RS200" , "RS250" , "RS300" , "RS350" , "RS400" , "RS480" , "RS482" , "RS485" , "RS600" , "RS690" , "RS740" , "RS780" , "RS880" , "RV100" , "RV200" , "RV250" , "RV280" , "RV350" , "RV370" , "RV380" , "RV410" , "RV505" , "RV515" , "RV516" , "RV530" , "RV535" , "RV560" , "RV570" , "RV610" , "RV620" , "RV630" , "RV635" , "RV670" , "RV710" , "RV730" , "RV740" , "RV770" , "RV790" , "Rage 2" , "Rage 3" , "Rage 3 Turbo" , "Rage 4" , "Rage 4 PRO" , "Rage 6" , "Rage Mobility" , "Redwood" , "Turks" , "Xenos Corona" , "Xenos Falcon" , "Xenos Jasper" , "Xenos Vejle" , "Xenos Xenon"
 
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
@@ -59,7 +60,7 @@ yourself manually.
 def makepersist():
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
     subprocess.call('REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "AutoDDU_CLI" /t REG_SZ /F /D "{directory}"'.format(directory=exe_location), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-
+    print("INFO: Successfully created autorun task for in normal mode.")
 
 def autologin():
     #TODO this requires the hacky workaround of deleting the DDU user so it stops auto logging in.
@@ -68,36 +69,52 @@ def autologin():
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d DDU /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        print("INFO: Successfully created autologin task")
     except:
         global login_or_not
         login_or_not = """
         You will need to login manually to the DDU
         profile account we created."""
 def workaroundwindowsissues():
-    from subprocess import CREATE_NEW_CONSOLE
-    # Windows does not create the folders of a user until you login: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon
-    # This basically adds a 1234 password to the previously created DDU account, then logins in via command line so Windows is forced to create the directories.
-    # After this we can download the .exe to the desktop folder of the account.
+    download_helper("https://download.sysinternals.com/files/PSTools.zip", os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
+    with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"), 'r') as zip_ref:
+        zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
+    subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    try:
+        subprocess.call('{directory_to_exe} -u DDU -p 1234 i- exit'.format(directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    except:
+        pass # This is meant to fail.
+    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
+    subprocess.call('NET USER DDU ""', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    # This was old approach, leaving here for now incase we need a failback one day.
     
-    # So here I am basically stuck between a rock and a hard place.
+    #     from subprocess import CREATE_NEW_CONSOLE
+
+    # # Windows does not create the folders of a user until you login: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon
+    # # This basically adds a 1234 password to the previously created DDU account, then logins in via command line so Windows is forced to create the directories.
+    # # After this we can download the .exe to the desktop folder of the account.
     
-    # I can either do the fairly risky workaround of this: https://superuser.com/questions/154686/autostart-program-in-safe-mode
-    # Which involves directly editing how Windows behaves at boot to make it launch AutoDDU even in safe mode automatically
+    # # So here I am basically stuck between a rock and a hard place.
     
-    # Or fiddle around with the above, but that introduces another serious problem, Windows designers are a bunch of retards and did this: 
-    # https://stackoverflow.com/questions/16107381/how-to-complete-the-runas-command-in-one-line
+    # # I can either do the fairly risky workaround of this: https://superuser.com/questions/154686/autostart-program-in-safe-mode
+    # # Which involves directly editing how Windows behaves at boot to make it launch AutoDDU even in safe mode automatically
     
-    # So now what do I do? I think this is the least worst option. Seriously, fuck you Microsoft.
-    subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL, creationflags=CREATE_NEW_CONSOLE)
+    # # Or fiddle around with the above, but that introduces another serious problem, Windows designers are a bunch of retards and did this: 
+    # # https://stackoverflow.com/questions/16107381/how-to-complete-the-runas-command-in-one-line
     
-    child = pexpect.spawn('runas /env /profile /user:DDU cmd.exe', timeout=120)
-    time.sleep(5)
-    child.sendline("1234")
-    child.send('\r')
+    # # So now what do I do? I think this is the least worst option. Seriously, fuck you Microsoft.
+    # subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL, creationflags=CREATE_NEW_CONSOLE)
     
-    time.sleep(5) 
-    child.close()
-    subprocess.call('NET USER "DDU" ""', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    # child = wexpect.spawn('runas /env /profile /user:DDU cmd.exe', timeout=120)
+    # time.sleep(5)
+    # child.sendline("1234")
+    # child.send('\r')
+    
+    # time.sleep(5) 
+    # child.sendline('exit')
+    # subprocess.call('NET USER "DDU" ""', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    
+    # print("INFO: Successfully ran background task")
     #TODO: this is dumb
     
     #TODO: investigate this workaround later: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon?page=1#entry-6915365
@@ -416,7 +433,7 @@ def ddu_download():
         )
     print(seven_zip + ' -o' + ddu_extracted_path+ ' x ' + ddu_zip_path +  ' -y > nul')
 
-    subprocess.call(str(seven_zip + ' -o' + ddu_extracted_path+ ' x ' + ddu_zip_path +  ' -y > nul'), shell=True)
+    subprocess.call(str(seven_zip + ' -o' + ddu_extracted_path+ ' x ' + ddu_zip_path +  ' -y > nul'), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
 
@@ -640,14 +657,15 @@ turn off and shortly after reboot.
                  if "i understand" in DewIt.lower():
                      break     
             safemode(1)
-            enable_internet(False)
-            changepersistent(2)
-            time.sleep(2)
+            
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues() # TODO: this is REALLY FUCKING STUPID
             makepersist()
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
             subprocess.call('shutdown /r -t 5', shell=True)
+            enable_internet(False)
+            changepersistent(2)
+            time.sleep(2)
             exit()
         if getpersistent() == 2:  
               print("Welcome back, the hardest part is over.")
