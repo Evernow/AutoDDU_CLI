@@ -616,7 +616,6 @@ Type "Do it" then press your enter key once you are ready. """, flush=True)
                     break
             time.sleep(5)
             BackupProfile()
-            autologin()
             download_drivers(mainshit[2])
             ddu_download()
             uptodate()
@@ -665,8 +664,9 @@ turn off and shortly after reboot.
             subprocess.call('shutdown /r -t 5', shell=True)
             enable_internet(False)
             changepersistent(2)
+            autologin()
             time.sleep(2)
-            exit()
+            quit()
         if getpersistent() == 2:  
               print("Welcome back, the hardest part is over.")
               print("This will take a minute or two, even though it may seem")
@@ -709,6 +709,7 @@ Will restart in 15 seconds.
                   pass
               time.sleep(5)
               subprocess.call('shutdown /r -t 10', shell=True)
+              quit()
         if getpersistent() == 3:  
             print(r"""
 Almost done. Only thing left now is install drivers
