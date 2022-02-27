@@ -68,6 +68,10 @@ def autologin():
     try:
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d DDU /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d 1234 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        
+        
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         print("INFO: Successfully created autologin task")
     except:
@@ -81,11 +85,10 @@ def workaroundwindowsissues():
         zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
     subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
-        subprocess.call('{directory_to_exe} -u DDU -p 1234 i- exit'.format(directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.call('{directory_to_exe} -accepteula -u DDU -p 1234 i- exit'.format(directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     except:
         pass # This is meant to fail.
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
-    subprocess.call('NET USER DDU ""', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     # This was old approach, leaving here for now incase we need a failback one day.
     
     #     from subprocess import CREATE_NEW_CONSOLE
@@ -666,7 +669,7 @@ turn off and shortly after reboot.
             changepersistent(2)
             autologin()
             time.sleep(2)
-            quit()
+            os._exit()
         if getpersistent() == 2:  
               print("Welcome back, the hardest part is over.")
               print("This will take a minute or two, even though it may seem")
@@ -709,7 +712,8 @@ Will restart in 15 seconds.
                   pass
               time.sleep(5)
               subprocess.call('shutdown /r -t 10', shell=True)
-              quit()
+              os._exit()
+              
         if getpersistent() == 3:  
             print(r"""
 Almost done. Only thing left now is install drivers
@@ -741,7 +745,7 @@ Closing in ten minutes. Feel free to close early if no problems
             
             changepersistent(0)
             time.sleep(600)
-            exit()
+            os._exit()
         while True:
             time.sleep(1)
     except Exception as oof:
