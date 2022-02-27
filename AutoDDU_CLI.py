@@ -23,6 +23,7 @@ seven_zip = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "7z.exe")
 ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
+Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup' , 'AutoDDUStartup.vbs')
 
 
 #Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
@@ -36,7 +37,7 @@ Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS"]
 
 Exceptions_laptops = "710A","745A","760A","805A","810A","810A","730A","740A" # Kepler laptops GPUs with no M in the name.
 
-EOL_AMD = "16899-0" , "Tahiti", "Tahiti XT" "Malta",  "18800-1" , "28800-5" , "28800-6" , "Broadway" , "CW16800-A" , "CW16800-B" , "Cedar" , "Cypress" , "ES1000" , "Flipper" , "Hemlock" , "Hollywood" , "IBM" , "Juniper" , "M1" , "M10" , "M11" , "M12" , "M18" , "M22" , "M24" , "M26" , "M28" , "M3" , "M4" , "M52" , "M54" , "M56" , "M58" , "M6" , "M62" , "M64" , "M66" , "M68" , "M7" , "M71" , "M72" , "M74" , "M76" , "M82" , "M86" , "M88" , "M9" , "M9+" , "M92" , "M93" , "M96" , "M97" , "M98" , "Mach32" , "Mach64" , "Mach64 GT" , "Mach64 GT-B" , "Mach64 LT" , "Mach8" , "Madison" , "Park" , "Pinewood" , "R100" , "R200" , "R250" , "R300" , "R350" , "R360" , "R420" , "R423" , "R430" , "R480" , "R481" , "R520" , "R580" , "R580+" , "R600" , "R680" , "R700" , "RC1000" , "RC300" , "RC410" , "RS100" , "RS200" , "RS250" , "RS300" , "RS350" , "RS400" , "RS480" , "RS482" , "RS485" , "RS600" , "RS690" , "RS740" , "RS780" , "RS880" , "RV100" , "RV200" , "RV250" , "RV280" , "RV350" , "RV370" , "RV380" , "RV410" , "RV505" , "RV515" , "RV516" , "RV530" , "RV535" , "RV560" , "RV570" , "RV610" , "RV620" , "RV630" , "RV635" , "RV670" , "RV710" , "RV730" , "RV740" , "RV770" , "RV790" , "Rage 2" , "Rage 3" , "Rage 3 Turbo" , "Rage 4" , "Rage 4 PRO" , "Rage 6" , "Rage Mobility" , "Redwood" , "Turks" , "Xenos Corona" , "Xenos Falcon" , "Xenos Jasper" , "Xenos Vejle" , "Xenos Xenon"
+EOL_AMD = "16899-0" , "Tahiti", "Tahiti XT",  "Malta",  "18800-1" , "28800-5" , "28800-6" , "Broadway" , "CW16800-A" , "CW16800-B" , "Cedar" , "Cypress" , "ES1000" , "Flipper" , "Hemlock" , "Hollywood" , "IBM" , "Juniper" , "M1" , "M10" , "M11" , "M12" , "M18" , "M22" , "M24" , "M26" , "M28" , "M3" , "M4" , "M52" , "M54" , "M56" , "M58" , "M6" , "M62" , "M64" , "M66" , "M68" , "M7" , "M71" , "M72" , "M74" , "M76" , "M82" , "M86" , "M88" , "M9" , "M9+" , "M92" , "M93" , "M96" , "M97" , "M98" , "Mach32" , "Mach64" , "Mach64 GT" , "Mach64 GT-B" , "Mach64 LT" , "Mach8" , "Madison" , "Park" , "Pinewood" , "R100" , "R200" , "R250" , "R300" , "R350" , "R360" , "R420" , "R423" , "R430" , "R480" , "R481" , "R520" , "R580" , "R580+" , "R600" , "R680" , "R700" , "RC1000" , "RC300" , "RC410" , "RS100" , "RS200" , "RS250" , "RS300" , "RS350" , "RS400" , "RS480" , "RS482" , "RS485" , "RS600" , "RS690" , "RS740" , "RS780" , "RS880" , "RV100" , "RV200" , "RV250" , "RV280" , "RV350" , "RV370" , "RV380" , "RV410" , "RV505" , "RV515" , "RV516" , "RV530" , "RV535" , "RV560" , "RV570" , "RV610" , "RV620" , "RV630" , "RV635" , "RV670" , "RV710" , "RV730" , "RV740" , "RV770" , "RV790" , "Rage 2" , "Rage 3" , "Rage 3 Turbo" , "Rage 4" , "Rage 4 PRO" , "Rage 6" , "Rage Mobility" , "Redwood" , "Turks" , "Xenos Corona" , "Xenos Falcon" , "Xenos Jasper" , "Xenos Vejle" , "Xenos Xenon"
 
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
@@ -59,7 +60,11 @@ yourself manually.
 
 def makepersist():
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
-    subprocess.call('REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "AutoDDU_CLI" /t REG_SZ /F /D "{directory}"'.format(directory=exe_location), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    lines = ['Set WshShell = CreateObject("WScript.Shell" )', 'WshShell.Run """{directory}""", 0'.format(directory=exe_location), "Set WshShell = Nothing"]
+    with open(Script_Location_For_startup, 'w') as f:
+        for line in lines:
+            f.write(line)
+            f.write('\n')
     print("INFO: Successfully created autorun task for in normal mode.")
 
 def autologin():
@@ -521,10 +526,10 @@ def safemode(ONorOFF):
         if ONorOFF == 0:
             subprocess.call('bcdedit /deletevalue {default} safeboot', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 def DDUCommands():
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanamd ', shell=True)
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanintel ', shell=True)
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleannvidia ', shell=True)
-
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleannvidia', '-logging'])
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleanamd', '-logging'])
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleanintel', '-logging'])
+        
 def enable_internet(enable):
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
     try:
@@ -759,6 +764,7 @@ Closing in ten minutes. Feel free to close early if no problems
             time.sleep(600)
             sys.exit(0)
         while True:
+            print("ERROR CONFIGURATION ERROR CONFIGURATION")
             time.sleep(1)
     except Exception as oof:
         print(unrecoverable_error_print)
