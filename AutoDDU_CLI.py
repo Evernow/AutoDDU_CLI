@@ -80,7 +80,7 @@ def workaroundwindowsissues():
     
     # So here I am basically stuck between a rock and a hard place.
     
-    # I can either do the very risky workaround of this: https://superuser.com/questions/154686/autostart-program-in-safe-mode
+    # I can either do the fairly risky workaround of this: https://superuser.com/questions/154686/autostart-program-in-safe-mode
     # Which involves directly editing how Windows behaves at boot to make it launch AutoDDU even in safe mode automatically
     
     # Or fiddle around with the above, but that introduces another serious problem, Windows designers are a bunch of retards and did this: 
@@ -108,8 +108,8 @@ def getsupportstatus():
     gpu_dictionary = dict() # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer] 
     
     for controller in controllers:
-       name = controller.wmi_property('Name').value
-       gpu_list_to_parse = controller.wmi_property('PNPDeviceID').value.lower().split("\\") # .lower() is due to Windows not following PCI naming convention.
+       name = controller.wmi_property('Name').value.encode("ascii", "ignore").decode("utf-8")
+       gpu_list_to_parse = controller.wmi_property('PNPDeviceID').value.encode("ascii", "ignore").decode("utf-8").lower().split("\\") # .lower() is due to Windows not following PCI naming convention.
        for gpu in gpu_list_to_parse:
            # We need to filter out by vendor or else we can parse in shit like Citrix or capture cards.
            if "dev_" in gpu and ("ven_10de" in gpu or "ven_121a" in gpu or "ven_8086" in gpu
@@ -442,7 +442,8 @@ def latest_windows_version():
 
 
 def uptodate():
-    if platform.release() != 11: # No update assistant for W11 yet afaik
+    # TODO: Switch to platform.release() once this is fixed: https://bugs.python.org/issue46869
+    if "11" not in wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode("utf-8"): # No update assistant for W11 yet afaik
     
         if int(platform.version().split('.')[2]) >= int(latest_windows_version()): #We should consider insider builds. But that's outside the scope of v1 at least.
             print("System up to date already")                
