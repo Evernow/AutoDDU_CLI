@@ -594,6 +594,14 @@ def mainpain():
                     time.sleep(1)
             print(mainshit[1])
             if mainshit[0] ==0:
+                print(r"""
+INCOMPATIBLE GPU CONFIGURATION FOUND.
+
+CURRENTLY NO WAY TO RUN AUTODDU WITH THIS CONFIGURATION.
+
+IF THIS IS A MISTAKE PLEASE SHARE THIS WITH EVERNOW:
+    """, flush=True)
+                print(mainshit)
                 while True:
                     time.sleep(1)
             
@@ -663,13 +671,16 @@ turn off and shortly after reboot.
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues() # TODO: this is REALLY FUCKING STUPID
             makepersist()
+              
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
             subprocess.call('shutdown /r -t 5', shell=True)
             enable_internet(False)
             changepersistent(2)
             autologin()
             time.sleep(2)
-            os._exit()
+            print("Command to restart has been sent.")
+            while True:
+                time.sleep(1)
         if getpersistent() == 2:  
               print("Welcome back, the hardest part is over.")
               print("This will take a minute or two, even though it may seem")
@@ -682,7 +693,6 @@ turn off and shortly after reboot.
                   print(oof, flush=True)
                   while True:
                       time.sleep(1)
-              time.sleep(30)
               print("DDU has been ran!")
               print(r"""
 This will now boot you back into normal mode.
@@ -705,20 +715,22 @@ Will restart in 15 seconds.
                              shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate()
               except:  
                   pass
-              try:
-                  subprocess.Popen('reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v AutoDDU_CLI /f', 
-                             shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).communicate()
-              except:  
-                  pass
               time.sleep(5)
               subprocess.call('shutdown /r -t 10', shell=True)
-              os._exit()
+              print("Command to restart has been sent.")
+              while True:
+                  time.sleep(1)
               
         if getpersistent() == 3:  
             print(r"""
 Almost done. Only thing left now is install drivers
 and then turn on your internet.
                   """, flush=True)
+            try:
+                subprocess.Popen('reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v AutoDDU_CLI /f', 
+                           shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).communicate()
+            except:  
+                pass
             if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")):
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
@@ -745,7 +757,7 @@ Closing in ten minutes. Feel free to close early if no problems
             
             changepersistent(0)
             time.sleep(600)
-            os._exit()
+            sys.exit(0)
         while True:
             time.sleep(1)
     except Exception as oof:
