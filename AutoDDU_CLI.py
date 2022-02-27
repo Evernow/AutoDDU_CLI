@@ -11,6 +11,7 @@ import requests
 from win32com.shell import shell, shellcon
 import shutil
 import platform
+import pexpect
 
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
 Appdata_AutoDDU_CLI = os.path.join(Appdata, "AutoDDU_CLI")
@@ -88,7 +89,7 @@ def workaroundwindowsissues():
     
     # So now what do I do? I think this is the least worst option. Seriously, fuck you Microsoft.
     subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL, creationflags=CREATE_NEW_CONSOLE)
-    import pexpect
+    
     child = pexpect.spawn('runas /env /profile /user:DDU cmd.exe', timeout=120)
     time.sleep(5)
     child.sendline("1234")
