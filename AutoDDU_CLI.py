@@ -521,9 +521,9 @@ def safemode(ONorOFF):
         if ONorOFF == 0:
             subprocess.call('bcdedit /deletevalue {default} safeboot', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 def DDUCommands():
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanamd ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanintel ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleannvidia ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanamd ', shell=True)
+        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleanintel ', shell=True)
+        subprocess.call(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe') + ' -silent -cleannvidia ', shell=True)
 
 def enable_internet(enable):
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
