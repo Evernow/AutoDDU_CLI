@@ -60,7 +60,7 @@ yourself manually.
 
 def makepersist():
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
-    lines = ['Set WshShell = CreateObject("WScript.Shell" )', 'WshShell.Run """{directory}""", 0'.format(directory=exe_location), "Set WshShell = Nothing"]
+    lines = ['Set WshShell = CreateObject("WScript.Shell" )', 'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
     with open(Script_Location_For_startup, 'w') as f:
         for line in lines:
             f.write(line)
@@ -698,7 +698,7 @@ turn off and shortly after reboot.
                   print(oof, flush=True)
                   while True:
                       time.sleep(1)
-              print("DDU has been ran!")
+              print("DDU has been ran!", flush=True)
               print(r"""
 This will now boot you back into normal mode.
               
@@ -754,12 +754,13 @@ and then turn on your internet.
                 print("All driver installations complete. Have a good day.")
                 print("Closing in ten minutes. Feel free to close early if no problems", flush=True)
             else:
+                
                 print("""
 Due to no drivers being detected, our work is done.
 Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
-            
+            enable_internet(True)
             changepersistent(0)
             time.sleep(600)
             sys.exit(0)
