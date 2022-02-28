@@ -1,8 +1,4 @@
-def PCIID(vendor, device):
-    import urllib.request, json 
-    with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json") as url:
-        data = json.loads(url.read().decode())
-        return(data[vendor]['devices'][device]['name'])
+from datetime import datetime, timezone
 import os,time    
 import wmi
 import sys
@@ -25,6 +21,7 @@ ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup' , 'AutoDDUStartup.vbs')
 
+log_file_location = os.path.join(Appdata, "AutoDDU_CLI", "AutoDDU_LOG.txt")
 
 #Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
 FERMI_NVIDIA = "GF108","GF108","GF108-300-A1","GF106","GF106-250","GF116-200","GF104-225-A1","GF104","GF104-300-KB-A1","GF114","GF100-030-A3","GF100-275-A3","GF100-375-A3","GF119","GF108","GF118","GF116","GF116-400","GF114-200-KB-A1","GF114-325-A1","GF114-400-A1","GF110","GF110-270-A1","GF110-275-A1","GF110-375-A1","2x GF110-351-A1","GF100","GF108","GF106","GF106","GF108","GF119-300-A1","GF108-100-KB-A1","GF108-400-A1","GF119 (N13M-GE)","GF117 (N13M-GS)","GF108 (N13P-GL)","GF117","GF106 (N12E-GE2)","GF116","GF108","GF114 (N13E-GS1-LP)","GF114 (N13E-GS1)","GF117","GF108","GF117","GF108",""
@@ -58,6 +55,55 @@ user profile we created, if it doesn't then login
 yourself manually.
 """
 
+def returnifduplicate():
+    processes = list() 
+    for process in wmi.WMI().Win32_Process():
+        processes.append(process.Name)
+    return(processes.count("AutoDDU_CLI.exe") > 2)
+
+
+def BadLanguage():
+    import wmi
+    lang = wmi.WMI().Win32_OperatingSystem()[0].OSLanguage
+    # https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-operatingsystem
+    ok_languages = [9, 1033, 2057, 3081, 4105, 5129, 6153, 7177, 8201, 10249, 11273] # Basically all english versions
+    logger("Language is " + str(lang))
+    if lang in ok_languages:
+        return False
+    else:
+        return True
+def HandleOtherLanguages():
+    # Due to some languages not having correct letters on their keyboards
+    # Instead of doing the "I do" shit, we just have them press enter on their keyboards
+    # twice. Much safer, since I assume every keyboard has this.. right?
+    howmany = 0
+    while howmany < 2 :
+        input("Press your enter key {n} more time(s)".format(n = 2 - howmany))
+        howmany +=1
+    print("Starting!")
+
+
+def PCIID(vendor, device):
+    import urllib.request, json 
+    with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json") as url:
+        data = json.loads(url.read().decode())
+        return(data[vendor]['devices'][device]['name'])
+
+
+def logger(log):
+    # The goal is to log everything that is practical to log. 
+    # I'm at the end of my rope! 
+    # Why do I have to coach someone incompetent like you every single time?
+    # I'm done with it! If you ever need help with anything else, please don't ask me!
+    file_object = open(log_file_location, 'w+')
+    file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + log)
+    file_object.close()    
+    
+
+def cleanup():
+    os.remove(os.remove(Script_Location_For_startup))
+    os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")) 
+    logger("Finished cleanup")
 def makepersist():
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
     lines = ['Set WshShell = CreateObject("WScript.Shell" )', 'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
@@ -65,7 +111,9 @@ def makepersist():
         for line in lines:
             f.write(line)
             f.write('\n')
+            
     print("INFO: Successfully created autorun task for in normal mode.")
+    logger("Finished makepersist")
 
 def autologin():
     #TODO this requires the hacky workaround of deleting the DDU user so it stops auto logging in.
@@ -79,7 +127,9 @@ def autologin():
         
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         print("INFO: Successfully created autologin task")
-    except:
+        logger("Finished autologin successfully")
+    except Exception as f:
+        logger("Failed autologin with this: " + f)
         global login_or_not
         login_or_not = """
         You will need to login manually to the DDU
@@ -93,7 +143,9 @@ def workaroundwindowsissues():
         subprocess.call('{directory_to_exe} -accepteula -u DDU -p 1234 i- exit'.format(directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     except:
         pass # This is meant to fail.
+    logger("Did prep work for working around Windows issue")
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
+    logger("Downloaded DDU to DDU profile")
     # This was old approach, leaving here for now incase we need a failback one day.
     
     #     from subprocess import CREATE_NEW_CONSOLE
@@ -132,10 +184,12 @@ def workaroundwindowsissues():
 def getsupportstatus():
     controllers = wmi.WMI().Win32_VideoController()
     gpu_dictionary = dict() # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer] 
-    
+    logger("Working in getsupportstatus with this wmi output: ")
     for controller in controllers:
        name = controller.wmi_property('Name').value.encode("ascii", "ignore").decode("utf-8")
        gpu_list_to_parse = controller.wmi_property('PNPDeviceID').value.encode("ascii", "ignore").decode("utf-8").lower().split("\\") # .lower() is due to Windows not following PCI naming convention.
+       logger(name)
+       logger(''.join(gpu_list_to_parse))
        for gpu in gpu_list_to_parse:
            # We need to filter out by vendor or else we can parse in shit like Citrix or capture cards.
            if "dev_" in gpu and ("ven_10de" in gpu or "ven_121a" in gpu or "ven_8086" in gpu
@@ -201,7 +255,7 @@ def getsupportstatus():
                            
                    # This approach covers for stupid SLI or dual GPUs (looking at you Anderson)            
                    gpu_dictionary[name] = [Vendor_ID, Device_ID, Arch, gpu, supportstatus, Consumer_or_Professional]
-                   
+    logger("Finished getsupportstatus with this dictionary: " + str(gpu_dictionary))               
     return(gpu_dictionary) 
 
 
@@ -225,12 +279,11 @@ def checkifpossible(): # Checks edge GPU cases and return list of GPU drivers to
     NVIDIA_R390 = data_nvidia["r390"]["link"]
     NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
-    
     with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/amd_gpu.json") as url:
         data_nvidia = json.loads(url.read().decode())
     AMD_Consumer = data_nvidia["consumer"]["link"] 
     performing_DDU_on = "DDU will be performed on the following GPUs: \n"
-    
+    logger("Successfully grabbed NVIDIA drivers from CommonSoftware repo")
     for gpu in dict_of_GPUS:
         name = gpu
         gpu = dict_of_GPUS[gpu]
@@ -294,10 +347,12 @@ IS OVER.
 PLEASE REPORT THIS TO EVERNOW IF IT IS A BUG.
         
 Chika is mad and confused at the same time."""
+   # logger("Finished checkifpossible with these values: " + 1 + " " + performing_DDU_on + " " + drivers_to_download)
     return(1, performing_DDU_on, drivers_to_download)  
 
 # This keeps track of where we are in the process in a text file. 
 def changepersistent(num):
+    logger("Changing persistent file to: " + str(num))
     open(Persistent_File_location, 'w').close()
     with open(Persistent_File_location, 'r') as file:
         data = file.readlines()
@@ -320,18 +375,20 @@ def BackupProfile():
      firstcommand = "net user /add DDU"
      secondcommand = "net localgroup administrators DDU /add"
      subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)  
-    # logger("Running command to add created to user to administrators")
+     logger("Running command to add created to user to administrators")
      subprocess.run(secondcommand, shell=True, check=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)  
-    # changepersistent(2)
-   #  logger("Successfully created DDU account")
+     logger("Successfully created DDU account")
      print("INFO: Created backup profile")
-    except:
+     logger("Created backup profile")
+    except Exception as f:
+        logger("Did not backup profile with this error: " + f)
         print("INFO: Did not create backup profile (not an error)")
         
-       # logger("Failed to create DDU account, likely already existed")
+        logger("Failed to create DDU account, likely already existed")
 
 
 def download_helper(link, file_name):
+    logger("Downloading  file from {link} to location {file_name}".format(link=link, file_name=file_name))
     with open(file_name, "wb") as f:
         print("Downloading %s" % file_name)
         my_referer =  "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
@@ -351,7 +408,7 @@ def download_helper(link, file_name):
                 sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
                 sys.stdout.flush()
 
-
+    logger("Successfully finished download")
     
 
 def download_drivers(list_to_download):
@@ -472,18 +529,18 @@ def uptodate():
     if "11" not in wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode("utf-8"): # No update assistant for W11 yet afaik
     
         if int(platform.version().split('.')[2]) >= int(latest_windows_version()): #We should consider insider builds. But that's outside the scope of v1 at least.
-            print("System up to date already")                
+            print("System up to date already", flush=True)                
     
         else:
-            print("System is out of date, downloading Microsoft Update Assistant.")
+            print("System is out of date, downloading Microsoft Update Assistant.", flush=True)
             download_helper('https://go.microsoft.com/fwlink/?LinkID=799445', os.path.join(Appdata, "MicrosoftUpdater.exe"))
-            print("This window will now open the Microsoft Update Assistant to help you update to the latest version.")
-            print("Once it is done you will have to restart, it should restart automatically when it is done.")
-            print("If it doesn't, restart yourself. Once you are booted back up you open this utility again.")
+            print("This window will now open the Microsoft Update Assistant to help you update to the latest version.", flush=True)
+            print("Once it is done you will have to restart, it should restart automatically when it is done.", flush=True)
+            print("If it doesn't, restart yourself. Once you are booted back up you open this utility again.", flush=True)
             print("Update assistant will open in 15 seconds.")
             time.sleep(15)
             subprocess.run(Appdata + "\\MicrosoftUpdater.exe /auto upgrade /passive /warnrestart:30 /skipeula", shell=True, check=True)
-            print("You need to restart after Update Assistant is finished, then once logged back in open this again.")
+            print("You need to restart after Update Assistant is finished, then once logged back in open this again.", flush=True)
             changepersistent(1)
             while True:
                 time.sleep(1)
@@ -583,6 +640,13 @@ def mainpain():
     """)
     print("\n")
     try:
+        if returnifduplicate() == True:
+            print(r"""
+THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
+CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.                  
+                  """)
+            while True:
+                time.sleep(1)
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             
     
@@ -623,13 +687,14 @@ and CANNOT be paused) please type "Do it"
                     
 Save all documents and prepare for your computer to restart
 without warning. 
-                    
-Type "Do it" then press your enter key once you are ready. """, flush=True)
-            
-            while True:
-                DewIt = str(input("Type in 'Do it' then press enter to begin: "))
-                if "do it" in DewIt.lower():
-                    break
+ """, flush=True)
+            if BadLanguage() == False:
+                while True:
+                    DewIt = str(input("Type in 'Do it' then press enter to begin: "))
+                    if "do it" in DewIt.lower():
+                        break
+            else:
+                HandleOtherLanguages()
             time.sleep(5)
             BackupProfile()
             download_drivers(mainshit[2])
@@ -658,19 +723,23 @@ messed up, this is normal.
 In addition we're going to turn off the internet so
 Windows cannot install drivers while we're installing them.
             
-Once you type in 'I understand' you will see the internet
-turn off and shortly after reboot.
-            
 {login_or_not}
+
+After once you are at a black wallpaper you will need to launch
+the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             
 (Read what is above, window to continue will appear in 15 seconds.)
             
                   """.format(login_or_not=login_or_not), flush=True)
             time.sleep(15)
-            while True:
-                 DewIt = str(input("Type in 'I understand' then enter once you understand what you must do: "))
-                 if "i understand" in DewIt.lower():
-                     break     
+            if BadLanguage() == False:
+                while True:
+                     DewIt = str(input("Type in 'I understand' then enter once you understand what you must do: "))
+                     if "i understand" in DewIt.lower():
+                         break     
+            else:
+                HandleOtherLanguages()
+            time.sleep(5)
             safemode(1)
             
             print("May seem frozen for a bit, do not worry, we're working in the background.")
@@ -761,6 +830,7 @@ Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
             enable_internet(True)
+            cleanup() # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
             changepersistent(0)
             time.sleep(600)
             sys.exit(0)
