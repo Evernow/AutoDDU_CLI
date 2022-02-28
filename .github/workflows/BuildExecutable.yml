@@ -1,0 +1,35 @@
+name: Build AutoDDU_CLI
+
+
+on:
+  push
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+
+      - name: checkout repo content
+        uses: actions/checkout@v2 # checkout the repository content to github runner
+          
+      - name: install python packages
+        run: |
+          pip install -r requirements.txt
+      - name: Run Pyinstaller
+        env: 
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
+        run: pyinstaller --no-confirm --onefile --console --uac-admin AutoDDU_CLI.py
+          
+      - name: commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m 'Chika builds new .exe'
+          
+      - name: push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main  
