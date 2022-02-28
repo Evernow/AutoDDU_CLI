@@ -21,7 +21,7 @@ ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup' , 'AutoDDUStartup.vbs')
 
-log_file_location = os.path.join(Appdata, "AutoDDU_CLI", "AutoDDU_LOG.txt")
+log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 
 #Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
 FERMI_NVIDIA = "GF108","GF108","GF108-300-A1","GF106","GF106-250","GF116-200","GF104-225-A1","GF104","GF104-300-KB-A1","GF114","GF100-030-A3","GF100-275-A3","GF100-375-A3","GF119","GF108","GF118","GF116","GF116-400","GF114-200-KB-A1","GF114-325-A1","GF114-400-A1","GF110","GF110-270-A1","GF110-275-A1","GF110-375-A1","2x GF110-351-A1","GF100","GF108","GF106","GF106","GF108","GF119-300-A1","GF108-100-KB-A1","GF108-400-A1","GF119 (N13M-GE)","GF117 (N13M-GS)","GF108 (N13P-GL)","GF117","GF106 (N12E-GE2)","GF116","GF108","GF114 (N13E-GS1-LP)","GF114 (N13E-GS1)","GF117","GF108","GF117","GF108",""
