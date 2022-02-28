@@ -100,6 +100,7 @@ def logger(log):
         os.makedirs(Appdata_AutoDDU_CLI)  
     file_object = open(log_file_location, 'a+')
     file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + log)
+    file_object.write("\n")
     file_object.close()    
     
 
@@ -540,7 +541,8 @@ def ddu_download():
 
 def latest_windows_version():
     from subprocess import CREATE_NEW_CONSOLE
-    p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1 -Win {version} -Rel List".format(version = platform.release()), 
+    download_helper("https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1", os.join.path(Appdata_AutoDDU_CLI, "Fido.ps1"))
+    p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file {directorytofido} -Win {version} -Rel List".format(version = platform.release(), directorytofido = os.join.path(Appdata_AutoDDU_CLI, "Fido.ps1")), 
                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
     #p = str(subprocess.Popen('powershell.exe -ExecutionPolicy RemoteSigned -file "C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1" -Win 7 -Rel List', stdout=sys.stdout, shell=True).communicate())
     logger("Got following output from FIDO " + str(p))
