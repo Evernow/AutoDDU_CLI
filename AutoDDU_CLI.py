@@ -74,6 +74,8 @@ def obtainsetting(index):
 
 
 def default_config():
+    if not os.path.exists(Appdata_AutoDDU_CLI):
+        os.makedirs(Appdata_AutoDDU_CLI)
     with open(AutoDDU_CLI_Settings, "w+") as outfile:
         json.dump(advanced_options_dict_global, outfile)
 
