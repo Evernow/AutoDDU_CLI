@@ -95,6 +95,8 @@ def logger(log):
     # I'm at the end of my rope! 
     # Why do I have to coach someone incompetent like you every single time?
     # I'm done with it! If you ever need help with anything else, please don't ask me!
+    if not os.path.exists(Appdata_AutoDDU_CLI):
+        os.makedirs(Appdata_AutoDDU_CLI)  
     file_object = open(log_file_location, 'w+')
     file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + log)
     file_object.close()    
