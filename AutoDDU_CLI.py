@@ -141,7 +141,7 @@ def AdvancedMenu_Options(num):
     advanced_options_dict_global = advanced_options_dict
     logger("Advanced options are now: " + str(advanced_options_dict))
 def change_AdvancedMenu(num):
-   with open(r"C:\Users\Daniel\Desktop\AutoDDU_CLI\sample.json", 'r+') as f:
+   with open(AutoDDU_CLI_Settings, 'r+') as f:
     advanced_options_dict = json.load(f)
     if num == 1:
         if advanced_options_dict["disablewindowsupdatecheck"] == 0:
