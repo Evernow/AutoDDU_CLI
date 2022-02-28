@@ -541,7 +541,7 @@ def ddu_download():
 def latest_windows_version():
     from subprocess import CREATE_NEW_CONSOLE
     download_helper("https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1", os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1"))
-    p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file {directorytofido} -Win {version} -Rel List".format(version = platform.release(), directorytofido = os.join.path(Appdata_AutoDDU_CLI, "Fido.ps1")), 
+    p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file {directorytofido} -Win {version} -Rel List".format(version = platform.release(), directorytofido = os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1")), 
                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
     #p = str(subprocess.Popen('powershell.exe -ExecutionPolicy RemoteSigned -file "C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1" -Win 7 -Rel List', stdout=sys.stdout, shell=True).communicate())
     logger("Got following output from FIDO " + str(p))
