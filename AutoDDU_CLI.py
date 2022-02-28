@@ -136,7 +136,7 @@ def autologin():
         print("INFO: Successfully created autologin task")
         logger("Finished autologin successfully")
     except Exception as f:
-        logger("Failed autologin with this: " + f)
+        logger("Failed autologin with this: " + str(f))
         global login_or_not
         login_or_not = """
         You will need to login manually to the DDU
@@ -407,9 +407,8 @@ def BackupProfile():
      print("INFO: Created backup profile")
      logger("Created backup profile")
     except Exception as f:
-        logger("Did not backup profile with this error: " + f)
         print("INFO: Did not create backup profile (not an error)")
-        
+        logger("Failed creating backup profile with error: " + str(f))
         logger("Failed to create DDU account, likely already existed")
 
 
@@ -508,7 +507,7 @@ def ddu_download():
             ddu_zip_path)
          logger("Finished with complicated DDU search....")
         except Exception as f:
-                logger("Failed complicated DDU search with error " + f)
+                logger("Failed complicated DDU search with error " + str(f))
                 print('DDU Download failed! Check your internet connection, if it works please contact Evernow and share with him this error:')
                 print(f)
                 while True:
