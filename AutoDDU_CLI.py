@@ -74,7 +74,7 @@ def obtainsetting(index):
 
 
 def default_config():
-    with open(AutoDDU_CLI_Settings, "w") as outfile:
+    with open(AutoDDU_CLI_Settings, "w+") as outfile:
         json.dump(advanced_options_dict_global, outfile)
 
 def AdvancedMenu():
