@@ -9,6 +9,7 @@ import shutil
 import platform
 #import wexpect
 import zipfile
+import traceback
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
 Appdata_AutoDDU_CLI = os.path.join(Appdata, "AutoDDU_CLI")
 Persistent_File_location = os.path.join(Appdata, "AutoDDU_CLI", "PersistentDDU_Log.txt")
@@ -28,7 +29,7 @@ FERMI_NVIDIA = "GF108","GF108","GF108-300-A1","GF106","GF106-250","GF116-200","G
 
 EOL_NVIDIA = "G98","G96b","G94b","G92b","MCP79XT","N10M-GE2(G98)","N10M-GE1(G98)","N10M-GE1(G96b)","N10P-GV1(G96b)","N10P-GE1(G96b)","N10E-GE1(G94b)","N10E-GS1(G94b)","GT218","GT216","GT215","MCP89","GT215-301-A3","G92","GT216","GT218","MCP68S","MCP67QV","MCP73","MCP76","NV44","G72","G73","G73-B1","G70","G71","2x G71","MCP78","G86","G84","G80","GM108","GM107","NB8M(G86)","NB8P(G84)","NB8P(G92)","C77","MCP79","MCP7A-S","MCP7A-U","G96-200-c1","G96a","G96b","G96-300-C1","G94a","G92-150-A2","G94a","G94b","G94-300-A1","G92a2 G92b","G92a","G92b","G92-420-A2","2x G92","MCP77MH","MCP79MH","NB9M-GE(G98)","NB9M-GE(G86)","MCP79MX","NB9P(G96)","NB9P-GV(G96)","NB9P-GE2(G96)","NB9P-GS(G96)","NB9P-GS1(G84)","NB9P-GT(G96)","NB9E-GE(G96)","NB9E-GS(G94)","NB9E-GT(G94)","NB9E-GT2(G92)","NB9E-GTX(G92)","NV34","NV34B","NV31","NV36","NV30","NV35","NV38","NV34M","NV31M","NV36M","C51M","NV44M","NV43M","NV41M","MCP67MV","MCP67M","G72M","G73M","G73-N-B1","G70M","G71M","NV11M","NV1A (IGP) / NV11 (MX)","NV15","NV16","NV1A","NV11","NV20","NV17M","NV18M","NV28M","NV11","G72GLM","G86M","G98M","G84M","GT218M","GT216M","NV1","NV3","NV4","NV6","NV5","NV37GL","NV43GL","NV41","NV45GL","NV40","NV45GL A3","NV40","NV43","G71GLM","G73GL","G73GLM","G92M","G84GL","G96M","G94M","G96","GT218GL","G100GL-U","G94","GT200GL","GT215M","NV34GL","NV35GL","NV30GL","NV36GL","NV40GL","NV17","NV28","NV18","MCP51","2xG98","2xNV43","G94","G100GL","G100GL-U","N13M-GE","NV45GL","NV40","NV45GL A3","NV11GL ","G96C","G94GLM"
 
-KEPLER_NVIDIA = "GK107","GK208-301-A1","GK208","GK208-400-A1","GK106","GK107-450-A2","GK-106-400-A1","GK106-220-A1","GK106-240-A1","GK106-400-A1","GK104-200-KD-A2","GK104-300-KD-A2","GK104-325-A2","GK104-400-A2","2x GK104-355-A2","GK107 (N13P-LP)","GK107 (N13P-GS)","GK107 (N13P-GT)","GK107 (N13E-GE)","GK104 (N13E-GR)","GK104 (N13E-GSR)","GK104 (N13E-GTX)","GK104","GK208-203-B1","GK208-201-B1","GK107-425-A2","GK104-225-A2","GK104-425-A2","GK110-300-A1","GK110-425-B1","GK110-400-A1","GK110-430-B1","2x GK110-350-B1","GK110","GK110B"
+KEPLER_NVIDIA = "GK107","GK208-301-A1","GK208","GK208-400-A1","GK106","GK107-450-A2","GK-106-400-A1","GK106-220-A1","GK106-240-A1","GK106-400-A1","GK104-200-KD-A2","GK104-300-KD-A2","GK104-325-A2","GK104-400-A2","2x GK104-355-A2","GK107 (N13P-LP)","GK107 (N13P-GS)","GK107 (N13P-GT)","GK107 (N13E-GE)","GK104 (N13E-GR)","GK104 (N13E-GSR)","GK104 (N13E-GTX)","GK104","GK208-203-B1","GK208-201-B1","GK107-425-A2","GK104-225-A2","GK104-425-A2","GK110-300-A1","GK110-425-B1","GK110-400-A1","GK110-430-B1","2x GK110-350-B1","GK110","GK110B", "GK110GL"
 
 Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS"]
 
@@ -97,14 +98,17 @@ def logger(log):
     # I'm done with it! If you ever need help with anything else, please don't ask me!
     if not os.path.exists(Appdata_AutoDDU_CLI):
         os.makedirs(Appdata_AutoDDU_CLI)  
-    file_object = open(log_file_location, 'w+')
+    file_object = open(log_file_location, 'a+')
     file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + log)
     file_object.close()    
     
 
 def cleanup():
     os.remove(os.remove(Script_Location_For_startup))
-    os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")) 
+    try:
+        os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")) 
+    except:
+        pass
     logger("Finished cleanup")
 def makepersist():
     download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
@@ -207,51 +211,68 @@ def getsupportstatus():
                    supportstatus = 0
                    Consumer_or_Professional = ""
                    if Vendor_ID == '121a': # Voodoo (wtf lol)
+                       logger("Got Voodoo GPU")
                        supportstatus = 4
                        Consumer_or_Professional = "Consumer"
                    if Vendor_ID == '8086': # Intel
+                       logger("Got Intel GPU") 
                        supportstatus = 1
                        Consumer_or_Professional = "Consumer"
                    if Vendor_ID == '1002': # AMD
+                       logger("Got Voodoo GPU")
                        for possibility in EOL_AMD:
                            if Arch in possibility:
+                               logger("Got EOL AMD GPU with code " + Arch)
                                supportstatus = 4
                        if supportstatus != 4:
+                            logger("Got Supported AMD GPU with code " + Arch)
                             supportstatus = 1
                        Consumer_or_Professional = "Consumer" # There are professional AMD GPUs but are EXTREMELY rare and I haven't built a driver search for them, nor intend to.
                    
                    
                    if Vendor_ID == '10de': # NVIDIA
+                       logger("Got NVIDIA GPU with code " + Arch)
                    
                        # Check if professional or consumer
                        for seeifprof in Professional_NVIDIA_GPU:
-                           if seeifprof.lower() in name.lower(): 
+                           if seeifprof.lower() in name.lower():
+                               logger("Got NVIDIA prof")
                                Consumer_or_Professional = "Professional"
                        if Consumer_or_Professional != "Professional":
+                           logger("Got NVIDIA consumer")
                            Consumer_or_Professional = "Consumer"
                        # Nightmare begins
                        for possibility in EOL_NVIDIA:
                            if Arch in possibility:
+                               logger("Got EOL NVIDIA")
                                supportstatus = 4 # EOL
                        for possibility in FERMI_NVIDIA:
                            if Arch in possibility:
+                               logger("Got NVIDIA FERMI")
                                for seeifprof in Professional_NVIDIA_GPU:
                                    
                                    if Consumer_or_Professional == "Professional" and todays_date < 2023: # EOL For Fermi prof
+                                       logger("Got professional fermi")
                                        supportstatus = 3 # fermiprof
                                if supportstatus != 3: 
+                                   logger("Got consumer fermi")
                                    supportstatus = 4 # EOL
                        for possibility in KEPLER_NVIDIA:
                             if Arch in possibility:
+                                logger("Got Kepler")
                                 if "M" in name.upper():
+                                    logger("Got laptop kepler (main)")
                                     supportstatus = 4 # EOL
                                 else:
                                     for exception_fuckinglaptops in Professional_NVIDIA_GPU:
                                         if exception_fuckinglaptops in name.upper():
+                                            logger("Got laptop kepler (secondary)")
                                             supportstatus = 4 # EOL
                                     if supportstatus != 4 and todays_date < 2025: # In reality it ends in mid 2024, but this is fine.
+                                        logger("Got desktop supported kepler")
                                         supportstatus = 2 # kepler
                        if supportstatus == 0:
+                            logger("Got supported NVIDIA")
                             supportstatus = 1
                                
                            
@@ -368,8 +389,10 @@ def getpersistent():
         with open(Persistent_File_location) as f:
             lines = f.read() 
             first = lines.split('\n', 1)[0]
+            logger("Got persistent file to be " + str(first))
             return(int(first))
     except:
+        logger("Tried to get persistent file but did not exist or failed")
         return(-1)
 
 def BackupProfile():
@@ -429,6 +452,7 @@ def ddu_download():
         shutil.rmtree(ddu_extracted_path)  
     if not os.path.exists(os.path.join(root_for_ddu_assembly)):
         os.makedirs(os.path.join(root_for_ddu_assembly))
+    logger("Starting simple DDU search")
     download_helper('https://raw.githubusercontent.com/Wagnard/display-drivers-uninstaller/WPF/display-driver-uninstaller/Display%20Driver%20Uninstaller/My%20Project/AssemblyInfo.vb',
             ddu_AssemblyInfo)
     
@@ -441,12 +465,13 @@ def ddu_download():
     for DDU_Version_Candidate in content:
         if 'AssemblyFileVersion' in DDU_Version_Candidate:
             Latest_DDU_Version_Raw = DDU_Version_Candidate[DDU_Version_Candidate.find('("')+2:DDU_Version_Candidate.find('")')]
-
+    logger("Almost done with simple DDU search")
     try:
         download_helper(
             'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
             ddu_zip_path
         )
+        logger("Finished DDU search")
     except: # Normal error checking would not catch the error that would occur here.
             # You don't really need to understand this, basically
     # I have been looking at commit history, and there are instances where 
@@ -460,7 +485,7 @@ def ddu_download():
 
     # Doesn't work for all cases (and I don't think it's possible for it to do so)
     # but it works 99.99% of the time. 
-
+        logger("Trying complicated DDU search")
         nums = Latest_DDU_Version_Raw.split(".")
 
         skip = 0 
@@ -474,13 +499,15 @@ def ddu_download():
             nums[-1-ind] = "9" # DDU seems to stop at 9th versions: https://www.wagnardsoft.com/content/display-driver-uninstaller-ddu-v18039-released
 
         Latest_DDU_Version_Raw = '.'.join(nums)
-
+        logger("Almost finished with complicated DDU search....")
         try:
 
          download_helper(
             'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
             ddu_zip_path)
+         logger("Finished with complicated DDU search....")
         except Exception as f:
+                logger("Failed complicated DDU search with error " + f)
                 print('DDU Download failed! Check your internet connection, if it works please contact Evernow and share with him this error:')
                 print(f)
                 while True:
@@ -516,24 +543,28 @@ def latest_windows_version():
     p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1 -Win {version} -Rel List".format(version = platform.release()), 
                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
     #p = str(subprocess.Popen('powershell.exe -ExecutionPolicy RemoteSigned -file "C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1" -Win 7 -Rel List', stdout=sys.stdout, shell=True).communicate())
+    logger("Got following output from FIDO " + str(p))
     dictionarytest = {}
     for release in p.split('\\n'):
         release = release.replace('build', 'Build')
         if "Build" in release:
+            logger("Parsing this line into the release dictionary: " + release)
             dictionarytest[release[3:release.index("(Build")-1]] = release[release.index("(Build")+ 7:release.rfind("-", release.index("(Build"))].split(".", 1)[0]
     
-        
+    logger("Working with this finished dictionary: " + str(dictionarytest))    
     return(list(dictionarytest.values())[0])
 
 
 def uptodate():
     # TODO: Switch to platform.release() once this is fixed: https://bugs.python.org/issue46869
     if "11" not in wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode("utf-8"): # No update assistant for W11 yet afaik
-    
+        logger("Going to be comparing {current} to {believedlatest}".format(current=str(platform.version().split('.')[2]), believedlatest=str(latest_windows_version())))
         if int(platform.version().split('.')[2]) >= int(latest_windows_version()): #We should consider insider builds. But that's outside the scope of v1 at least.
-            print("System up to date already", flush=True)                
+            print("System up to date already", flush=True)  
+            logger("I believe it is up to date")              
     
         else:
+            logger("I do not believe it is up to date")
             print("System is out of date, downloading Microsoft Update Assistant.", flush=True)
             download_helper('https://go.microsoft.com/fwlink/?LinkID=799445', os.path.join(Appdata, "MicrosoftUpdater.exe"))
             print("This window will now open the Microsoft Update Assistant to help you update to the latest version.", flush=True)
@@ -639,8 +670,8 @@ def mainpain():
 @#(*..*%((,  %                       *#............,///////&%////*..#,//....///*
 .*/(&//(%,    #/,               .#(........,**///////%/,&(///////*..#*//,..////&
 /,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@
-    """)
-    print("\n")
+    """, flush=True)
+    print("\n", flush=True)
     try:
         if returnifduplicate() == True:
             print(r"""
@@ -658,9 +689,8 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
             try:
                 mainshit = checkifpossible()
             except Exception as mainshit:
-                mainshit = mainshit
                 print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
-                print(mainshit)
+                print(traceback.format_exc())
                 while True:
                     time.sleep(1)
             print(mainshit[1])
@@ -766,7 +796,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
               except Exception as oof:
                   print("Error while doing DDU. You can still run manually.")
                   print("Please send this to Evernow:")
-                  print(oof, flush=True)
+                  print(traceback.format_exc(), flush=True)
                   while True:
                       time.sleep(1)
               print("DDU has been ran!", flush=True)
@@ -841,7 +871,7 @@ Closing in ten minutes. Feel free to close early if no problems
             time.sleep(1)
     except Exception as oof:
         print(unrecoverable_error_print)
-        print(oof, flush=True)
+        print(traceback.format_exc(), flush=True)
         while True:
             time.sleep(1)
     
