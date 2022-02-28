@@ -1,3 +1,5 @@
+advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0}
+# Default settings
 from datetime import datetime, timezone
 import os,time    
 import wmi
@@ -10,6 +12,11 @@ import platform
 #import wexpect
 import zipfile
 import traceback
+import json
+
+
+clear = lambda: os.system('cls')
+
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
 Appdata_AutoDDU_CLI = os.path.join(Appdata, "AutoDDU_CLI")
 Persistent_File_location = os.path.join(Appdata, "AutoDDU_CLI", "PersistentDDU_Log.txt")
@@ -56,7 +63,136 @@ user profile we created, if it doesn't then login
 yourself manually.
 """
 
+
+
+AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+def obtainsetting(index):
+    with open(AutoDDU_CLI_Settings, 'r+') as f:
+        advanced_options_dict = json.load(f)
+        return(advanced_options_dict[index])
+
+
+def default_config():
+    with open(AutoDDU_CLI_Settings, "w") as outfile:
+        json.dump(advanced_options_dict_global, outfile)
+
+def AdvancedMenu():
+    logger("User entered AdvancedMenu")
+    option = -1
+    while option != 7:
+         clear()
+         time.sleep(1)
+         print ("WARNING: THIS MAY BEHAVE UNEXPECTADLY!")
+         print ('1 --' + AdvancedMenu_Options(1)) # Disable Windows Updates check
+         print ('2 --' + AdvancedMenu_Options(2)) # Bypass supported GPU requirement
+         print ('3 --' + AdvancedMenu_Options(3)) # Provide my own driver URLs
+         print ('4 --' + AdvancedMenu_Options(4)) # Disable time check
+         print ('5 --' + AdvancedMenu_Options(5)) # Do not turn internet off when needed
+         print ('6 --' + AdvancedMenu_Options(6)) # Do not disable overclocking/undervolts/fan curves
+         print ('7 -- Start' )
+         option = int(input('Enter your choice: '))
+         change_AdvancedMenu(option)
+         
+def AdvancedMenu_Options(num):
+  logger("User is changing option " + str(num))
+  with open(AutoDDU_CLI_Settings, 'r+') as f:
+    advanced_options_dict = json.load(f)
+    if num == 1:
+        if advanced_options_dict["disablewindowsupdatecheck"] == 0:
+            return(" Disable Windows Updates check")
+        else:
+            return(" Enable Windows Updates check")
+        
+    if num == 2:
+        if advanced_options_dict["bypassgpureq"] == 0:
+            return(" Bypass supported GPU requirement")
+        else:
+            return(" Enable supported GPU requirement")
+        
+    if num == 3:
+        if len(advanced_options_dict["provideowngpuurl"]) == 0:
+            return(" Provide my own driver URLs")
+        else:
+            return(" Let AutoDDU look for drivers")
+        
+    if num == 4:
+        if advanced_options_dict["disabletimecheck"] == 0:
+            return(" Disable time check")
+        else:
+            return(" Enable time check")
+        
+    if num == 5:
+        if advanced_options_dict["disableinternetturnoff"] == 0:
+            return(" Do not turn internet off when needed")
+        else:
+            return("Turn internet off when needed")
+        
+    if num == 6:
+        if advanced_options_dict["donotdisableoverclocks"] == 0:
+            return(" Do not disable overclocking/undervolts/fan curves")
+        else:
+            return(" Disable overclocking/undervolts/fan curves")
+    f.seek(0)
+    json.dump(advanced_options_dict, f, indent=4)
+    f.truncate()
+    advanced_options_dict_global = advanced_options_dict
+    logger("Advanced options are now: " + str(advanced_options_dict))
+def change_AdvancedMenu(num):
+   with open(r"C:\Users\Daniel\Desktop\AutoDDU_CLI\sample.json", 'r+') as f:
+    advanced_options_dict = json.load(f)
+    if num == 1:
+        if advanced_options_dict["disablewindowsupdatecheck"] == 0:
+            advanced_options_dict["disablewindowsupdatecheck"] = 1
+        else:
+            advanced_options_dict["disablewindowsupdatecheck"] = 0
+        
+    if num == 2:
+        if advanced_options_dict["bypassgpureq"] == 0:
+            advanced_options_dict["bypassgpureq"] = 1
+        else:
+            advanced_options_dict["bypassgpureq"] = 0
+        
+    if num == 3:
+        if len(advanced_options_dict["provideowngpuurl"]) == 0:
+            option = str(input('Type in the driver download URL: '))
+            advanced_options_dict["provideowngpuurl"].append(option)
+        else:
+            advanced_options_dict["provideowngpuurl"] = []
+        
+    if num == 4:
+        if advanced_options_dict["disabletimecheck"] == 0:
+            advanced_options_dict["disabletimecheck"] = 1
+        else:
+            advanced_options_dict["disabletimecheck"] = 0
+        
+    if num == 5:
+        if advanced_options_dict["disableinternetturnoff"] == 0:
+            advanced_options_dict["disableinternetturnoff"] = 1
+        else:
+            advanced_options_dict["disableinternetturnoff"] = 0
+        
+    if num == 6:
+        if advanced_options_dict["donotdisableoverclocks"] == 0:
+            advanced_options_dict["donotdisableoverclocks"] = 1
+        else:
+            advanced_options_dict["donotdisableoverclocks"] = 0
+    f.seek(0)
+    json.dump(advanced_options_dict, f, indent=4)
+    f.truncate()
+        
+
+def print_menu1():
+    print ('Press Enter Key -- Start' )
+    print ('2 -- Advanced Options' )    
+    option = int(input('Enter your choice: '))
+    if option == 2:
+        AdvancedMenu()
+
+
+
 def returnifduplicate():
+    # TODO: If someone downloads this twice the process name will be "AutoDDU_CLI.exe (1) , which won't be caught by this
     processes = list() 
     for process in wmi.WMI().Win32_Process():
         processes.append(process.Name)
@@ -622,6 +758,7 @@ def DDUCommands():
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleanintel', '-logging'])
         
 def enable_internet(enable):
+  if obtainsetting("donotdisableoverclocks") == 0:
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
     try:
         for adapter in network_adapters:
@@ -682,30 +819,33 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
             while True:
                 time.sleep(1)
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
+            default_config()
+            print_menu1()
             
     
             print("This process will attempt to perform DDU automatically.", flush=True)
             time.sleep(1)
             mainshit = ""
-            try:
-                mainshit = checkifpossible()
-            except Exception as mainshit:
-                print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
-                print(traceback.format_exc())
-                while True:
-                    time.sleep(1)
-            print(mainshit[1])
-            if mainshit[0] ==0:
-                print(r"""
-INCOMPATIBLE GPU CONFIGURATION FOUND.
-
-CURRENTLY NO WAY TO RUN AUTODDU WITH THIS CONFIGURATION.
-
-IF THIS IS A MISTAKE PLEASE SHARE THIS WITH EVERNOW:
-    """, flush=True)
-                print(mainshit)
-                while True:
-                    time.sleep(1)
+            if obtainsetting("bypassgpureq") == 0: 
+                try:
+                    mainshit = checkifpossible()
+                except Exception as mainshit:
+                    print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
+                    print(traceback.format_exc())
+                    while True:
+                        time.sleep(1)
+                print(mainshit[1])
+                if mainshit[0] ==0:
+                    print(r"""
+    INCOMPATIBLE GPU CONFIGURATION FOUND.
+    
+    CURRENTLY NO WAY TO RUN AUTODDU WITH THIS CONFIGURATION.
+    
+    IF THIS IS A MISTAKE PLEASE SHARE THIS WITH EVERNOW:
+        """, flush=True)
+                    print(mainshit)
+                    while True:
+                        time.sleep(1)
             
             print(r"""
 This will update Windows if out of date, download needed drivers,
@@ -730,17 +870,23 @@ without warning.
                 HandleOtherLanguages()
             time.sleep(5)
             BackupProfile()
-            download_drivers(mainshit[2])
+            if len(obtainsetting("provideowngpuurl")) != 0:
+                download_drivers(obtainsetting("provideowngpuurl"))
+                
+            elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
+                download_drivers(mainshit[2])
             ddu_download()
-            uptodate()
+            if obtainsetting("disablewindowsupdatecheck") == 0:
+                uptodate()
             changepersistent(1)
         if getpersistent() == 1:        
-            print("Now going to disable any oveclocks/undervolts/fan curves if any on the GPU.")
+            print("Now going to disable any oveclocks/undervolts/fan curves if any on the GPU. (If not changed to do otherwise)")
             print("If you had one you will have to reapply after this process is done.")
             print("If you do not know what any of this is, don't worry, you don't have to do anything.")
             print("We will resume in 5 seconds.", flush=True)
-            time.sleep(5) 
-            disable_clocking() 
+            time.sleep(5)
+            if obtainsetting("donotdisableoverclocks") == 0:
+                disable_clocking() 
             print(r"""
                   
 ----------------------------NOTICE----------------------------
