@@ -3,7 +3,7 @@
 ![](Chikaftw_upscaled.png)
 
 
-This is an attempt to automate as much as possible for the end user, while also being maintainable and requiring time spent to maintain it overtime.
+This is an attempt to automate as much as possible for the end user, while also being maintainable and requiring little time spent to maintain it overtime.
 
 ## Requirements (these are all handled automatically):
 - [FIDO](https://github.com/pbatard/Fido): Used to know which is the latest Windows release
