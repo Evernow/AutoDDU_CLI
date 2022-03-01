@@ -85,14 +85,14 @@ def AdvancedMenu():
     while option != 7:
          clear()
          time.sleep(1)
-         print ("WARNING: THIS MAY BEHAVE UNEXPECTADLY!")
-         print ('1 --' + AdvancedMenu_Options(1)) # Disable Windows Updates check
-         print ('2 --' + AdvancedMenu_Options(2)) # Bypass supported GPU requirement
-         print ('3 --' + AdvancedMenu_Options(3)) # Provide my own driver URLs
-         print ('4 --' + AdvancedMenu_Options(4)) # Disable time check
-         print ('5 --' + AdvancedMenu_Options(5)) # Do not turn internet off when needed
-         print ('6 --' + AdvancedMenu_Options(6)) # Do not disable overclocking/undervolts/fan curves
-         print ('7 -- Start' )
+         print ("WARNING: THIS MAY BEHAVE UNEXPECTADLY!",flush=True)
+         print ('1 --' + AdvancedMenu_Options(1),flush=True) # Disable Windows Updates check
+         print ('2 --' + AdvancedMenu_Options(2),flush=True) # Bypass supported GPU requirement
+         print ('3 --' + AdvancedMenu_Options(3),flush=True) # Provide my own driver URLs
+         print ('4 --' + AdvancedMenu_Options(4),flush=True) # Disable time check
+         print ('5 --' + AdvancedMenu_Options(5),flush=True) # Do not turn internet off when needed
+         print ('6 --' + AdvancedMenu_Options(6),flush=True) # Do not disable overclocking/undervolts/fan curves
+         print ('7 -- Start',flush=True )
          option = int(input('Enter your choice: '))
          change_AdvancedMenu(option)
          
@@ -157,7 +157,7 @@ def change_AdvancedMenu(num):
         
     if num == 3:
         if len(advanced_options_dict["provideowngpuurl"]) == 0:
-            option = str(input('Type in the driver download URL: '))
+            option = str(input('Type in the driver download URL: ))
             advanced_options_dict["provideowngpuurl"].append(option)
         else:
             advanced_options_dict["provideowngpuurl"] = []
@@ -185,8 +185,8 @@ def change_AdvancedMenu(num):
         
 
 def print_menu1():
-    print ('Press Enter Key -- Start' )
-    print ('2 -- Advanced Options' )    
+    print ('Press Enter Key -- Start' ,flush=True)
+    print ('2 -- Advanced Options' ,flush=True)    
     option = str(input('Enter your choice: '))
     if option == "2":
         AdvancedMenu()
@@ -287,7 +287,7 @@ def workaroundwindowsissues():
     except:
         pass # This is meant to fail.
     logger("Did prep work for working around Windows issue")
-    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
+    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
     logger("Downloaded DDU to DDU profile")
     # This was old approach, leaving here for now incase we need a failback one day.
     
