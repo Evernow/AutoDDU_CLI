@@ -250,7 +250,7 @@ def cleanup():
         pass
     logger("Finished cleanup")
 def makepersist():
-    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", exe_location)
+    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", exe_location)
     lines = ['Set WshShell = CreateObject("WScript.Shell" )', 'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
     with open(Script_Location_For_startup, 'w') as f:
         for line in lines:
