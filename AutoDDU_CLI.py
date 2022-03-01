@@ -77,7 +77,6 @@ def findnottaken():
         entry_path = os.path.join(Users_directory, entry_name)
         if os.path.isdir(entry_path):
             subfolders.append(entry_name.upper())
-    print(subfolders)
     while next in subfolders:
         next = next + "U"
     return(next)
