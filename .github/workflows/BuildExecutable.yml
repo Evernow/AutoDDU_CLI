@@ -19,7 +19,7 @@ jobs:
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
-        run: pyinstaller --no-confirm --onefile --console --uac-admin AutoDDU_CLI.py
+        run: pyinstaller --noconfirm --onefile --console --uac-admin AutoDDU_CLI.py
           
       - name: commit files
         run: |
