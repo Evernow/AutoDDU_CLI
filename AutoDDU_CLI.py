@@ -93,7 +93,7 @@ def AdvancedMenu():
          print ('5 --' + AdvancedMenu_Options(5),flush=True) # Do not turn internet off when needed
          print ('6 --' + AdvancedMenu_Options(6),flush=True) # Do not disable overclocking/undervolts/fan curves
          print ('7 -- Start',flush=True )
-         option = int(input('Enter your choice: '))
+         option = str(input('Enter your choice: '))
          change_AdvancedMenu(option)
          
 def AdvancedMenu_Options(num):
@@ -143,38 +143,38 @@ def AdvancedMenu_Options(num):
 def change_AdvancedMenu(num):
    with open(AutoDDU_CLI_Settings, 'r+') as f:
     advanced_options_dict = json.load(f)
-    if num == 1:
+    if num == "1":
         if advanced_options_dict["disablewindowsupdatecheck"] == 0:
             advanced_options_dict["disablewindowsupdatecheck"] = 1
         else:
             advanced_options_dict["disablewindowsupdatecheck"] = 0
         
-    if num == 2:
+    if num == "2":
         if advanced_options_dict["bypassgpureq"] == 0:
             advanced_options_dict["bypassgpureq"] = 1
         else:
             advanced_options_dict["bypassgpureq"] = 0
         
-    if num == 3:
+    if num == "3":
         if len(advanced_options_dict["provideowngpuurl"]) == 0:
             option = str(input('Type in the driver download URL: '))
             advanced_options_dict["provideowngpuurl"].append(option)
         else:
             advanced_options_dict["provideowngpuurl"] = []
         
-    if num == 4:
+    if num == "4":
         if advanced_options_dict["disabletimecheck"] == 0:
             advanced_options_dict["disabletimecheck"] = 1
         else:
             advanced_options_dict["disabletimecheck"] = 0
         
-    if num == 5:
+    if num == "5":
         if advanced_options_dict["disableinternetturnoff"] == 0:
             advanced_options_dict["disableinternetturnoff"] = 1
         else:
             advanced_options_dict["disableinternetturnoff"] = 0
         
-    if num == 6:
+    if num == "6":
         if advanced_options_dict["donotdisableoverclocks"] == 0:
             advanced_options_dict["donotdisableoverclocks"] = 1
         else:
