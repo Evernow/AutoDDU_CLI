@@ -925,7 +925,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             workaroundwindowsissues() # TODO: this is REALLY FUCKING STUPID
             makepersist()
               
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
             subprocess.call('shutdown /r -t 5', shell=True)
             enable_internet(False)
             changepersistent(2)
