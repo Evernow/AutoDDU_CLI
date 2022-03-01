@@ -297,7 +297,7 @@ def workaroundwindowsissues():
     download_helper("https://download.sysinternals.com/files/PSTools.zip", os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
     with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"), 'r') as zip_ref:
         zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
-    subprocess.call('NET USER {profile} 1234 ').format(profile=obtainsetting("ProfileUsed"), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
         subprocess.call('{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"), directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     except:
