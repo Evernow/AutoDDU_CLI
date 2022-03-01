@@ -241,7 +241,7 @@ def logger(log):
     
 
 def cleanup():
-    os.remove(os.remove(Script_Location_For_startup))
+    os.remove(Script_Location_For_startup)
     try:
         os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")) 
     except:
