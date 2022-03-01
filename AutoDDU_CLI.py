@@ -187,8 +187,8 @@ def change_AdvancedMenu(num):
 def print_menu1():
     print ('Press Enter Key -- Start' )
     print ('2 -- Advanced Options' )    
-    option = int(input('Enter your choice: '))
-    if option == 2:
+    option = str(input('Enter your choice: '))
+    if option == "2":
         AdvancedMenu()
 
 
