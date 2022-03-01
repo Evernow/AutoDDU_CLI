@@ -25,6 +25,7 @@ ddu_AssemblyInfo = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "Assembl
 ddu_zip_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "DDU.exe")
 seven_zip = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "7z.exe")
 ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
+Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0))
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup' , 'AutoDDUStartup.vbs')
@@ -67,6 +68,21 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+
+def findnottaken():
+    # TODO: this is dumb, but I don't like the risk of deleting user profile folders... Windows deletes these after a while anyways if they aren't associated with a user.
+    next = "DDU"
+    subfolders = list()
+    for entry_name in os.listdir(Users_directory):
+        entry_path = os.path.join(Users_directory, entry_name)
+        if os.path.isdir(entry_path):
+            subfolders.append(entry_name.upper())
+    print(subfolders)
+    while next in subfolders:
+        next = next + "U"
+    return(next)
+
+
 def obtainsetting(index):
     with open(AutoDDU_CLI_Settings, 'r+') as f:
         advanced_options_dict = json.load(f)
@@ -74,6 +90,7 @@ def obtainsetting(index):
 
 
 def default_config():
+    advanced_options_dict_global["ProfileUsed"] = findnottaken()
     if not os.path.exists(Appdata_AutoDDU_CLI):
         os.makedirs(Appdata_AutoDDU_CLI)
     with open(AutoDDU_CLI_Settings, "w+") as outfile:
@@ -263,7 +280,7 @@ def autologin():
     # https://superuser.com/questions/514265/set-user-for-auto-logon-on-windows-via-batch-script
     try:
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d DDU /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d {profile} /f'.format(profile=obtainsetting("ProfileUsed")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         
         subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d 1234 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         
@@ -281,13 +298,13 @@ def workaroundwindowsissues():
     download_helper("https://download.sysinternals.com/files/PSTools.zip", os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
     with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"), 'r') as zip_ref:
         zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
-    subprocess.call('NET USER DDU 1234 ', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.call('NET USER {profile} 1234 ').format(profile=obtainsetting("ProfileUsed"), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
-        subprocess.call('{directory_to_exe} -accepteula -u DDU -p 1234 i- exit'.format(directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.call('{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"), directory_to_exe=os.path.join(Appdata_AutoDDU_CLI, "PsTools", "PsExec.exe")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     except:
         pass # This is meant to fail.
     logger("Did prep work for working around Windows issue")
-    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")    
+    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))    
     logger("Downloaded DDU to DDU profile")
     # This was old approach, leaving here for now incase we need a failback one day.
     
@@ -533,8 +550,8 @@ def getpersistent():
 
 def BackupProfile():
     try:
-     firstcommand = "net user /add DDU"
-     secondcommand = "net localgroup administrators DDU /add"
+     firstcommand = "net user /add {profile}".format(profile=obtainsetting("ProfileUsed"))
+     secondcommand = "net localgroup administrators {profile} /add".format(profile=obtainsetting("ProfileUsed"))
      subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)  
      logger("Running command to add created to user to administrators")
      subprocess.run(secondcommand, shell=True, check=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)  
@@ -925,7 +942,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             workaroundwindowsissues() # TODO: this is REALLY FUCKING STUPID
             makepersist()
               
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\DDU\Desktop\AutoDDU_CLI.exe")
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
             subprocess.call('shutdown /r -t 5', shell=True)
             enable_internet(False)
             changepersistent(2)
@@ -963,7 +980,7 @@ Will restart in 15 seconds.
               safemode(0)
               changepersistent(3)
               try:
-                  subprocess.Popen('powershell.exe Remove-LocalUser -Name "DDU"', 
+                  subprocess.Popen('powershell.exe Remove-LocalUser -Name "{profile}"'.format(profile=obtainsetting("ProfileUsed")), 
                              shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate()
               except:  
                   pass
