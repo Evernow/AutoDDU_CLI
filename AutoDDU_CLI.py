@@ -751,10 +751,12 @@ def safemode(ONorOFF):
         if ONorOFF == 0:
             subprocess.call('bcdedit /deletevalue {default} safeboot', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 def DDUCommands():
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleannvidia', '-logging'])
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleanamd', '-logging'])
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-cleanintel', '-logging'])
-        
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent','-RemoveMonitors' , '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNvidiaDirs', '-cleannvidia', '-logging'])
+        print("1/3 finished with DDU", flush=True)
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent','-RemoveMonitors' , '-RemoveVulkan', '-RemoveAMDDirs','-RemoveCrimsonCache','-RemoveAMDCP','-cleanamd', '-logging'])
+        print("2/3 finished with DDU", flush=True)
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors' , '-RemoveVulkan','-RemoveINTELCP','-cleanintel', '-logging'])
+        print("3/3 finished with DDU", flush=True)
 def enable_internet(enable):
   if obtainsetting("donotdisableoverclocks") == 0:
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
