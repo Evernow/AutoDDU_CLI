@@ -157,7 +157,7 @@ def change_AdvancedMenu(num):
         
     if num == 3:
         if len(advanced_options_dict["provideowngpuurl"]) == 0:
-            option = str(input('Type in the driver download URL: ))
+            option = str(input('Type in the driver download URL: '))
             advanced_options_dict["provideowngpuurl"].append(option)
         else:
             advanced_options_dict["provideowngpuurl"] = []
