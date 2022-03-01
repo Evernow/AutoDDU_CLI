@@ -82,7 +82,7 @@ def default_config():
 def AdvancedMenu():
     logger("User entered AdvancedMenu")
     option = -1
-    while option != 7:
+    while option != "7":
          clear()
          time.sleep(1)
          print ("WARNING: THIS MAY BEHAVE UNEXPECTADLY!",flush=True)
