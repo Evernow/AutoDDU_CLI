@@ -1,6 +1,6 @@
 advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0}
 # Default settings
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import os,time    
 import wmi
 import sys
@@ -13,8 +13,8 @@ import platform
 import zipfile
 import traceback
 import json
-
-
+import urllib.request
+from subprocess import CREATE_NEW_CONSOLE
 clear = lambda: os.system('cls')
 
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
@@ -202,7 +202,6 @@ def returnifduplicate():
 
 
 def BadLanguage():
-    import wmi
     lang = wmi.WMI().Win32_OperatingSystem()[0].OSLanguage
     # https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-operatingsystem
     ok_languages = [9, 1033, 2057, 3081, 4105, 5129, 6153, 7177, 8201, 10249, 11273] # Basically all english versions
@@ -223,7 +222,6 @@ def HandleOtherLanguages():
 
 
 def PCIID(vendor, device):
-    import urllib.request, json 
     with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json") as url:
         data = json.loads(url.read().decode())
         return(data[vendor]['devices'][device]['name'])
@@ -339,7 +337,7 @@ def getsupportstatus():
            # We need to filter out by vendor or else we can parse in shit like Citrix or capture cards.
            if "dev_" in gpu and ("ven_10de" in gpu or "ven_121a" in gpu or "ven_8086" in gpu
                                                            or "ven_1002" in gpu): # 1002 = AMD ; 8086 = Intel ; 10de = NVIDIA ; 121a = Voodoo (unlikely but I mean.. doesn't hurt?)
-                   from datetime import date
+                   
                    todays_date = date.today().year
                    
                    # Us assuming a ven and dev ID is 4 characters long is a safe one: https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
@@ -433,7 +431,6 @@ def checkifpossible(): # Checks edge GPU cases and return list of GPU drivers to
     dict_of_GPUS = getsupportstatus()
   #  print(dict_of_GPUS)
     drivers_to_download = list()
-    import urllib.request, json 
     with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json") as url:
         data_nvidia = json.loads(url.read().decode())
     NVIDIA_Consumer = data_nvidia["consumer"]["link"]
@@ -677,7 +674,6 @@ def ddu_download():
         shutil.move(os.path.join(where_it_is, file_name), ddu_extracted_path)
 
 def latest_windows_version():
-    from subprocess import CREATE_NEW_CONSOLE
     download_helper("https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1", os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1"))
     p = str(subprocess.Popen("powershell.exe -ExecutionPolicy RemoteSigned -file {directorytofido} -Win {version} -Rel List".format(version = platform.release(), directorytofido = os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1")), 
                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
@@ -717,7 +713,7 @@ def uptodate():
             while True:
                 time.sleep(1)
 def disable_clocking():
-        from subprocess import CREATE_NEW_CONSOLE
+        
         try:
             subprocess.call(
                 'powershell.exe  Unregister-ScheduledTask -TaskName "MSIAfterburner" -Confirm:$false',
@@ -965,7 +961,6 @@ Will restart in 15 seconds.
               safemode(0)
               changepersistent(3)
               try:
-                  from subprocess import CREATE_NEW_CONSOLE
                   subprocess.Popen('powershell.exe Remove-LocalUser -Name "DDU"', 
                              shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate()
               except:  
