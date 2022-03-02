@@ -340,10 +340,10 @@ def workaroundwindowsissues():
     
     
 
-def getsupportstatus():
+def getgpuinfos():
     controllers = wmi.WMI().Win32_VideoController()
     gpu_dictionary = dict() # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer] 
-    logger("Working in getsupportstatus with this wmi output: ")
+    logger("Working in getgpuinfos with this wmi output: ")
     for controller in controllers:
        name = controller.wmi_property('Name').value.encode("ascii", "ignore").decode("utf-8")
        gpu_list_to_parse = controller.wmi_property('PNPDeviceID').value.encode("ascii", "ignore").decode("utf-8").lower().split("\\") # .lower() is due to Windows not following PCI naming convention.
@@ -354,13 +354,29 @@ def getsupportstatus():
            if "dev_" in gpu and ("ven_10de" in gpu or "ven_121a" in gpu or "ven_8086" in gpu
                                                            or "ven_1002" in gpu): # 1002 = AMD ; 8086 = Intel ; 10de = NVIDIA ; 121a = Voodoo (unlikely but I mean.. doesn't hurt?)
                    
-                   todays_date = date.today().year
                    
                    # Us assuming a ven and dev ID is 4 characters long is a safe one: https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
                    Arch = PCIID(gpu[gpu.find('ven_')+4:gpu.find('ven_')+8], gpu[gpu.find('dev_')+4:gpu.find('dev_')+8])
                    Arch = Arch[:Arch.find(' ')]
                    Vendor_ID = gpu[gpu.find('ven_')+4:gpu.find('ven_')+8]
                    Device_ID = gpu[gpu.find('dev_')+4:gpu.find('dev_')+8]
+                   gpu_dictionary[name] = [Arch, Vendor_ID, Device_ID]
+    logger(str(gpu_dictionary))
+    return(gpu_dictionary)
+                   
+todays_date = date.today().year
+
+
+def getsupportstatus(parsed_gpus): # parsed_gpus[name] = [Arch, Vendor_ID, Device_ID]
+    gpu_dictionary = dict() # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer] 
+    logger("Working in getsupportstatus with this wmi output: ")
+    for gpu in parsed_gpus:
+                   
+                   todays_date = date.today().year
+                   name = gpu
+                   Arch = parsed_gpus[gpu][0]
+                   Vendor_ID = parsed_gpus[gpu][1]
+                   Device_ID = parsed_gpus[gpu][2]
                    supportstatus = 0
                    Consumer_or_Professional = ""
                    if Vendor_ID == '121a': # Voodoo (wtf lol)
@@ -437,14 +453,16 @@ def getsupportstatus():
 
 # supportstatus = 0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL
 # [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT, supportstatus, professional/consumer] 
-def checkifpossible(): # Checks edge GPU cases and return list of GPU drivers to downloaded
+def checkifpossible(getgpus): # Checks edge GPU cases and return list of GPU drivers to downloaded
+
+
     # WIP to prevent different driver branches being installed (like R470 and R510 or R510 prof and R510 consumer)
     Consumer = 0
     Professional = 0
     Fermi = 0
     Kepler = 0
     
-    dict_of_GPUS = getsupportstatus()
+    dict_of_GPUS = getgpus
   #  print(dict_of_GPUS)
     drivers_to_download = list()
     with urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json") as url:
@@ -524,6 +542,7 @@ PLEASE REPORT THIS TO EVERNOW IF IT IS A BUG.
 Chika is mad and confused at the same time."""
    # logger("Finished checkifpossible with these values: " + 1 + " " + performing_DDU_on + " " + drivers_to_download)
     return(1, performing_DDU_on, drivers_to_download)  
+
 
 # This keeps track of where we are in the process in a text file. 
 def changepersistent(num):
@@ -786,7 +805,7 @@ def enable_internet(enable):
         pass # Ugly way, but some adapters in specific configs cannot be disabled.
         # TODO: Verify if internet is actually disabled
 
-def mainpain():
+def mainpain(TestEnvironment):
     
     os.system('mode con: cols=80 lines=40')
     print(r"""
@@ -844,7 +863,9 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
             mainshit = ""
             if obtainsetting("bypassgpureq") == 0: 
                 try:
-                    mainshit = checkifpossible()
+                    # For testing you replace getgpuinfos() with proper dict such as:
+                    # {'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}
+                    mainshit = checkifpossible(getsupportstatus(getgpuinfos()))
                 except Exception as mainshit:
                     print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
                     print(traceback.format_exc())
@@ -1038,4 +1059,4 @@ Closing in ten minutes. Feel free to close early if no problems
             time.sleep(1)
     
     
-print(mainpain())                 
+print(mainpain([]))                 
