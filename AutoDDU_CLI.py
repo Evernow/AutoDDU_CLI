@@ -1,4 +1,4 @@
-advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0, "disabledadapters" : []}
+advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0, "disabledadapters" : [], "avoidspacecheck" : 0 }
 # Default settings
 from datetime import datetime, timezone, date
 import os,time    
@@ -68,6 +68,8 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def freespace():
+    return(shutil.disk_usage(Appdata).free > 20474836480 ) # ~20GB
 
 def findnottaken():
     # TODO: this is dumb, but I don't like the risk of deleting user profile folders... Windows deletes these after a while anyways if they aren't associated with a user.
@@ -866,6 +868,12 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
             print_menu1()
+            if not freespace() and len(TestEnvironment) == 0:
+                print(r"""
+Too little free space to continue.
+Please have at least 20GB of free space in C: drive.                 
+                      """)
+                
             
     
             print("This process will attempt to perform DDU automatically.", flush=True)
