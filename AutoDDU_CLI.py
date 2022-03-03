@@ -1,4 +1,4 @@
-advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0}
+advanced_options_dict_global = {"disablewindowsupdatecheck" : 0, "bypassgpureq" : 0, "provideowngpuurl" : [], "disabletimecheck" : 0, "disableinternetturnoff" : 0, "donotdisableoverclocks": 0, "disabledadapters" : []}
 # Default settings
 from datetime import datetime, timezone, date
 import os,time    
@@ -793,18 +793,28 @@ def DDUCommands():
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors' , '-RemoveVulkan','-RemoveINTELCP','-cleanintel', '-logging'])
         print("3/3 finished with DDU", flush=True)
 def enable_internet(enable):
-  if obtainsetting("donotdisableoverclocks") == 0:
+   if obtainsetting("donotdisableoverclocks") == 0:
+    list_test = list()
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
-    try:
-        for adapter in network_adapters:
-            if enable:
-                adapter.Enable()
-            else:
+    for adapter in network_adapters:
+       try:
+        if not enable:
+            if adapter.NetEnabled:
+                list_test.append(adapter.GUID) # I'll take the chances: https://devblogs.microsoft.com/oldnewthing/20080627-00/?p=21823
                 adapter.Disable()
-    except:
-        pass # Ugly way, but some adapters in specific configs cannot be disabled.
-        # TODO: Verify if internet is actually disabled
-
+        else:
+            if adapter.GUID in list_test:
+                adapter.Enable()
+       except:
+           pass
+    if not enable:
+        with open(AutoDDU_CLI_Settings, 'r+') as f:
+          advanced_options_dict = json.load(f)
+          advanced_options_dict["disabledadapters"] = list_test
+          f.seek(0)
+          json.dump(advanced_options_dict, f, indent=4)
+          f.truncate()
+          
 def mainpain(TestEnvironment):
     
     os.system('mode con: cols=80 lines=40')
