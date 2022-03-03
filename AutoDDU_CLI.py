@@ -100,7 +100,7 @@ def default_config():
 def AdvancedMenu():
     logger("User entered AdvancedMenu")
     option = -1
-    while option != "7":
+    while option != "8":
          clear()
          time.sleep(1)
          print ("WARNING: THIS MAY BEHAVE UNEXPECTADLY!",flush=True)
@@ -110,7 +110,8 @@ def AdvancedMenu():
          print ('4 --' + AdvancedMenu_Options(4),flush=True) # Disable time check
          print ('5 --' + AdvancedMenu_Options(5),flush=True) # Do not turn internet off when needed
          print ('6 --' + AdvancedMenu_Options(6),flush=True) # Do not disable overclocking/undervolts/fan curves
-         print ('7 -- Start',flush=True )
+         print ('7 --' + AdvancedMenu_Options(7),flush=True) # Disable 20GB free storage requirement
+         print ('8 -- Start',flush=True )
          option = str(input('Enter your choice: '))
          change_AdvancedMenu(option)
          
@@ -153,6 +154,11 @@ def AdvancedMenu_Options(num):
             return(" Do not disable overclocking/undervolts/fan curves")
         else:
             return(" Disable overclocking/undervolts/fan curves")
+    if num == 7:
+        if advanced_options_dict["avoidspacecheck"] == 0:
+            return(" Disable 20GB free storage requirement")
+        else:
+            return(" Enable 20GB free storage requirement")
     f.seek(0)
     json.dump(advanced_options_dict, f, indent=4)
     f.truncate()
@@ -197,6 +203,11 @@ def change_AdvancedMenu(num):
             advanced_options_dict["donotdisableoverclocks"] = 1
         else:
             advanced_options_dict["donotdisableoverclocks"] = 0
+    if num == "7":
+        if advanced_options_dict["avoidspacecheck"] == 0:
+            advanced_options_dict["avoidspacecheck"] = 1
+        else:
+            advanced_options_dict["avoidspacecheck"] = 0
     f.seek(0)
     json.dump(advanced_options_dict, f, indent=4)
     f.truncate()
@@ -868,11 +879,13 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
             print_menu1()
-            if not freespace() and len(TestEnvironment) == 0:
+            if not freespace() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
 Too little free space to continue.
 Please have at least 20GB of free space in C: drive.                 
-                      """)
+                      """,flush=True)
+                while True:
+                    time.sleep(1)
                 
             
     
