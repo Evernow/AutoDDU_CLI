@@ -800,10 +800,10 @@ def enable_internet(enable):
        try:
         if not enable:
             if adapter.NetEnabled:
-                list_test.append(adapter.GUID) # I'll take the chances: https://devblogs.microsoft.com/oldnewthing/20080627-00/?p=21823
+                list_test.append(adapter.MACAddress)
                 adapter.Disable()
         else:
-            if adapter.GUID in list_test:
+            if adapter.MACAddress in list_test:
                 adapter.Enable()
        except:
            pass
