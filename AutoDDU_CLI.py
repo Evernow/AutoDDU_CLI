@@ -803,7 +803,7 @@ def enable_internet(enable):
                 list_test.append(adapter.MACAddress)
                 adapter.Disable()
         else:
-            if adapter.MACAddress in list_test:
+            if adapter.MACAddress in obtainsetting("disabledadapters"):
                 adapter.Enable()
        except:
            pass
