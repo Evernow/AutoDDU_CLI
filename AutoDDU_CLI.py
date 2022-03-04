@@ -830,7 +830,7 @@ def enable_internet(enable):
                 adapter.Enable()
        except Exception as FUCKYOU:
            logger("Got exception in enable_internet when trying something with " + adapter.Name)
-           logger(FUCKYOU)
+           logger(str(FUCKYOU))
            pass
     if not enable:
         with open(AutoDDU_CLI_Settings, 'r+') as f:
