@@ -828,9 +828,9 @@ def enable_internet(enable):
             if adapter.MACAddress in obtainsetting("disabledadapters"):
                 logger("Successfully enabled this : " + adapter.MACAddress)
                 adapter.Enable()
-       except Exception as FUCKYOU:
+       except:
            logger("Got exception in enable_internet when trying something with " + adapter.Name)
-           logger(str(FUCKYOU))
+           logger(str(traceback.format_exc()))
            pass
     if not enable:
         with open(AutoDDU_CLI_Settings, 'r+') as f:
