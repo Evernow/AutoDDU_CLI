@@ -1054,6 +1054,8 @@ Will restart in 15 seconds.
                   time.sleep(1)
               
         if getpersistent() == 3:  
+            print("Please wait 5 seconds and we'll start the last process")
+            time.sleep(5)
             print(r"""
 Almost done. Only thing left now is install drivers
 and then turn on your internet.
