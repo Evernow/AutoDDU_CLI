@@ -819,14 +819,14 @@ def enable_internet(enable):
        try:
         if enable == False:
             if adapter.NetEnabled:
-                list_test.append(adapter.MACAddress)
+                list_test.append(str(adapter.MACAddress))
                 adapter.Disable()
-                logger("Disabled adapter: " + adapter.MACAddress)
+                logger("Disabled adapter: " + str(adapter.MACAddress))
         else:
             logger("Got this when checking if for else in internet function: " + str((adapter.MACAddress in obtainsetting("disabledadapters"))))
-            logger("MacAddress involved is: " + adapter.MACAddress)
-            if adapter.MACAddress in obtainsetting("disabledadapters"):
-                logger("Successfully enabled this : " + adapter.MACAddress)
+            logger("MacAddress involved is: " + str(adapter.MACAddress))
+            if str(adapter.MACAddress) in obtainsetting("disabledadapters"):
+                logger("Successfully enabled this : " + str(adapter.MACAddress))
                 adapter.Enable()
        except:
            logger("Got exception in enable_internet when trying something with " + adapter.Name)
