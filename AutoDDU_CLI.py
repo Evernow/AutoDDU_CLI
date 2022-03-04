@@ -811,7 +811,7 @@ def enable_internet(enable):
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
     for adapter in network_adapters:
        try:
-        if not enable:
+        if enable == False:
             if adapter.NetEnabled:
                 list_test.append(adapter.MACAddress)
                 adapter.Disable()
