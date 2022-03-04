@@ -15,6 +15,8 @@ import traceback
 import json
 import urllib.request
 from subprocess import CREATE_NEW_CONSOLE
+import ntplib
+
 clear = lambda: os.system('cls')
 
 Appdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0) 
@@ -67,6 +69,24 @@ yourself manually.
 
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+def TimeChecker():
+    # Returns true when time Windows is following is within 48 hours
+    # of what the actual time is. This catches issues where 
+    # someone's PC has not been turned on for a long time and cannot
+    # sync with Microsoft's time servers (like idiot blocks Microsoft domains)
+    
+    c = ntplib.NTPClient()
+    response = c.request('us.pool.ntp.org', version=3) 
+    response.offset
+    # Time from U.S. NTP timeserver
+    InternetTime =  int(time.mktime((datetime.fromtimestamp(response.tx_time, timezone.utc)).timetuple()))
+    
+    # Time computer is following
+    LocalTime = time.time()
+    if (InternetTime - 172800) <= LocalTime <= ((InternetTime + 172800)): # Check if within 48 hours
+        return(True)
+    return(False)
 
 def freespace():
     return(shutil.disk_usage(Appdata).free > 20474836480 ) # ~20GB
@@ -900,7 +920,20 @@ Please have at least 20GB of free space in C: drive.
                     time.sleep(1)
                 
             
-    
+            if not TimeChecker() and obtainsetting("disabletimecheck") == 0:
+              try:
+                print("""
+Fatal error:
+Your system clock is either incorrect or 
+your system is blocking critical domains to determine
+the correct time. """)
+                while True:
+                    pass
+              except:
+                  print("NOTE: TIME CHECK FAILED. ISSUES MAY ARISE LATER. LOGS RECORDED.")
+                  logger(str(traceback.format_exc()))
+                  time.sleep(5)
+                
             print("This process will attempt to perform DDU automatically.", flush=True)
             time.sleep(1)
             mainshit = ""

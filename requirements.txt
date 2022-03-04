@@ -1,3 +1,4 @@
 wmi
 pyinstaller
 requests
+ntplib
