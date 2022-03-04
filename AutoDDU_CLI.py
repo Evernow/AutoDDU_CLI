@@ -530,11 +530,11 @@ def checkifpossible(getgpus): # Checks edge GPU cases and return list of GPU dri
             if gpu[0] == '1002': # AMD 
                 if AMD_Consumer not in drivers_to_download: # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                     drivers_to_download.append(AMD_Consumer) 
-                Consumer += 1
+                #Consumer += 1
             if gpu[0] == '8086': # Intel 
                 if "https://dsadata.intel.com/installer" not in drivers_to_download: # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                     drivers_to_download.append("https://dsadata.intel.com/installer") 
-                Consumer += 1
+                #Consumer += 1
     if Consumer > 0 and Professional > 0:
       performing_DDU_on = "Cannot perform DDU due to seeing Professional and Consumer GPUs \n Which is not supported by NVIDIA: https://nvidia.custhelp.com/app/answers/detail/a_id/2280/~/can-i-use-a-geforce-and-quadro-card-in-the-same-system%3F \n For troubleshooting purposes please show this if this is a mistake: \n"
       performing_DDU_on = performing_DDU_on + dict_of_GPUS
