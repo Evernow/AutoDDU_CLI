@@ -809,6 +809,12 @@ def enable_internet(enable):
    if obtainsetting("disableinternetturnoff") == 0:
     list_test = list()
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
+    logger("Working with these adapters in enable_internet")
+    list_of_names = list()
+    for adapter_name in network_adapters:
+        list_of_names.append(adapter_name.Name)
+    logger(str(list_of_names))
+    logger("In enable_internet with argument to " + str(enable))
     for adapter in network_adapters:
        try:
         if enable == False:
@@ -1066,9 +1072,9 @@ and then turn on your internet.
                     if "intel" in driver:
                         intel = 1
                 if intel == 1:
-                    print("Intel driver needed, will turn on internet (needed for installer)", flush=True)
+                    print("Intel driver needed, will turn on internet (needed for installer), please wait a bit", flush=True)
                     enable_internet(True)
-                    time.sleep(1)
+                    time.sleep(10)
                     subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
                 print("All driver installations complete. Have a good day.")
                 print("Closing in ten minutes. Feel free to close early if no problems", flush=True)
