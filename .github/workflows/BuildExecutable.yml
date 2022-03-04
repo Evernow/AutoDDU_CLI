@@ -15,11 +15,7 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Run Pyinstaller
-        env: 
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
-        run: pyinstaller --noconfirm --onefile --console --uac-admin AutoDDU_CLI.py
+        run: pyinstaller --noconfirm --onefile --console --icon chikabest.ico --uac-admin AutoDDU_CLI.py
           
       - name: commit files
         run: |
