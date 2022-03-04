@@ -806,7 +806,7 @@ def DDUCommands():
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors' , '-RemoveVulkan','-RemoveINTELCP','-cleanintel', '-logging'])
         print("3/3 finished with DDU", flush=True)
 def enable_internet(enable):
-   if obtainsetting("donotdisableoverclocks") == 0:
+   if obtainsetting("disableinternetturnoff") == 0:
     list_test = list()
     network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
     for adapter in network_adapters:
@@ -815,8 +815,12 @@ def enable_internet(enable):
             if adapter.NetEnabled:
                 list_test.append(adapter.MACAddress)
                 adapter.Disable()
+                logger("Disabled adapter: " + adapter.MACAddress)
         else:
+            logger("Got this when checking if for else in internet function: " + adapter.MACAddress in obtainsetting("disabledadapters"))
+            logger("MacAddress involved is: " + adapter.MACAddress)
             if adapter.MACAddress in obtainsetting("disabledadapters"):
+                logger("Successfully enabled this : " + adapter.MACAddress)
                 adapter.Enable()
        except:
            pass
