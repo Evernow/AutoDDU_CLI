@@ -823,7 +823,7 @@ def enable_internet(enable):
                 adapter.Disable()
                 logger("Disabled adapter: " + adapter.MACAddress)
         else:
-            logger("Got this when checking if for else in internet function: " + adapter.MACAddress in obtainsetting("disabledadapters"))
+            logger("Got this when checking if for else in internet function: " + str((adapter.MACAddress in obtainsetting("disabledadapters"))))
             logger("MacAddress involved is: " + adapter.MACAddress)
             if adapter.MACAddress in obtainsetting("disabledadapters"):
                 logger("Successfully enabled this : " + adapter.MACAddress)
