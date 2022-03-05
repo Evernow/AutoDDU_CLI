@@ -290,7 +290,10 @@ def logger(log):
     
 
 def cleanup():
-    os.remove(Script_Location_For_startup)
+    try:
+        os.remove(Script_Location_For_startup)
+    except:
+        pass
     try:
         os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")) 
     except:
@@ -1113,6 +1116,11 @@ and then turn on your internet.
                     enable_internet(True)
                     time.sleep(10)
                     subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
+                    try:
+                        os.remove(Script_Location_For_startup)
+                    except:
+                        pass
+                    changepersistent(0)
                 print("All driver installations complete. Have a good day.")
                 print("Closing in ten minutes. Feel free to close early if no problems", flush=True)
             else:
