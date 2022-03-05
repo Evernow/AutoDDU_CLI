@@ -1102,7 +1102,7 @@ and then turn on your internet.
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
                 for driver in s:
-                    if "radeon" or "-desktop-" in driver:
+                    if "radeon" in driver or "-desktop-" in driver:
                         print("Launching driver installer, please install.")
                         time.sleep(1)
                         subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
