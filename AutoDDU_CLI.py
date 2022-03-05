@@ -639,6 +639,7 @@ def download_helper(link, file_name):
                 sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
                 sys.stdout.flush()
 
+    print("\n")
     logger("Successfully finished download")
     
 
