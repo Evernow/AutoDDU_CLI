@@ -75,18 +75,21 @@ def TimeChecker():
     # of what the actual time is. This catches issues where 
     # someone's PC has not been turned on for a long time and cannot
     # sync with Microsoft's time servers (like idiot blocks Microsoft domains)
-    
-    c = ntplib.NTPClient()
-    response = c.request('us.pool.ntp.org', version=3) 
-    response.offset
-    # Time from U.S. NTP timeserver
-    InternetTime =  int(time.mktime((datetime.fromtimestamp(response.tx_time, timezone.utc)).timetuple()))
-    
-    # Time computer is following
-    LocalTime = time.time()
-    if (InternetTime - 172800) <= LocalTime <= ((InternetTime + 172800)): # Check if within 48 hours
-        return(True)
-    return(False)
+    try:
+        c = ntplib.NTPClient()
+        response = c.request('us.pool.ntp.org', version=3) 
+        response.offset
+        # Time from U.S. NTP timeserver
+        InternetTime =  int(time.mktime((datetime.fromtimestamp(response.tx_time, timezone.utc)).timetuple()))
+        
+        # Time computer is following
+        LocalTime = time.time()
+        if (InternetTime - 172800) <= LocalTime <= ((InternetTime + 172800)): # Check if within 48 hours
+            return(True)
+        return(False)
+    except:
+        print("INFO: TIME CHECK FAILED (NON FATAL)")
+        logger("Checking the time failed")
 
 def freespace():
     return(shutil.disk_usage(Appdata).free > 20474836480 ) # ~20GB
