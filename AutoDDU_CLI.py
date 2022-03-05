@@ -88,8 +88,12 @@ def TimeChecker():
             return(True)
         return(False)
     except:
-        print("INFO: TIME CHECK FAILED (NON FATAL)")
         logger("Checking the time failed")
+        logger(str(traceback.format_exc()))
+        print("INFO: TIME CHECK FAILED (NON FATAL)", flush=True)
+        print("WARNING: THIS CAN CAUSE ISSUES.", flush=True)
+        print("WILL CONTINUE IN 10 SECONDS", flush=True)
+        time.sleep(10)
 
 def freespace():
     return(shutil.disk_usage(Appdata).free > 20474836480 ) # ~20GB
