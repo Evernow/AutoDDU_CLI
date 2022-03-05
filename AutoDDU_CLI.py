@@ -1070,7 +1070,7 @@ You can login to your normal user profile, no need for DDU.
               
 Once you login you run this one last time where we will install
 the drivers properly, then once finished turn on your internet.
-              
+NOTE AUTODDU WILL OPEN BY ITSELF AFTER YOU LOGIN, JUST WAIT TILL IT DOES.              
 Will restart in 15 seconds.
               
                     """, flush=True)
