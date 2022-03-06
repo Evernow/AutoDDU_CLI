@@ -1151,10 +1151,10 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
 
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe",
                             r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
-            subprocess.call('shutdown /r -t 5', shell=True)
             enable_internet(False)
             changepersistent(2)
             autologin()
+            subprocess.call('shutdown /r -t 5', shell=True)
             time.sleep(2)
             print("Command to restart has been sent.")
             while True:
