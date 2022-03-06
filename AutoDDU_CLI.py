@@ -17,10 +17,6 @@ import ntplib
 import requests
 import wmi
 from win32com.shell import shell, shellcon
-import threading
-import win32gui
-import pygetwindow
-
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
@@ -119,17 +115,6 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
-def resizewindow_hackyhack():
-    changeto = 615
-    while True:
-        if changeto == 615:
-            changeto = 620
-        else:
-            changeto = 615
-        w=win32gui
-        win = pygetwindow.getWindowsWithTitle(w.GetWindowText (w.GetForegroundWindow()))[0]
-        win.size = (640, changeto)
-        time.sleep(10)
 
 def time_checker():
     # Returns true when time Windows is following is within 48 hours
@@ -996,8 +981,7 @@ def enable_internet(enable):
 
 
 def mainpain(TestEnvironment):
-    t1 = threading.Thread(target=resizewindow_hackyhack)
-    t1.start()
+    os.system('mode con: cols=80 lines=40')
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
