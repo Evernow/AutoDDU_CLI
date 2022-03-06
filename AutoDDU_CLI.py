@@ -1038,19 +1038,19 @@ Please have at least 20GB of free space in C: drive.
                 while True:
                     time.sleep(1)
 
-            if not time_checker() and obtainsetting("disabletimecheck") == 0:
-                try:
-                    print("""
-Fatal error:
-Your system clock is either incorrect or 
-your system is blocking critical domains to determine
-the correct time. """)
-                    while True:
-                        pass
-                except:
-                    print("NOTE: TIME CHECK FAILED. ISSUES MAY ARISE LATER. LOGS RECORDED.")
-                    logger(str(traceback.format_exc()))
-                    time.sleep(5)
+#             if not time_checker() and obtainsetting("disabletimecheck") == 0:
+#                 try:
+#                     print("""
+# Fatal error:
+# Your system clock is either incorrect or 
+# your system is blocking critical domains to determine
+# the correct time. """)
+#                     while True:
+#                         pass
+#                 except:
+#                     print("NOTE: TIME CHECK FAILED. ISSUES MAY ARISE LATER. LOGS RECORDED.")
+#                     logger(str(traceback.format_exc()))
+#                     time.sleep(5)
 
             print("This process will attempt to perform DDU automatically.", flush=True)
             time.sleep(1)
