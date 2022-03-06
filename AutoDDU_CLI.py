@@ -377,23 +377,16 @@ def makepersist():
 
 
 def autologin():
-    # TODO this requires the hacky workaround of deleting the DDU user so it stops auto logging in.
+    #TODO this requires the hacky workaround of deleting the DDU user so it stops auto logging in.
     # https://superuser.com/questions/514265/set-user-for-auto-logon-on-windows-via-batch-script
     try:
-        subprocess.call(
-            r'reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f',
-            shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.call(
-            r'reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d {profile} /f'.format(
-                profile=obtainsetting("ProfileUsed")), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        subprocess.call(
-            r'reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d 1234 /f',
-            shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        subprocess.call(
-            r'reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f',
-            shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d {profile} /f'.format(profile=obtainsetting("ProfileUsed")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d 1234 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        
+        
+        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         print("INFO: Successfully created autologin task")
         logger("Finished autologin successfully")
     except Exception as f:
@@ -402,7 +395,6 @@ def autologin():
         login_or_not = """
         You will need to login manually to the DDU
         profile account we created."""
-
 
 def workaroundwindowsissues():
     download_helper("https://download.sysinternals.com/files/PSTools.zip",
