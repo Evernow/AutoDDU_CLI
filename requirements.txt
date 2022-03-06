@@ -2,4 +2,4 @@ wmi
 pyinstaller
 requests
 ntplib
-win32gui
+pywin32
