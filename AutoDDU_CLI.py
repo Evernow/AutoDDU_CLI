@@ -39,6 +39,7 @@ Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSI
                                            'Windows', 'Start Menu', 'Programs', 'Startup', 'AutoDDUStartup.vbs')
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
+PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
 
 # Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
 FERMI_NVIDIA = ["GF108", "GF108", "GF108-300-A1", "GF106", "GF106-250", "GF116-200", "GF104-225-A1", "GF104",
@@ -1226,7 +1227,13 @@ and then turn on your internet.
                           flush=True)
                     enable_internet(True)
                     time.sleep(10)
-                    subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
+                    if os.path.exists(os.path.join(PROGRAM_FILESX86,"Intel", "Driver and Support Assistant")):
+                        print("Your Intel GPU driver will be pushed in by Windows Updates after this exists, we're done here")
+                        logger("Found already installed Intel assistant driver")
+                    else:
+                        logger("Did not find Intel assistant driver, launching our own")
+                        print("Installing Intel driver assistant")
+                        subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
                     try:
                         os.remove(Script_Location_For_startup)
                     except:
