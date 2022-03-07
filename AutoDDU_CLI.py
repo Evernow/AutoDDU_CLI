@@ -17,7 +17,7 @@ import ntplib
 import requests
 import wmi
 from win32com.shell import shell, shellcon
-
+from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0}
@@ -974,6 +974,16 @@ def enable_internet(enable):
 
 
 def mainpain(TestEnvironment):
+    # Wine Easter Egg
+    try: # Tries to open key only present when running under Wine
+        aKey = OpenKey(ConnectRegistry(None,HKEY_CURRENT_USER), r"Software\Wine", 0, KEY_READ)
+
+        subprocess.run("winebrowser https://funny.computer/linux/") # Nobody actually installs IE in their prefixes right?
+        print("Someone actually ran this on Linux lol")
+        while True:
+            time.sleep(1)
+    except:
+        pass
     os.system('mode con: cols=80 lines=40')
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
