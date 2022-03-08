@@ -937,33 +937,30 @@ def DDUCommands():
 
 
 def enable_internet(enable):
+# https://stackoverflow.com/questions/59668995/how-do-i-discover-pci-information-from-an-msft-netadapter
+# https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/hh968170(v=vs.85)
     if obtainsetting("disableinternetturnoff") == 0:
-        list_test = list()
-        network_adapters = wmi.WMI().Win32_NetworkAdapter(PhysicalAdapter=True)
-        logger("Working with these adapters in enable_internet")
-        list_of_names = list()
-        for adapter_name in network_adapters:
-            list_of_names.append(adapter_name.Name)
-        logger(str(list_of_names))
+        wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
         logger("In enable_internet with argument to " + str(enable))
-        for adapter in network_adapters:
-            try:
-                if enable == False:
-                    if adapter.NetEnabled:
-                        list_test.append(str(adapter.Name))
-                        adapter.Disable()
-                        logger("Disabled adapter: " + str(adapter.Name))
-                else:
-                    logger("Got this when checking if for else in internet function: " + str(
-                        (adapter.Name in obtainsetting("disabledadapters"))))
-                    logger("MacAddress involved is: " + str(adapter.Name))
-                    if str(adapter.Name) in obtainsetting("disabledadapters"):
-                        logger("Successfully enabled this : " + str(adapter.Name))
-                        adapter.Enable()
-            except:
-                logger("Got exception in enable_internet when trying something with " + adapter.Name)
-                logger(str(traceback.format_exc()))
-                pass
+        list_of_names = list()
+        list_test = list()
+        for adapter in wrxAdapter:
+            list_of_names.append(adapter.Name)
+            if adapter.Virtual == False:
+                try:
+                    if enable == False:
+                        if adapter.State == 3:
+                            adapter.Disable()
+                            list_test.append(str(adapter.Name))
+                            logger("Successfully disabled this : " + str(adapter.Name))
+                    else:
+                        if str(adapter.Name) in obtainsetting("disabledadapters"):
+                                logger("Successfully enabled this : " + str(adapter.Name))
+                                adapter.Enable()
+                except:
+                    logger("Got exception in enable_internet when trying something with " + adapter.Name)
+                    logger(str(traceback.format_exc()))
+                    pass
         if not enable:
             with open(AutoDDU_CLI_Settings, 'r+') as f:
                 advanced_options_dict = json.load(f)
@@ -971,6 +968,8 @@ def enable_internet(enable):
                 f.seek(0)
                 json.dump(advanced_options_dict, f, indent=4)
                 f.truncate()
+        logger("Working with these adapters in enable_internet")
+        logger(str(list_of_names))
 
 
 def mainpain(TestEnvironment):
