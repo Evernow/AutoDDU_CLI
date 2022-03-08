@@ -807,7 +807,7 @@ def ddu_download():
         seven_zip
 
     )
-    print(seven_zip + ' -o' + ddu_extracted_path + ' x ' + ddu_zip_path + ' -y > nul')
+   # print(seven_zip + ' -o' + ddu_extracted_path + ' x ' + ddu_zip_path + ' -y > nul')
 
     subprocess.call(str(seven_zip + ' -o' + ddu_extracted_path + ' x ' + ddu_zip_path + ' -y > nul'), shell=True,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -1192,13 +1192,14 @@ Will restart in 15 seconds.
 
             safemode(0)
             changepersistent(3)
+            possible_error = ""
             try:
-                subprocess.Popen(
+                possible_error = subprocess.Popen(
                     'powershell.exe Remove-LocalUser -Name "{profile}"'.format(profile=obtainsetting("ProfileUsed")),
                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                     creationflags=CREATE_NEW_CONSOLE).communicate()
             except:
-                pass
+                logger(str(possible_error))
             time.sleep(5)
             subprocess.call('shutdown /r -t 10', shell=True)
             print("Command to restart has been sent.")
@@ -1213,12 +1214,8 @@ Almost done. Only thing left now is install drivers
 and then turn on your internet.
                   """, flush=True)
             try:
-                subprocess.Popen(r'reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v AutoDDU_CLI /f',
-                                 shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).communicate()
-            except:
-                pass
-            try:
                 os.remove(Script_Location_For_startup)
+                logger("Removed script startup at first of 3rd call")
             except:
                 pass
             if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")):
@@ -1228,8 +1225,11 @@ and then turn on your internet.
                     if "radeon" in driver or "-desktop-" in driver:
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
+                        logger("Opening driver executable: {}".format(driver))
                         subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
+                        logger("Sucessfully finished driver executable: {}".format(driver))
                     if "intel" in driver:
+                        logger("I saw an Intel driver as {} to run later".format(driver))
                         intel = 1
                 if intel == 1:
                     print("Intel driver needed, will turn on internet (needed for installer), please wait a bit",
