@@ -354,10 +354,6 @@ def logger(log):
 
 def cleanup():
     try:
-        os.remove(Script_Location_For_startup)
-    except:
-        pass
-    try:
         os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
     except:
         pass
@@ -1221,8 +1217,10 @@ and then turn on your internet.
                                  shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).communicate()
             except:
                 pass
-            cleanup()  # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
-            changepersistent(0)
+            try:
+                os.remove(Script_Location_For_startup)
+            except:
+                pass
             if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")):
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
@@ -1260,6 +1258,8 @@ Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
             enable_internet(True)
+            cleanup()  # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
+            changepersistent(0)
             time.sleep(600)
             sys.exit(0)
         while True:
