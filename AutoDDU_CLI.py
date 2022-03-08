@@ -949,7 +949,7 @@ def enable_internet(enable):
             if adapter.Virtual == False:
                 try:
                     if enable == False:
-                        if adapter.State == 3:
+                        if adapter.State == 2:
                             adapter.Disable()
                             list_test.append(str(adapter.Name))
                             logger("Successfully disabled this : " + str(adapter.Name))
