@@ -831,12 +831,12 @@ def ddu_download():
         shutil.move(os.path.join(where_it_is, file_name), ddu_extracted_path)
 
 
-def latest_windows_version():
+def latest_windows_version(majorversion):
     download_helper("https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1",
                     os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1"))
     p = str(subprocess.Popen(
         "powershell.exe -ExecutionPolicy RemoteSigned -file {directorytofido} -Win {version} -Rel List".format(
-            version=platform.release(), directorytofido=os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1")),
+            version=majorversion, directorytofido=os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1")),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
     # p = str(subprocess.Popen('powershell.exe -ExecutionPolicy RemoteSigned -file "C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1" -Win 7 -Rel List', stdout=sys.stdout, shell=True).communicate())
     logger("Got following output from FIDO " + str(p))
@@ -854,13 +854,34 @@ def latest_windows_version():
 
 def uptodate():
     # TODO: Switch to platform.release() once this is fixed: https://bugs.python.org/issue46869
-    if "11" not in wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode(
-            "utf-8"):  # No update assistant for W11 yet afaik
+    current_major_version = wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode(
+            "utf-8")
+    if "8" in current_major_version or "7" in current_major_version:  # AutoDDU only works on Windows 10 and above.
+        logger("Got a Windows {} user".format(current_major_version))
+        print("AutoDDU only works on Windows 10 and above. Updating you to Windows 10.")
+        download_helper('https://go.microsoft.com/fwlink/?LinkID=799445',
+                            os.path.join(Appdata, "MicrosoftUpdater.exe"))
+        print("This window will now open the Microsoft Update Assistant to help you update to the latest version.",
+                  flush=True)
+        print("Once it is done you will have to restart, it should restart automatically when it is done.",
+                  flush=True)
+        print("If it doesn't, restart yourself. Once you are booted back up you open this utility again.",
+                  flush=True)
+        print("Update assistant will open in 15 seconds.")
+        time.sleep(15)
+        subprocess.run(Appdata + "\\MicrosoftUpdater.exe /auto upgrade /passive /warnrestart:30 /skipeula",
+                           shell=True, check=True)
+        print("You need to restart after Update Assistant is finished, then once logged back in open this again.",
+                  flush=True)
+        changepersistent(1)
+        while True:
+            time.sleep(1)
+    if "10" in current_major_version:  
         logger(
             "Going to be comparing {current} to {believedlatest}".format(current=str(platform.version().split('.')[2]),
-                                                                         believedlatest=str(latest_windows_version())))
+                                                                         believedlatest=str(latest_windows_version("10"))))
         if int(platform.version().split('.')[2]) >= int(
-                latest_windows_version()):  # We should consider insider builds. But that's outside the scope of v1 at least.
+                latest_windows_version("10")):  # We should consider insider builds. But that's outside the scope of v1 at least.
             print("System up to date already", flush=True)
             logger("I believe it is up to date")
 
@@ -884,7 +905,9 @@ def uptodate():
             changepersistent(1)
             while True:
                 time.sleep(1)
-
+    if "11" in current_major_version: # No update assistant for W11 yet afaik
+        print("Windows already up to date")
+        changepersistent(1)
 
 def disable_clocking():
     try:
@@ -1118,6 +1141,7 @@ without warning.
                 uptodate()
             changepersistent(1)
         if getpersistent() == 1:
+            uptodate()
             print(
                 "Now going to disable any oveclocks/undervolts/fan curves if any on the GPU. (If not changed to do otherwise)")
             print("If you had one you will have to reapply after this process is done.")
