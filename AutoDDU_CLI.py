@@ -1141,7 +1141,8 @@ without warning.
                 uptodate()
             changepersistent(1)
         if getpersistent() == 1:
-            uptodate()
+            if obtainsetting("disablewindowsupdatecheck") == 0:
+                uptodate()
             print(
                 "Now going to disable any oveclocks/undervolts/fan curves if any on the GPU. (If not changed to do otherwise)")
             print("If you had one you will have to reapply after this process is done.")
