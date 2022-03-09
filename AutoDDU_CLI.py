@@ -869,7 +869,7 @@ def uptodate():
                   flush=True)
         print("Update assistant will open in 15 seconds.")
         time.sleep(15)
-        subprocess.run(Appdata + "\\MicrosoftUpdater.exe /Auto upgrade /eula accept",
+        subprocess.run(Appdata + "\\MicrosoftUpdater.exe /auto upgrade /eula accept",
                            shell=True, check=True)
         print("You need to restart after Update Assistant is finished, then once logged back in open this again.",
                   flush=True)
