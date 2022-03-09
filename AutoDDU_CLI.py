@@ -361,7 +361,12 @@ def cleanup():
 
 
 def makepersist():
-    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", exe_location)
+    try:
+        shutil.copyfile(sys.executable, exe_location)
+        logger("Successfully copied executable to Appdata directory")
+    except:
+        logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
+        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", exe_location)
     lines = ['Set WshShell = CreateObject("WScript.Shell" )',
              'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
     with open(Script_Location_For_startup, 'w') as f:
@@ -410,9 +415,13 @@ def workaroundwindowsissues():
     except:
         pass  # This is meant to fail.
     logger("Did prep work for working around Windows issue")
-    download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe",
-                    r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
-    logger("Downloaded DDU to DDU profile")
+    try:
+        shutil.copyfile(sys.executable, r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+        logger("Successfully copied executable to new user")
+    except:
+        logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe",
+                        r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
     # This was old approach, leaving here for now incase we need a failback one day.
 
     #     from subprocess import CREATE_NEW_CONSOLE
@@ -1154,9 +1163,6 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             makepersist()
-
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe",
-                            r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
             enable_internet(False)
             changepersistent(2)
             autologin()
