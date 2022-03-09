@@ -859,7 +859,7 @@ def uptodate():
     if "8" in current_major_version or "7" in current_major_version:  # AutoDDU only works on Windows 10 and above.
         logger("Got a Windows {} user".format(current_major_version))
         print("AutoDDU only works on Windows 10 and above. Updating you to Windows 10.")
-        download_helper('https://go.microsoft.com/fwlink/?LinkID=799445',
+        download_helper('https://go.microsoft.com/fwlink/?LinkId=691209',
                             os.path.join(Appdata, "MicrosoftUpdater.exe"))
         print("This window will now open the Microsoft Update Assistant to help you update to the latest version.",
                   flush=True)
@@ -869,7 +869,7 @@ def uptodate():
                   flush=True)
         print("Update assistant will open in 15 seconds.")
         time.sleep(15)
-        subprocess.run(Appdata + "\\MicrosoftUpdater.exe /auto upgrade /passive /warnrestart:30 /skipeula",
+        subprocess.run(Appdata + "\\MicrosoftUpdater.exe /Auto upgrade /eula accept",
                            shell=True, check=True)
         print("You need to restart after Update Assistant is finished, then once logged back in open this again.",
                   flush=True)
