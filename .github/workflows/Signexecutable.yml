@@ -1,1 +1,16 @@
-
+name: Sign executable
+on:
+  workflow_run:
+    workflows: ["Build AutoDDU_CLI"]
+    types:
+      - completed
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+    - name: Sign executable
+      uses: dlemstra/code-sign-action@v1
+      with:
+        certificate: '${{ secrets.CERTIFICATE }}'
+        folder: 'dist'
+        recursive: false
