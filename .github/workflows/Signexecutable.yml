@@ -13,4 +13,4 @@ jobs:
       with:
         certificate: '${{ secrets.CERTIFICATE }}'
         folder: 'dist'
-        recursive: false
+        recursive: true
