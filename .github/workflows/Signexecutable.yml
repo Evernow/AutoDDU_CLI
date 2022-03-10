@@ -14,5 +14,5 @@ jobs:
         certificate: '${{ secrets.CERTIFICATE }}'
         password: '${{ secrets.CERTPW }}'
         certificatename: '${{ secrets.CERTNAME }}'
-        folder: 'dist'
+        folder: 'AutoDDU_CLI/dist/'
         recursive: false
