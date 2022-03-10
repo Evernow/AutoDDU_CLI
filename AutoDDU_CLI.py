@@ -853,7 +853,7 @@ def latest_windows_version(majorversion):
 
 
 def uptodate():
-    # TODO: Switch to platform.release() once this is fixed: https://bugs.python.org/issue46869
+    # TODO: Switch to platform.release() once this is fixed: https://bugs.python.org/issue45382
     current_major_version = wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode(
             "utf-8")
     if "8" in current_major_version or "7" in current_major_version:  # AutoDDU only works on Windows 10 and above.
@@ -876,7 +876,7 @@ def uptodate():
         changepersistent(1)
         while True:
             time.sleep(1)
-    if "10" in current_major_version:  
+    elif "10" in current_major_version:  
         logger(
             "Going to be comparing {current} to {believedlatest}".format(current=str(platform.version().split('.')[2]),
                                                                          believedlatest=str(latest_windows_version("10"))))
@@ -905,9 +905,13 @@ def uptodate():
             changepersistent(1)
             while True:
                 time.sleep(1)
-    if "11" in current_major_version: # No update assistant for W11 yet afaik
+    elif "11" in current_major_version: # No update assistant for W11 yet afaik
         print("Windows already up to date")
         changepersistent(1)
+    else:
+        print("Something catastrophically went wrong. Cannot detect Windows version.")
+        while True:
+            time.sleep(1)
 
 def disable_clocking():
     try:
@@ -1130,6 +1134,8 @@ without warning.
             else:
                 HandleOtherLanguages()
             time.sleep(5)
+            if obtainsetting("disablewindowsupdatecheck") == 0:
+                uptodate()
             BackupProfile()
             if len(obtainsetting("provideowngpuurl")) != 0:
                 download_drivers(obtainsetting("provideowngpuurl"))
@@ -1137,8 +1143,6 @@ without warning.
             elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
                 download_drivers(mainshit[2])
             ddu_download()
-            if obtainsetting("disablewindowsupdatecheck") == 0:
-                uptodate()
             changepersistent(1)
         if getpersistent() == 1:
             if obtainsetting("disablewindowsupdatecheck") == 0:
