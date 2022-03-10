@@ -20,5 +20,5 @@ jobs:
       uses: dlemstra/code-sign-action@v1
       with:
         certificate: '${{ secrets.CERTIFICATE }}'
-        folder: '/AutoDDU_CLI/dist/'
+        folder: '/AutoDDU_CLI/dist'
         recursive: true
