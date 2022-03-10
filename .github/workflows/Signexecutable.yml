@@ -1,0 +1,18 @@
+name: Sign executable
+on:
+  workflow_run:
+    workflows: ["Build AutoDDU_CLI"]
+    types:
+      - completed
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+    - name: Sign executable
+      uses: DanaBear/code-sign-action@v1
+      with:
+        certificate: '${{ secrets.CERTIFICATE }}'
+        password: '${{ secrets.CERTPW }}'
+        certificatename: '${{ secrets.CERTNAME }}'
+        folder: 'dist'
+        recursive: false
