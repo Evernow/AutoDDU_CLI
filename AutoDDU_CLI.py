@@ -704,7 +704,7 @@ def BackupProfile():
 
 
 def download_helper(url, fname):
-    logger("Downloading  file from {link} to location {file_name}".format(link=url, file_name=fname))
+    logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
     print("Downloading file {}".format(fname.split("\\")[-1]))
     resp = requests.get(url, stream=True, headers={'referer': my_referer,
