@@ -18,7 +18,6 @@ import requests
 import wmi
 from win32com.shell import shell, shellcon
 from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
-from tqdm.auto import tqdm
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
@@ -704,6 +703,7 @@ def BackupProfile():
 
 
 def download_helper(url, fname):
+    from tqdm.auto import tqdm
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
     print("Downloading file {}".format(fname.split("\\")[-1]))
