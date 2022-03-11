@@ -366,7 +366,7 @@ def makepersist():
         logger("Successfully copied executable to Appdata directory")
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
-        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe", exe_location)
+        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
     lines = ['Set WshShell = CreateObject("WScript.Shell" )',
              'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
     with open(Script_Location_For_startup, 'w') as f:
@@ -420,7 +420,7 @@ def workaroundwindowsissues():
         logger("Successfully copied executable to new user")
     except:
         logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
-        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/dist/AutoDDU_CLI.exe",
+        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
                         r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
     # This was old approach, leaving here for now incase we need a failback one day.
 
