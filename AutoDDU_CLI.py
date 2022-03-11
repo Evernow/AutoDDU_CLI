@@ -18,6 +18,8 @@ import requests
 import wmi
 from win32com.shell import shell, shellcon
 from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
+from tqdm.auto import tqdm
+
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0}
@@ -703,25 +705,22 @@ def BackupProfile():
 
 def download_helper(link, file_name):
     logger("Downloading  file from {link} to location {file_name}".format(link=link, file_name=file_name))
-    with open(file_name, "wb") as f:
-        print("Downloading %s" % file_name)
-        my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
-        # WHY AMD???? WHY???? 
-        response = requests.get(link, allow_redirects=True, stream=True, headers={'referer': my_referer,
-                                                                                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'})
-        total_length = response.headers.get('content-length')
-
-        if total_length is None:  # no content length header
-            f.write(response.content)
-        else:
-            dl = 0
-            total_length = int(total_length)
-            for data in response.iter_content(chunk_size=4096):
-                dl += len(data)
-                f.write(data)
-                done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
-                sys.stdout.flush()
+    my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
+    print("Downloading file {}".format(file_name.split("\\")[-1]))
+    with requests.get(link, allow_redirects=True, stream=True, headers={'referer': my_referer,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'}) as r:
+    
+        # check header to get content length, in bytes
+        total_length = int(r.headers.get("Content-Length"))
+        
+        # implement progress bar via tqdm
+        with tqdm.wrapattr(r.raw, "read", total=total_length, desc="")as raw:
+        
+            # save the output to a file
+            with open(file_name, 'wb')as output:
+                shutil.copyfileobj(raw, output)
+    print("\n")
+    logger("Successfully finished download")
 
     print("\n")
     logger("Successfully finished download")
@@ -1136,16 +1135,16 @@ without warning.
             time.sleep(5)
             if obtainsetting("disablewindowsupdatecheck") == 0:
                 uptodate()
-            changepersistent(1)
-        if getpersistent() == 1:
-            if obtainsetting("disablewindowsupdatecheck") == 0:
-                uptodate()
-            BackupProfile()
             if len(obtainsetting("provideowngpuurl")) != 0:
                 download_drivers(obtainsetting("provideowngpuurl"))
 
             elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
                 download_drivers(mainshit[2])
+            changepersistent(1)
+        if getpersistent() == 1:
+            if obtainsetting("disablewindowsupdatecheck") == 0:
+                uptodate()
+            BackupProfile()
             ddu_download()
             print(
                 "Now going to disable any oveclocks/undervolts/fan curves if any on the GPU. (If not changed to do otherwise)")

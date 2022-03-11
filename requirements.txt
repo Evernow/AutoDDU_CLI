@@ -1,4 +1,4 @@
 wmi
 pyinstaller
 requests
-ntplib
+tqdm
