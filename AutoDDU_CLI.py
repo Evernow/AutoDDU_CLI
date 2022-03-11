@@ -703,25 +703,23 @@ def BackupProfile():
         logger("Failed to create DDU account, likely already existed")
 
 
-def download_helper(link, file_name):
-    logger("Downloading  file from {link} to location {file_name}".format(link=link, file_name=file_name))
+def download_helper(url, fname):
+    logger("Downloading  file from {link} to location {file_name}".format(link=link, file_name=fname))
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
-    print("Downloading file {}".format(file_name.split("\\")[-1]))
-    with requests.get(link, allow_redirects=True, stream=True, headers={'referer': my_referer,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'}) as r:
-    
-        # check header to get content length, in bytes
-        total_length = int(r.headers.get("Content-Length"))
-        
-        # implement progress bar via tqdm
-        with tqdm.wrapattr(r.raw, "read", total=total_length, desc="")as raw:
-        
-            # save the output to a file
-            with open(file_name, 'wb')as output:
-                shutil.copyfileobj(raw, output)
-    print("\n")
-    logger("Successfully finished download")
-
+    print("Downloading file {}".format(fname.split("\\")[-1]))
+    resp = requests.get(url, stream=True, headers={'referer': my_referer,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'})
+    total = int(resp.headers.get('content-length', 0))
+    with open(fname, 'wb') as file, tqdm(
+        desc=fname,
+        total=total,
+        unit='iB',
+        unit_scale=True,
+        unit_divisor=1024,
+    ) as bar:
+        for data in resp.iter_content(chunk_size=1024):
+            size = file.write(data)
+            bar.update(size)
     print("\n")
     logger("Successfully finished download")
 
