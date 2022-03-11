@@ -711,7 +711,6 @@ def download_helper(url, fname):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'})
     total = int(resp.headers.get('content-length', 0))
     with open(fname, 'wb') as file, tqdm(
-        desc=fname,
         total=total,
         unit='iB',
         unit_scale=True,
