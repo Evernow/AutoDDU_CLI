@@ -117,6 +117,13 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def internet_on():
+    try:
+        urllib.request.urlopen('https://www.github.com/', timeout=3)
+        return True
+    except:
+        return False
+
 
 def time_checker():
     # Returns true when time Windows is following is within 48 hours
@@ -703,6 +710,11 @@ def BackupProfile():
 
 
 def download_helper(url, fname):
+    while not internet_on():
+        print("No internet connection")
+        print("Please make sure internet is enabled")
+        print("Retrying in 30 seconds")
+        time.sleep(30)
     from tqdm.auto import tqdm
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
@@ -1111,8 +1123,9 @@ Please have at least 20GB of free space in C: drive.
             print(r"""
 This will update Windows if out of date, download needed drivers,
 disable internet (needed to prevent Windows from fucking it up), 
-and push you into safe mode.
-            
+and push you into safe mode. IT WILL DO THIS FOR YOU. 
+YOU DO NOT NEED TO DO ANYTHING EXCEPT LAUNCH THIS APP ONCE RESTARTED
+IN SAFE MODE
 This will also disable all GPU overclocks/undervolts/custom fan curves.
 Do not worry if you do not know what this is, it won't affect you.
                     
@@ -1156,7 +1169,7 @@ without warning.
 ----------------------------NOTICE----------------------------
 
 This application will now enable safe mode, disable the internet
-and then reboot you.
+and then reboot you. IT WILL DO THIS FOR YOU. 
 Safe mode is a state of Windows where no GPU Drivers are loaded,
 this is needed so they we can do a proper clean install.
             
@@ -1299,6 +1312,15 @@ Closing in ten minutes. Feel free to close early if no problems
     except Exception:
         print(unrecoverable_error_print)
         print(traceback.format_exc(), flush=True)
+        try:
+            if getpersistent() == 1:
+                changepersistent(0)
+            elif getpersistent() == 2:
+                changepersistent(1)
+            elif getpersistent() == 3:
+                changepersistent(2)
+        except:
+            pass
         while True:
             time.sleep(1)
 
