@@ -850,13 +850,11 @@ def ddu_download():
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
-    subprocess.call([ddu_zip_path, "-o {}".format(ddu_extracted_path), "-y"],
+    subprocess.call((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
-
-    where_it_is = ddu_extracted_path + '\\' + 'DDU v' + Latest_DDU_Version_Raw
-
+    where_it_is = os.path.join(ddu_extracted_path, "DDU v{}".format(Latest_DDU_Version_Raw))
     file_names = os.listdir(where_it_is)
 
     for file_name in file_names:
