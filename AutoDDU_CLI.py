@@ -32,7 +32,6 @@ Persistent_File_location = os.path.join(Appdata, "AutoDDU_CLI", "PersistentDDU_L
 root_for_ddu_assembly = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser")
 ddu_AssemblyInfo = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "AssemblyInfo.vb")
 ddu_zip_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "DDU.exe")
-seven_zip = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Parser\\", "7z.exe")
 ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0))
 
@@ -669,7 +668,7 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                     Consumer += 1
             if gpu[0] == '1002':  # AMD
                 if AMD_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    if obtainsetting("amdenterprise") == 1
+                    if obtainsetting("amdenterprise") == 1:
                         drivers_to_download.append(AMD_Professional)
                     else:
                         drivers_to_download.append(AMD_Consumer)
@@ -848,16 +847,9 @@ def ddu_download():
             while True:
                 time.sleep(5)
 
-    # TODO: Automate 7zip download, should always get latest version.
 
-    download_helper(
-        'https://github.com/24HourSupport/CommonSoftware/raw/main/7za.exe',
-        seven_zip
 
-    )
-   # print(seven_zip + ' -o' + ddu_extracted_path + ' x ' + ddu_zip_path + ' -y > nul')
-
-    subprocess.call(str(seven_zip + ' -o' + ddu_extracted_path + ' x ' + ddu_zip_path + ' -y > nul'), shell=True,
+    subprocess.call([ddu_zip_path, "-o {}".format(ddu_extracted_path), "-y"]),
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
