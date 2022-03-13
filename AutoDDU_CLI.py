@@ -119,6 +119,23 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def accountforoldcontinues():
+    if os.path.exists(Persistent_File_location):
+        if abs(int(time.time()) - os.path.getmtime(Persistent_File_location)) > 86400:
+            try:
+                os.remove(Persistent_File_location)
+                os.remove(AutoDDU_CLI_Settings)
+                logger("Deleted persistent file in 24hrs check")
+            except:
+                print("""
+Warning: Saw this session is continuing after over
+24 hours. This is possibily a bug.
+
+I tried to restart but it failed. This could cuase issues.""")
+                logger("Failed to delete persistent file in 24hrs check")
+                logger(str(traceback.format_exc()))
+
+
 def internet_on():
     try:
         urllib.request.urlopen('https://www.github.com/', timeout=3)
@@ -768,14 +785,16 @@ def download_helper(url, fname):
 
 
 def download_drivers(list_to_download):
+    if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\")):
+        shutil.rmtree(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\"))
+    os.makedirs(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\"))
     for driver in list_to_download:
         url = driver.rstrip()  # Newline character is grabbed sometimes
         if "intel.com" in url.lower():
             fileextension = "inteldriver.exe"
         else:
             fileextension = url.split("/")[-1]
-        if not os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\")):
-            os.makedirs(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\"))
+        
         download_helper(url, os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\", fileextension))
 
 
@@ -1053,6 +1072,7 @@ def mainpain(TestEnvironment):
     os.system('mode con: cols=80 lines=40')
     kernel32 = ctypes.windll.kernel32
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), (0x4|0x80|0x20|0x2|0x10|0x1|0x00|0x100))
+    accountforoldcontinues()
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
@@ -1302,13 +1322,13 @@ and then turn on your internet.
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
                 for driver in s:
-                    if "radeon" in driver or "-desktop-" in driver:
+                    if "intel" not in driver:
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
                         logger("Opening driver executable: {}".format(driver))
                         subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
                         logger("Sucessfully finished driver executable: {}".format(driver))
-                    if "intel" in driver:
+                    else:
                         logger("I saw an Intel driver as {} to run later".format(driver))
                         intel = 1
                 if intel == 1:
