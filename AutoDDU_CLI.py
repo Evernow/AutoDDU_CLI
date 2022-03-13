@@ -848,7 +848,8 @@ def ddu_download():
                 time.sleep(5)
 
 
-
+    if not os.path.exists(ddu_extracted_path):
+        os.makedirs(ddu_extracted_path)
     subprocess.call([ddu_zip_path, "-o {}".format(ddu_extracted_path), "-y"],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
