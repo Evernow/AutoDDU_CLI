@@ -1052,7 +1052,7 @@ def mainpain(TestEnvironment):
         pass
     os.system('mode con: cols=80 lines=40')
     kernel32 = ctypes.windll.kernel32
-    kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 128)
+    kernel32.SetConsoleMode(kernel32.GetStdHandle(-10))
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
