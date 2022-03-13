@@ -78,7 +78,7 @@ KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK1
                  "GK110-400-A1", "GK110-430-B1", "2x GK110-350-B1", "GK110", "GK110B", "GK110GL", "GK104", "GK106",
                  "GK208", "GK208B", "GK20A", "GK210"]
 
-Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS", "GRID"]
+Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS", "GRID", "RTX A"]
 
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
                       "740A"]  # Kepler laptops GPUs with no M in the name.
