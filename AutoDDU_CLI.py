@@ -849,7 +849,7 @@ def ddu_download():
 
 
 
-    subprocess.call([ddu_zip_path, "-o {}".format(ddu_extracted_path), "-y"]),
+    subprocess.call([ddu_zip_path, "-o {}".format(ddu_extracted_path), "-y"],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
