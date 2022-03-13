@@ -19,6 +19,8 @@ import wmi
 from win32com.shell import shell, shellcon
 from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
 
+import ctypes
+
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
@@ -990,12 +992,15 @@ def DDUCommands():
                      '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
                      '-RemoveNvidiaDirs', '-cleannvidia', '-logging'])
     print("1/3 finished with DDU", flush=True)
+    sys.stdout.flush()
     subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                      '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'])
     print("2/3 finished with DDU", flush=True)
+    sys.stdout.flush()
     subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                      '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'])
     print("3/3 finished with DDU", flush=True)
+    sys.stdout.flush()
     logger("Successfully finished DDU commands.")
 
 def enable_internet(enable):
@@ -1046,6 +1051,8 @@ def mainpain(TestEnvironment):
     except:
         pass
     os.system('mode con: cols=80 lines=40')
+    kernel32 = ctypes.windll.kernel32
+    kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 128)
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
@@ -1082,6 +1089,7 @@ def mainpain(TestEnvironment):
 .*/(&//(%,    #/,               .#(........,**///////%/,&(///////*..#*//,..////&
 /,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@
     """, flush=True)
+    sys.stdout.flush()
     print("\n", flush=True)
     try:
         if returnifduplicate() == True:
@@ -1089,6 +1097,7 @@ def mainpain(TestEnvironment):
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
 CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.                  
                   """)
+            sys.stdout.flush()
             while True:
                 time.sleep(1)
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
@@ -1099,6 +1108,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
 Too little free space to continue.
 Please have at least 20GB of free space in C: drive.                 
                       """, flush=True)
+                sys.stdout.flush()
                 while True:
                     time.sleep(1)
 
@@ -1157,6 +1167,7 @@ and CANNOT be paused) please type "Do it"
 Save all documents and prepare for your computer to restart
 without warning. 
  """, flush=True)
+            sys.stdout.flush()
             if BadLanguage() == False:
                 while True:
                     DewIt = str(input("Type in 'Do it' then press enter to begin: "))
@@ -1210,6 +1221,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             
                   """.format(login_or_not=login_or_not), flush=True)
             time.sleep(15)
+            sys.stdout.flush()
             if BadLanguage() == False:
                 while True:
                     DewIt = str(input("Type in 'I understand' then enter once you understand what you must do: "))
@@ -1226,6 +1238,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             enable_internet(False)
             changepersistent(2)
             autologin()
+            time.sleep(3)
             subprocess.call('shutdown /r -t 5', shell=True)
             time.sleep(2)
             print("Command to restart has been sent.")
@@ -1235,6 +1248,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             print("Welcome back, the hardest part is over.")
             print("This will take a minute or two, even though it may seem")
             print("like nothing is happening, please be patient.", flush=True)
+            sys.stdout.flush()
             try:
                 DDUCommands()
             except Exception as oof:
