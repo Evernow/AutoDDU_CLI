@@ -21,7 +21,8 @@ from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
-                                "disabledadapters": [], "avoidspacecheck": 0}
+                                "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
+                                "nvidiastudio" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -187,7 +188,7 @@ def default_config():
 def AdvancedMenu():
     logger("User entered AdvancedMenu")
     option = -1
-    while option != "8":
+    while option != "10":
         clear()
         time.sleep(1)
         print("WARNING: THIS MAY BEHAVE UNEXPECTADLY!", flush=True)
@@ -198,7 +199,9 @@ def AdvancedMenu():
         print('5 --' + AdvancedMenu_Options(5), flush=True)  # Do not turn internet off when needed
         print('6 --' + AdvancedMenu_Options(6), flush=True)  # Do not disable overclocking/undervolts/fan curves
         print('7 --' + AdvancedMenu_Options(7), flush=True)  # Disable 20GB free storage requirement
-        print('8 -- Start', flush=True)
+        print('8 --' + AdvancedMenu_Options(8), flush=True)  # Use AMD Enterprise driver
+        print('9 --' + AdvancedMenu_Options(9), flush=True)  # Use NVIDIA Studio driver (Pascal and up)
+        print('10 -- Start', flush=True)
         option = str(input('Enter your choice: '))
         change_AdvancedMenu(option)
 
@@ -247,6 +250,16 @@ def AdvancedMenu_Options(num):
                 return " Disable 20GB free storage requirement"
             else:
                 return " Enable 20GB free storage requirement"
+        if num == 8:
+            if advanced_options_dict["amdenterprise"] == 0:
+                return " Use AMD Enterprise Driver"
+            else:
+                return " Use AMD Consumer Driver"
+        if num == 9:
+            if advanced_options_dict["nvidiastudio"] == 0:
+                return " Use NVIDIA Studio driver (Pascal and up)"
+            else:
+                return " Use NVIDIA Game Ready driver"
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
@@ -297,6 +310,16 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["avoidspacecheck"] = 1
             else:
                 advanced_options_dict["avoidspacecheck"] = 0
+        if num == "8":
+            if advanced_options_dict["amdenterprise"] == 0:
+                advanced_options_dict["amdenterprise"] = 1
+            else:
+                advanced_options_dict["amdenterprise"] = 0
+        if num == "9":
+            if advanced_options_dict["nvidiastudio"] == 0:
+                advanced_options_dict["nvidiastudio"] = 1
+            else:
+                advanced_options_dict["nvidiastudio"] = 0
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
@@ -592,14 +615,16 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
             "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json") as url:
         data_nvidia = json.loads(url.read().decode())
     NVIDIA_Consumer = data_nvidia["consumer"]["link"]
+    NVIDIA_Consumer_Studio = data_nvidia["consumer_studio"]["link"]
     NVIDIA_Professional = data_nvidia["professional"]["link"]
     NVIDIA_R390 = data_nvidia["r390"]["link"]
     NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
     with urllib.request.urlopen(
             "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/amd_gpu.json") as url:
-        data_nvidia = json.loads(url.read().decode())
-    AMD_Consumer = data_nvidia["consumer"]["link"]
+        amd_nvidia = json.loads(url.read().decode())
+    AMD_Consumer = amd_nvidia["consumer"]["link"]
+    AMD_Professional = amd_nvidia["professional"]["link"]
     performing_DDU_on = "DDU will be performed on the following GPUs: \n"
     logger("Successfully grabbed NVIDIA drivers from CommonSoftware repo")
     for gpu in dict_of_GPUS:
@@ -637,11 +662,17 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                     Professional += 1
                 else:
                     if NVIDIA_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                        drivers_to_download.append(NVIDIA_Consumer)
+                        if obtainsetting("nvidiastudio") == 1 and ("GK" not in gpu[2] and "GM" not in gpu[2]): # Unlike normal driver, Studio only supports Pascal and above
+                            drivers_to_download.append(NVIDIA_Consumer_Studio)
+                        else:
+                            drivers_to_download.append(NVIDIA_Consumer)
                     Consumer += 1
             if gpu[0] == '1002':  # AMD
                 if AMD_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    drivers_to_download.append(AMD_Consumer)
+                    if obtainsetting("amdenterprise") == 1
+                        drivers_to_download.append(AMD_Professional)
+                    else:
+                        drivers_to_download.append(AMD_Consumer)
                     # Consumer += 1
             if gpu[0] == '8086':  # Intel
                 if "https://dsadata.intel.com/installer" not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
@@ -974,7 +1005,7 @@ def DDUCommands():
     subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                      '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'])
     print("3/3 finished with DDU", flush=True)
-
+    logger("Successfully finished DDU commands.")
 
 def enable_internet(enable):
 # https://stackoverflow.com/questions/59668995/how-do-i-discover-pci-information-from-an-msft-netadapter
