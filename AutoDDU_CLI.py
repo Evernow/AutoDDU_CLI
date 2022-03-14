@@ -21,6 +21,10 @@ from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
 
 import ctypes
 
+from win32event import CreateMutex
+from win32api import CloseHandle, GetLastError
+from winerror import ERROR_ALREADY_EXISTS
+
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
@@ -118,6 +122,22 @@ yourself manually.
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+# https://stackoverflow.com/a/65501621/17484902
+class singleinstance:
+    """ Limits application to single instance """
+
+    def __init__(self):
+        self.mutexname = "AutoDDUCLI_{91473d5a-5f6e-4266-ab87-22115e93b84b}"
+        self.mutex = CreateMutex(None, False, self.mutexname)
+        self.lasterror = GetLastError()
+    
+    def alreadyrunning(self):
+        return (self.lasterror == ERROR_ALREADY_EXISTS)
+        
+    def __del__(self):
+        if self.mutex:
+            CloseHandle(self.mutex)
 
 def accountforoldcontinues():
     if os.path.exists(Persistent_File_location):
@@ -1073,6 +1093,7 @@ def mainpain(TestEnvironment):
     kernel32 = ctypes.windll.kernel32
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), (0x4|0x80|0x20|0x2|0x10|0x1|0x00|0x100))
     accountforoldcontinues()
+    myapp = singleinstance()
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
@@ -1112,7 +1133,7 @@ def mainpain(TestEnvironment):
     sys.stdout.flush()
     print("\n", flush=True)
     try:
-        if returnifduplicate() == True:
+        if myapp.alreadyrunning():
             print(r"""
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
 CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.                  
