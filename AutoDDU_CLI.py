@@ -123,6 +123,15 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def insafemode():
+    bootstate = wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
+            "utf-8")
+    if "safe" in bootstate.lower():
+        return True
+    else:
+        return False
+
+
 # https://stackoverflow.com/a/65501621/17484902
 class singleinstance:
     """ Limits application to single instance """
@@ -206,6 +215,8 @@ def findnottaken():
             subfolders.append(entry_name.upper())
     while ddu_next in subfolders:
         ddu_next = ddu_next + "U"
+    logger("Used users are: " + str(subfolders))
+    logger("Ended up using user: " + str(ddu_next))
     return ddu_next
 
 
@@ -394,6 +405,7 @@ def HandleOtherLanguages():
     # Due to some languages not having correct letters on their keyboards
     # Instead of doing the "I do" shit, we just have them press enter on their keyboards
     # twice. Much safer, since I assume every keyboard has this.. right?
+    logger("Did other language workaround")
     howmany = 0
     while howmany < 2:
         input("Press your enter key {n} more time(s)".format(n=2 - howmany))
@@ -424,9 +436,10 @@ def logger(log):
 def cleanup():
     try:
         os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
+        logger("Finished cleanup in cleanup()")
     except:
         pass
-    logger("Finished cleanup")
+    logger("Exited cleanup()")
 
 
 def makepersist():
@@ -780,6 +793,7 @@ def BackupProfile():
 
 def download_helper(url, fname):
     while not internet_on():
+        logger("Saw no internet, asking user to connect")
         print("No internet connection")
         print("Please make sure internet is enabled")
         print("Retrying in 30 seconds")
@@ -1021,26 +1035,42 @@ def safemode(ONorOFF):
     if ONorOFF == 1:
         subprocess.call('bcdedit /set {default} safeboot minimal', shell=True, stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL)
+        logger("Ran command to enable safe mode")
     if ONorOFF == 0:
         subprocess.call('bcdedit /deletevalue {default} safeboot', shell=True, stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL)
-
+        logger("Ran command to disable safe mode")
 
 def DDUCommands():
-    subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                     '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
-                     '-RemoveNvidiaDirs', '-cleannvidia', '-logging'])
-    print("1/3 finished with DDU", flush=True)
-    sys.stdout.flush()
-    subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                     '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'])
-    print("2/3 finished with DDU", flush=True)
-    sys.stdout.flush()
-    subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                     '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'])
-    print("3/3 finished with DDU", flush=True)
-    sys.stdout.flush()
-    logger("Successfully finished DDU commands.")
+    if insafemode() == True:
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+                        '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
+                        '-RemoveNvidiaDirs', '-cleannvidia', '-logging'])
+        print("1/3 finished with DDU", flush=True)
+        sys.stdout.flush()
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+                        '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'])
+        print("2/3 finished with DDU", flush=True)
+        sys.stdout.flush()
+        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+                        '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'])
+        print("3/3 finished with DDU", flush=True)
+        sys.stdout.flush()
+        logger("Successfully finished DDU commands in safe mode.")
+    else:
+        print("Something catastrophically went wrong.")
+        print("Somehow tried to run DDU not in safe mode.")
+        print("Resetting all settings to default, please run again.")
+        print("If actually in safe mode, something is wrong with check, please sent this to Evernow:")
+        print(str(wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
+            "utf-8")))
+        cleanup()
+        try:
+            os.remove(Script_Location_For_startup)
+        except:
+            pass
+        changepersistent(0)
+
 
 def enable_internet(enable):
 # https://stackoverflow.com/questions/59668995/how-do-i-discover-pci-information-from-an-msft-netadapter
