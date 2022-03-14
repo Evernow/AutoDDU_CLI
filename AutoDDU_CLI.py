@@ -575,7 +575,7 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
             supportstatus = 1
             Consumer_or_Professional = "Consumer"
         if Vendor_ID == '1002':  # AMD
-            logger("Got Voodoo GPU")
+            logger("Got AMD GPU")
             for possibility in EOL_AMD:
                 if Arch in possibility:
                     logger("Got EOL AMD GPU with code " + Arch)
