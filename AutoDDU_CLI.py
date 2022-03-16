@@ -123,6 +123,7 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+
 def insafemode():
     bootstate = wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
             "utf-8")
@@ -287,7 +288,7 @@ def AdvancedMenu_Options(num):
             if advanced_options_dict["disableinternetturnoff"] == 0:
                 return " Do not turn internet off when needed"
             else:
-                return "Turn internet off when needed"
+                return " Turn internet off when needed"
 
         if num == 6:
             if advanced_options_dict["donotdisableoverclocks"] == 0:
@@ -438,7 +439,24 @@ def cleanup():
         os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
         logger("Finished cleanup in cleanup()")
     except:
-        pass
+        logger("Failed to delete Drivers folder with error")
+        logger(str(traceback.format_exc()))
+
+    logger("Starting process of attempting to cleanup user folder")
+    if os.path.exists(os.path.join(Users_directory, obtainsetting("ProfileUsed"))):
+        if abs(int(time.time()) - os.path.getctime(os.path.join(Users_directory, obtainsetting("ProfileUsed")))) < 14400:
+            if os.getlogin() != obtainsetting("ProfileUsed"):
+                try:
+                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")))
+                    logger("Deleted {} folder".format(obtainsetting("ProfileUsed")))
+                except:
+                    logger("Failed to delete {} folder in cleanup".format(obtainsetting("ProfileUsed")))
+                    logger(str(traceback.format_exc()))
+            else:
+                logger("Was going to delete used {} profile but was logged in as user somehow".format(obtainsetting("ProfileUsed")))
+        else:
+            logger("Was going to delete used {} profile but was older than 4 hours".format(obtainsetting("ProfileUsed")))
+
     logger("Exited cleanup()")
 
 
@@ -777,6 +795,14 @@ def getpersistent():
 
 def BackupProfile():
     try:
+        if len(obtainsetting("ProfileUsed")) > 19:
+            # https://docs.microsoft.com/en-us/troubleshoot/windows-server/identity/net-add-not-support-names-exceeding-20-characters
+            print("You have too many DDU profile folders in C:\\Users.")
+            print("Please delete user profiles in settings and then also")
+            print("their respective user folders tyvm")
+            print("Once you did that close this and then reopen.")
+            while True:
+                time.sleep(1)
         firstcommand = "net user /add {profile}".format(profile=obtainsetting("ProfileUsed"))
         secondcommand = "net localgroup administrators {profile} /add".format(profile=obtainsetting("ProfileUsed"))
         subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
