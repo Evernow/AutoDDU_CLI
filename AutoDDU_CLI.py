@@ -453,6 +453,9 @@ def cleanup():
                     time.sleep(1)
                     shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")),  ignore_errors=True)
                     logger("Deleted {} folder".format(obtainsetting("ProfileUsed")))
+                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")))
+                    logger("Did second run of deleting profile folder")
+                    
                 except:
                     logger("Failed to delete {} folder in cleanup".format(obtainsetting("ProfileUsed")))
                     logger(str(traceback.format_exc()))
