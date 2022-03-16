@@ -436,7 +436,7 @@ def logger(log):
 
 def cleanup():
     try:
-        os.rmdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
+        shutil.rmtree(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
         logger("Finished cleanup in cleanup()")
     except:
         logger("Failed to delete Drivers folder with error")
@@ -448,8 +448,10 @@ def cleanup():
             if os.getlogin() != obtainsetting("ProfileUsed"):
                 try:
                     subprocess.call('takeown /R /A /F {} /D N'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                    time.sleep(1)
                     subprocess.call('icacls {} /grant Administrators:F /T /C'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")))
+                    time.sleep(1)
+                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")),  ignore_errors=True)
                     logger("Deleted {} folder".format(obtainsetting("ProfileUsed")))
                 except:
                     logger("Failed to delete {} folder in cleanup".format(obtainsetting("ProfileUsed")))
