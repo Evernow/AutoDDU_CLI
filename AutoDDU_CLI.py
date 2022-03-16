@@ -447,14 +447,12 @@ def cleanup():
         if abs(int(time.time()) - os.path.getctime(os.path.join(Users_directory, obtainsetting("ProfileUsed")))) < 14400:
             if os.getlogin() != obtainsetting("ProfileUsed"):
                 try:
-                    subprocess.call('takeown /R /A /F {} /D N'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                    subprocess.call('takeown /R /A /F "{}" /D N'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     time.sleep(1)
-                    subprocess.call('icacls {} /grant Administrators:F /T /C'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                    subprocess.call('icacls "{}" /grant Administrators:F /T /C'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     time.sleep(1)
-                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")),  ignore_errors=True)
+                    subprocess.call('rmdir /S /Q "{}"'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     logger("Deleted {} folder".format(obtainsetting("ProfileUsed")))
-                    shutil.rmtree(os.path.join(Users_directory, obtainsetting("ProfileUsed")))
-                    logger("Did second run of deleting profile folder")
                     
                 except:
                     logger("Failed to delete {} folder in cleanup".format(obtainsetting("ProfileUsed")))
