@@ -56,7 +56,7 @@ FERMI_NVIDIA = ["GF108", "GF108", "GF108-300-A1", "GF106", "GF106-250", "GF116-2
                 "GF110-275-A1", "GF110-375-A1", "2x GF110-351-A1", "GF100", "GF108", "GF106", "GF106", "GF108",
                 "GF119-300-A1", "GF108-100-KB-A1", "GF108-400-A1", "GF119 (N13M-GE)", "GF117 (N13M-GS)",
                 "GF108 (N13P-GL)", "GF117", "GF106 (N12E-GE2)", "GF116", "GF108", "GF114 (N13E-GS1-LP)",
-                "GF114 (N13E-GS1)", "GF117", "GF108", "GF117", "GF108", ""]
+                "GF114 (N13E-GS1)", "GF117", "GF108", "GF117", "GF108"]
 
 EOL_NVIDIA = ["G98", "G96b", "G94b", "G92b", "MCP79XT", "N10M-GE2(G98)", "N10M-GE1(G98)", "N10M-GE1(G96b)",
               "N10P-GV1(G96b)", "N10P-GE1(G96b)", "N10E-GE1(G94b)", "N10E-GS1(G94b)", "GT218", "GT216", "GT215",
@@ -73,7 +73,7 @@ EOL_NVIDIA = ["G98", "G96b", "G94b", "G92b", "MCP79XT", "N10M-GE2(G98)", "N10M-G
               "NV3", "NV4", "NV6", "NV5", "NV37GL", "NV43GL", "NV41", "NV45GL", "NV40", "NV45GL A3", "NV40", "NV43",
               "G71GLM", "G73GL", "G73GLM", "G92M", "G84GL", "G96M", "G94M", "G96", "GT218GL", "G100GL-U", "G94",
               "GT200GL", "GT215M", "NV34GL", "NV35GL", "NV30GL", "NV36GL", "NV40GL", "NV17", "NV28", "NV18", "MCP51",
-              "2xG98", "2xNV43", "G94", "G100GL", "G100GL-U", "N13M-GE", "NV45GL", "NV40", "NV45GL A3", "NV11GL ",
+              "2xG98", "2xNV43", "G94", "G100GL", "G100GL-U", "N13M-GE", "NV45GL", "NV40", "NV45GL A3", "NV11GL",
               "G96C", "G94GLM"]
 
 KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK107-450-A2", "GK-106-400-A1",
