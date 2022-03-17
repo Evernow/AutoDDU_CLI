@@ -1138,8 +1138,12 @@ def enable_internet(enable):
         logger("Working with these adapters in enable_internet")
         logger(str(list_of_names))
 
-
+# For testing you pass in a list with
+# [{'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}, []]
+#                   GPU infos                           , 
 def mainpain(TestEnvironment):
+
+
     # Wine Easter Egg
     try: # Tries to open key only present when running under Wine
         aKey = OpenKey(ConnectRegistry(None,HKEY_CURRENT_USER), r"Software\Wine", 0, KEY_READ)
