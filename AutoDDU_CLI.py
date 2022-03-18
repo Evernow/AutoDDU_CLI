@@ -1,3 +1,4 @@
+Version_of_AutoDDU_CLI = "0.0.1"
 import json
 import os
 import platform
@@ -1200,6 +1201,7 @@ def mainpain(TestEnvironment):
     sys.stdout.flush()
     print("\n", flush=True)
     try:
+        logger("Version " + Version_of_AutoDDU_CLI)
         if myapp.alreadyrunning():
             print(r"""
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
