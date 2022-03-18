@@ -466,6 +466,7 @@ def cleanup():
 
 
 def makepersist():
+    time.sleep(0.5)
     try:
         shutil.copyfile(sys.executable, exe_location)
         logger("Successfully copied executable to Appdata directory")
@@ -521,6 +522,7 @@ def workaroundwindowsissues():
         pass  # This is meant to fail.
     logger("Did prep work for working around Windows issue")
     try:
+        time.sleep(0.5)
         shutil.copyfile(sys.executable, r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
         logger("Successfully copied executable to new user")
     except:
