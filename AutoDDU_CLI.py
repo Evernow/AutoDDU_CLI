@@ -29,7 +29,7 @@ from winerror import ERROR_ALREADY_EXISTS
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
-                                "nvidiastudio" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
+                                "nvidiastudio" : 0, "startedinsafemode" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -123,7 +123,6 @@ yourself manually.
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
-
 
 def insafemode():
     bootstate = wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
@@ -371,6 +370,13 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["nvidiastudio"] = 1
             else:
                 advanced_options_dict["nvidiastudio"] = 0
+
+
+        if num == "99":
+            if advanced_options_dict["startedinsafemode"] == 0:
+                advanced_options_dict["startedinsafemode"] = 1
+            else:
+                advanced_options_dict["startedinsafemode"] = 0
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
@@ -506,30 +512,43 @@ def autologin():
         profile account we created."""
 
 def workaroundwindowsissues():
-    download_helper("https://download.sysinternals.com/files/PSTools.zip",
-                    os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
-    with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
-        zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
-    subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    try:
-        subprocess.call(
-            '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
-                                                                                 directory_to_exe=os.path.join(
-                                                                                     Appdata_AutoDDU_CLI, "PsTools",
-                                                                                     "PsExec.exe")), shell=True,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except:
-        pass  # This is meant to fail.
-    logger("Did prep work for working around Windows issue")
-    try:
-        time.sleep(0.5)
-        shutil.copyfile(sys.executable, r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
-        logger("Successfully copied executable to new user")
-    except:
-        logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
-        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                        r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+    if insafemode():
+        change_AdvancedMenu("99")
+        logger("In Safemode while working around windows issues, falling back to Default folder copying method")
+        try:
+            time.sleep(0.5)
+            shutil.copyfile(sys.executable, r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+            logger("Successfully copied executable to new user")
+        except:
+            logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                            r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+    else:
+        download_helper("https://download.sysinternals.com/files/PSTools.zip",
+                        os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
+        with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
+            zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
+        subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            subprocess.call(
+                '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
+                                                                                    directory_to_exe=os.path.join(
+                                                                                        Appdata_AutoDDU_CLI, "PsTools",
+                                                                                        "PsExec.exe")), shell=True,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except:
+            pass  # This is meant to fail.
+        logger("Did prep work for working around Windows issue")
+        try:
+            time.sleep(0.5)
+            shutil.copyfile(sys.executable, r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+            logger("Successfully copied executable to new user")
+        except:
+            logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                            r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+    
     # This was old approach, leaving here for now incase we need a failback one day.
 
     #     from subprocess import CREATE_NEW_CONSOLE
@@ -1286,7 +1305,7 @@ without warning.
             else:
                 HandleOtherLanguages()
             time.sleep(5)
-            if obtainsetting("disablewindowsupdatecheck") == 0:
+            if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
                 uptodate()
             if len(obtainsetting("provideowngpuurl")) != 0:
                 download_drivers(obtainsetting("provideowngpuurl"))
@@ -1295,7 +1314,7 @@ without warning.
                 download_drivers(mainshit[2])
             changepersistent(1)
         if getpersistent() == 1:
-            if obtainsetting("disablewindowsupdatecheck") == 0:
+            if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
                 uptodate()
             BackupProfile()
             ddu_download()
@@ -1450,6 +1469,8 @@ Closing in ten minutes. Feel free to close early if no problems
             enable_internet(True)
             cleanup()  # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
             changepersistent(0)
+            if obtainsetting("startedinsafemode") == 1:
+                os.remove(r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
             time.sleep(600)
             sys.exit(0)
         while True:
