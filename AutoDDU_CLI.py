@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.0.2"
+Version_of_AutoDDU_CLI = "0.0.3"
 import json
 import os
 import platform
@@ -25,6 +25,7 @@ import ctypes
 from win32event import CreateMutex
 from win32api import CloseHandle, GetLastError
 from winerror import ERROR_ALREADY_EXISTS
+import webbrowser
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
@@ -123,6 +124,23 @@ yourself manually.
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+def handleoutofdate():
+    response = requests.get("https://github.com/Evernow/AutoDDU_CLI/raw/main/version.txt")
+    data = response.text
+    if (Version_of_AutoDDU_CLI) != (data):
+        logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data, local=Version_of_AutoDDU_CLI))
+        print("Note you are running a version that is not the one that is the latest.")
+        print("Do you want to continue?")
+        print("Type in 'Yes' and we'll continue along")
+        print("Type 'No' and we'll exit linking you to the latest release so you can launch it.")
+        answer = ""
+        while "yes" not in answer.lower() and "no" not in answer.lower():
+            answer = input("Type in Yes or No then enter key: ")
+        if "no" in answer.lower():
+            webbrowser.open('https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe')
+            sys.exit(0)
+
 
 def insafemode():
     bootstate = wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
@@ -1228,6 +1246,7 @@ def mainpain(TestEnvironment):
     print("\n", flush=True)
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
+        handleoutofdate()
         if myapp.alreadyrunning():
             print(r"""
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
