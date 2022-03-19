@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.0.3"
+Version_of_AutoDDU_CLI = "0.0.4"
 import json
 import os
 import platform
@@ -1246,7 +1246,9 @@ def mainpain(TestEnvironment):
     print("\n", flush=True)
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
-        handleoutofdate()
+        if insafemode():
+            if internet_on():
+                handleoutofdate()
         if myapp.alreadyrunning():
             print(r"""
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
