@@ -523,6 +523,8 @@ def workaroundwindowsissues():
             logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
                             r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+        subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         download_helper("https://download.sysinternals.com/files/PSTools.zip",
                         os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
@@ -538,7 +540,7 @@ def workaroundwindowsissues():
                                                                                         "PsExec.exe")), shell=True,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except:
-            pass  # This is meant to fail.
+            pass  
         logger("Did prep work for working around Windows issue")
         try:
             time.sleep(0.5)
