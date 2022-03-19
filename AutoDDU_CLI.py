@@ -603,6 +603,11 @@ def getgpuinfos():
                 # Us assuming a ven and dev ID is 4 characters long is a safe one: https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
                 Arch = PCIID(gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8],
                              gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8])
+                if '[' in Arch and ']' in Arch:
+                    logger("Got more accurate name from PCI-IDS")
+                    name = Arch[Arch.find('[')+1:Arch.find(']')]
+                else:
+                    logger("Depending on Windows giving us correct GPU name")
                 Arch = Arch[:Arch.find(' ')]
                 Vendor_ID = gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8]
                 Device_ID = gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8]
