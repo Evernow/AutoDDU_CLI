@@ -1,15 +1,9 @@
 name: Build AutoDDU_CLI
 
 
-on: 
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Building executable'  
+on:
+  push
+  
 jobs:
   build:
     runs-on: windows-2022
