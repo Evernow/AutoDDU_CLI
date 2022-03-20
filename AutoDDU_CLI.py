@@ -1160,7 +1160,7 @@ def enable_internet(enable):
         list_test = list()
         for adapter in wrxAdapter:
             list_of_names.append(adapter.Name)
-            if adapter.Virtual == False:
+            if adapter.Virtual == False and adapter.LinkTechnology != 10:
                 try:
                     if enable == False:
                         if adapter.State == 2:
