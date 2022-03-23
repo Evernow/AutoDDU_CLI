@@ -86,7 +86,10 @@ KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK1
                  "GK110-400-A1", "GK110-430-B1", "2x GK110-350-B1", "GK110", "GK110B", "GK110GL", "GK104", "GK106",
                  "GK208", "GK208B", "GK20A", "GK210"]
 
-Professional_NVIDIA_GPU = ["Quadro", "Tesla", "NVS", "GRID", "RTX A"]
+Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
+
+Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "GRID", "M", "T"]
+
 
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
                       "740A"]  # Kepler laptops GPUs with no M in the name.
@@ -102,7 +105,8 @@ EOL_AMD = ["16899-0", "Tahiti", "Tahiti XT", "Malta", "18800-1", "28800-5", "288
            "RV280", "RV350", "RV370", "RV380", "RV410", "RV505", "RV515", "RV516", "RV530", "RV535", "RV560", "RV570",
            "RV610", "RV620", "RV630", "RV635", "RV670", "RV710", "RV730", "RV740", "RV770", "RV790", "Rage 2", "Rage 3",
            "Rage 3 Turbo", "Rage 4", "Rage 4 PRO", "Rage 6", "Rage Mobility", "Redwood", "Turks", "Xenos Corona",
-           "Xenos Falcon", "Xenos Jasper", "Xenos Vejle", "Xenos Xenon"]
+           "Xenos Falcon", "Xenos Jasper", "Xenos Vejle", "Xenos Xenon", "Rage", "Xenos", "CW16800", "16899", "18800",
+           "28800"]
 
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
@@ -676,7 +680,13 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
                 if seeifprof.lower() in name.lower():
                     logger("Got NVIDIA prof")
                     Consumer_or_Professional = "Professional"
-            if Consumer_or_Professional != "Professional":
+            if Consumer_or_Professional == "":
+                for seeifdatacenter in Datacenter_NVIDIA_GPU:
+                    if len(seeifdatacenter) >= len(name):
+                        if name[:len(seeifdatacenter)].lower() == seeifdatacenter.lower():
+                            logger("Got NVIDIA datacenter")
+                            Consumer_or_Professional = "Datacenter"
+            if Consumer_or_Professional == "":
                 logger("Got NVIDIA consumer")
                 Consumer_or_Professional = "Consumer"
             # Nightmare begins
@@ -738,6 +748,8 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     NVIDIA_Consumer = data_nvidia["consumer"]["link"]
     NVIDIA_Consumer_Studio = data_nvidia["consumer_studio"]["link"]
     NVIDIA_Professional = data_nvidia["professional"]["link"]
+    NVIDIA_Datacenter = data_nvidia["datacenter"]["link"]
+    NVIDIA_Datacenter_Kepler = data_nvidia["datacenter_kepler"]["link"]
     NVIDIA_R390 = data_nvidia["r390"]["link"]
     NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
@@ -767,6 +779,9 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                     drivers_to_download.append(NVIDIA_R470_Consumer)
                 Kepler += 1
                 Consumer += 1
+            elif gpu[-1] == "Datacenter":
+                if NVIDIA_Datacenter_Kepler not in drivers_to_download:
+                    drivers_to_download.append(NVIDIA_Datacenter_Kepler)
             else:  # Professional.. probably (edge cases, TODO)
                 performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
                 if NVIDIA_R470_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
@@ -781,6 +796,10 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                     if NVIDIA_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                         drivers_to_download.append(NVIDIA_Professional)
                     Professional += 1
+                elif gpu[-1] == "Datacenter":
+                    if NVIDIA_Datacenter not in drivers_to_download:
+                        drivers_to_download.append(NVIDIA_Datacenter)
+                        Professional += 1
                 else:
                     if NVIDIA_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                         if obtainsetting("nvidiastudio") == 1 and ("GK" not in gpu[2] and "GM" not in gpu[2]): # Unlike normal driver, Studio only supports Pascal and above
