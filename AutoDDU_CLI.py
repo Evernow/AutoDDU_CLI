@@ -88,7 +88,7 @@ KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK1
 
 Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
 
-Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "GRID", "M", "T"]
+Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"]
 
 
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
@@ -717,8 +717,13 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
                                 logger("Got laptop kepler (secondary)")
                                 supportstatus = 4  # EOL
                         if supportstatus != 4 and todays_date < 2025:  # In reality it ends in mid 2024, but this is fine.
-                            logger("Got desktop supported kepler")
-                            supportstatus = 2  # kepler
+                            if "GRID" not in name:
+                                logger("Got desktop supported kepler")
+                                supportstatus = 2  # kepler
+                            else:
+                                logger("Got GRID GPU with {}".format(name))
+                                supportstatus = 4  # EOL, all GRID GPUs are EOL now
+
             if supportstatus == 0:
                 logger("Got supported NVIDIA")
                 supportstatus = 1
