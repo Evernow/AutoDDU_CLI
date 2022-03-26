@@ -1531,6 +1531,7 @@ Closing in ten minutes. Feel free to close early if no problems
     except Exception:
         print(unrecoverable_error_print)
         print(traceback.format_exc(), flush=True)
+        logger(str(traceback.format_exc()))
         try:
             if getpersistent() == 1:
                 changepersistent(0)
