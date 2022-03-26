@@ -539,12 +539,17 @@ def workaroundwindowsissues():
         logger("In Safemode while working around windows issues, falling back to Default folder copying method")
         try:
             time.sleep(0.5)
-            shutil.copyfile(sys.executable, r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+            shutil.copyfile(sys.executable, os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
             logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            try:
+                logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
+                logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"Default"))) )
+            except:
+                logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                            r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+                            os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
@@ -566,12 +571,18 @@ def workaroundwindowsissues():
         logger("Did prep work for working around Windows issue")
         try:
             time.sleep(0.5)
-            shutil.copyfile(sys.executable, r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+            shutil.copyfile(sys.executable, os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
             logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            try:
+                logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
+                logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"{}".format(obtainsetting("ProfileUsed"))))) )
+            except:
+                logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
+
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                            r"C:\Users\{profile}\Desktop\AutoDDU_CLI.exe".format(profile=obtainsetting("ProfileUsed")))
+                            os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
     
     # This was old approach, leaving here for now incase we need a failback one day.
 
@@ -1522,7 +1533,7 @@ Closing in ten minutes. Feel free to close early if no problems
             cleanup()  # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
             changepersistent(0)
             if obtainsetting("startedinsafemode") == 1:
-                os.remove(r"C:\Users\Default\Desktop\AutoDDU_CLI.exe")
+                os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
             time.sleep(600)
             sys.exit(0)
         while True:
