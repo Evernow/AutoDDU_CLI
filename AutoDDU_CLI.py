@@ -501,6 +501,11 @@ def makepersist():
         logger("Successfully copied executable to Appdata directory")
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
+        try:
+            logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+            logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+        except:
+            logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
     lines = ['Set WshShell = CreateObject("WScript.Shell" )',
              'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
@@ -1281,6 +1286,7 @@ def mainpain(TestEnvironment):
     print("\n", flush=True)
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
+        logger("Running under user {}".format(os.getlogin()))
         if insafemode():
             if internet_on():
                 handleoutofdate()
