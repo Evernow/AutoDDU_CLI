@@ -502,6 +502,7 @@ def makepersist():
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
         try:
+
             logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
             logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
         except:
@@ -544,13 +545,16 @@ def workaroundwindowsissues():
         logger("In Safemode while working around windows issues, falling back to Default folder copying method")
         try:
             time.sleep(0.5)
-            shutil.copyfile(sys.executable, os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
+            shutil.copyfile(sys.executable, os.path.join(Users_directory, "Desktop","Default", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
             logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
             try:
                 logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
                 logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"Default"))) )
+                logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+                logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
@@ -583,6 +587,9 @@ def workaroundwindowsissues():
             try:
                 logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
                 logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"{}".format(obtainsetting("ProfileUsed"))))) )
+                logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+                logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
 
@@ -1287,6 +1294,11 @@ def mainpain(TestEnvironment):
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
         logger("Running under user {}".format(os.getlogin()))
+        try:
+            logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+            logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+        except:
+            logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         if insafemode():
             if internet_on():
                 handleoutofdate()
