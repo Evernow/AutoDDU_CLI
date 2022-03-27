@@ -129,6 +129,15 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def suspendbitlocker():
+    try:
+        p = str(subprocess.Popen(
+            "Suspend-BitLocker -MountPoint 'C:' -RebootCount 3",
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
+        logger("Suspended bitlocker with output " + str(p))
+    except:
+        logger("Did not suspend bitlocker")
+    
 def handleoutofdate():
     response = requests.get("https://github.com/Evernow/AutoDDU_CLI/raw/main/version.txt")
     data = response.text
@@ -1410,7 +1419,6 @@ without warning.
             print(r"""
                   
 ----------------------------NOTICE----------------------------
-
 This application will now enable safe mode, disable the internet
 and then reboot you. IT WILL DO THIS FOR YOU. 
 Safe mode is a state of Windows where no GPU Drivers are loaded,
@@ -1420,10 +1428,11 @@ You wallpaper will be black, the resolution will look
 messed up, this is normal.
             
 In addition we're going to turn off the internet so
-Windows cannot install drivers while we're installing them.
+Windows cannot install drivers while we're installing them. Also
+if you have BitLocker enabled we're going to temporarily
+disable for three reboots.
             
 {login_or_not}
-
 After once you are at a black wallpaper you will need to launch
 the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             
@@ -1439,6 +1448,8 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                         break
             else:
                 HandleOtherLanguages()
+            time.sleep(1)
+            suspendbitlocker()
             time.sleep(5)
             safemode(1)
 
