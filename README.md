@@ -11,7 +11,7 @@ This is an attempt to automate as much as possible for the end user, while also 
 - [PCI ID Database](http://pci-ids.ucw.cz/) - Used to know what GPU we're working with
 
 # User requirements (these are dependent of user install)
-- Windows 8.1* or higher (due to [Python requirements](https://docs.python.org/3/using/windows.html) and use of [MSFT_NetAdapter](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/hh968170(v=vs.85)))
+- Windows 8.1^ or higher (due to [Python requirements](https://docs.python.org/3/using/windows.html) and use of [MSFT_NetAdapter](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/hh968170(v=vs.85)))
 - Internet connection (that can access Github.com, NVIDIA.com, AMD.com, Intel.com, Microsoft.com, sysinternals.com, wagnardsoft.com, githubusercontent.com)
 
-* Windows 8.1 users will be updated to Windows 10.
+^ Windows 8.1 users will be updated to Windows 10.
