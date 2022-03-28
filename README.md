@@ -15,6 +15,11 @@ This is an attempt to automate as much as possible for the end user, while also 
 - Internet connection (that can access Github.com, NVIDIA.com, AMD.com, Intel.com, Microsoft.com, sysinternals.com, wagnardsoft.com, githubusercontent.com)
 - Presence and functionality of  `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` which is used to make AutoDDU_CLI startup on bootup when out of safe mode.
 - Services required by [PsExec](https://docs.microsoft.com/en-us/sysinternals/downloads/psexec) to be running. This is used to create user profile folders.
+- 64-bit OS due to:
+  - PyWin32 only [supporting 64-bit](https://github.com/mhammond/pywin32/issues/1805)
+  - Display Driver Uninstaller executables being distributed in 64-bit only format.
+  - NVIDIA, AMD and Intel only support 64-bit.
+  - Non-existent demand for any other architectures.
 
 
 
