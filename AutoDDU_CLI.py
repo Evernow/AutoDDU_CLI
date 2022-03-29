@@ -1305,7 +1305,7 @@ def mainpain(TestEnvironment):
         logger("Running under user {}".format(os.getlogin()))
         try:
             logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
-            logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+            logger("Contents of directory contain executable: " + str("AutoDDU_CLI.exe" in os.listdir(os.path.dirname(sys.executable)))  )
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         if insafemode():
