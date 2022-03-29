@@ -1395,13 +1395,13 @@ without warning.
             else:
                 HandleOtherLanguages()
             time.sleep(5)
-            if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
-                uptodate()
             if len(obtainsetting("provideowngpuurl")) != 0:
                 download_drivers(obtainsetting("provideowngpuurl"))
 
             elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
                 download_drivers(mainshit[2])
+            if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
+                uptodate()
             changepersistent(1)
         if getpersistent() == 1:
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
