@@ -129,6 +129,32 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def returnpendingupdates():
+    CheckPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "CheckPendingUpdates.vbs")
+    OutputOfPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "OutputOfPendingUpdates.txt")
+    # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
+    # https://github.com/Evernow/AutoDDU_CLI/issues/14
+    vbsfile = ['Set updateSession = CreateObject("Microsoft.Update.Session")\n', 
+    'Set updateSearcher = updateSession.CreateupdateSearcher()        \n', 
+    'Set searchResult = updateSearcher.Search("IsInstalled=0 and Type=\'Software\'")\n', '\n', '\n',
+     'If searchResult.Updates.Count <> 0 Then \n', '\n', 'For i = 0 To searchResult.Updates.Count - 1\n',
+      '    Set update = searchResult.Updates.Item(i)\n', '    \n', 'Next\n', 'End If\n', '\n', 'Main\n', '\n', 'Sub Main()\n',
+       '    Dim result, fso, fs\n', '    result = 1 / Cos(25)\n', '    Set fso = CreateObject("Scripting.FileSystemObject")\n',
+        '    Set fs  = fso.CreateTextFile("{output}", True)\n'.format(output=OutputOfPendingUpdates),
+         '    fs.Write searchResult.Updates.Count\n',
+         '    fs.Close\n', 'End Sub'] 
+    with open(CheckPendingUpdates, 'w') as f:
+        for item in vbsfile:
+            f.write(item)
+    os.system(CheckPendingUpdates)
+    with open(OutputOfPendingUpdates,'r') as file:
+        lines = file.readlines()     
+        if lines[0] == "0":
+            return False
+        else:
+            return True
+
+
 def suspendbitlocker():
     try:
         p = str(subprocess.Popen(
@@ -1106,6 +1132,20 @@ def uptodate():
 
         else:
             logger("I do not believe it is up to date")
+            if returnpendingupdates() == True:
+                print("There are pending Windows Updates.")
+                print("Please check for Windows Updates and apply updates.")
+                print("If you need to restart to apply please do so.")
+                print("In that case just reopen AutoDDU_CLI once restarted.")
+                print("If no restart is needed, we'll show option to continue in 60 seconds.")
+                time.sleep(60)
+                if BadLanguage() == False:
+                    while True:
+                        DewIt = str(input("Type in 'Continue' then press enter to begin: "))
+                        if "continue" in DewIt.lower():
+                            break
+                else:
+                    HandleOtherLanguages()
             print("System is out of date, downloading Microsoft Update Assistant.", flush=True)
             download_helper('https://go.microsoft.com/fwlink/?LinkID=799445',
                             os.path.join(Appdata, "MicrosoftUpdater.exe"))
