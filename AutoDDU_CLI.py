@@ -1348,9 +1348,12 @@ def mainpain(TestEnvironment):
             logger("Contents of directory contain executable: " + str("AutoDDU_CLI.exe" in os.listdir(os.path.dirname(sys.executable)))  )
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
-        if insafemode():
+        if not insafemode():
             if internet_on():
-                handleoutofdate()
+                try:
+                    handleoutofdate()
+                except:
+                    logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
         if myapp.alreadyrunning():
             print(r"""
 THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
