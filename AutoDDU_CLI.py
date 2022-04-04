@@ -172,7 +172,6 @@ def suspendbitlocker():
         logger("Suspended bitlocker with output " + str(p))
     except:
         logger("Did not suspend bitlocker with output " + p)
-        l
     
 def handleoutofdate():
     response = requests.get("https://github.com/Evernow/AutoDDU_CLI/raw/main/version.txt")
@@ -188,6 +187,7 @@ def handleoutofdate():
             answer = input("Type in Yes or No then enter key: ")
         if "no" in answer.lower():
             webbrowser.open('https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe')
+            time.sleep(1)
             sys.exit(0)
 
 
