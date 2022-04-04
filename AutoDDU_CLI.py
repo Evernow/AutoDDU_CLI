@@ -188,7 +188,7 @@ def handleoutofdate():
         if "no" in answer.lower():
             webbrowser.open('https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe')
             time.sleep(1)
-            sys.exit(0)
+            os._exit(1)
 
 
 def insafemode():
