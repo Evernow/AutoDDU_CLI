@@ -162,6 +162,7 @@ when asked.""")
         time.sleep(5)
         logger("Failed in returnpendingupdates with error")
         logger(str(traceback.format_exc()))
+        return False
 
 
 def suspendbitlocker():
