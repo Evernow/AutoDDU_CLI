@@ -134,25 +134,34 @@ def returnpendingupdates():
     OutputOfPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "OutputOfPendingUpdates.txt")
     # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
     # https://github.com/Evernow/AutoDDU_CLI/issues/14
-    vbsfile = ['Set updateSession = CreateObject("Microsoft.Update.Session")\n', 
-    'Set updateSearcher = updateSession.CreateupdateSearcher()        \n', 
-    'Set searchResult = updateSearcher.Search("IsInstalled=0 and Type=\'Software\'")\n', '\n', '\n',
-     'If searchResult.Updates.Count <> 0 Then \n', '\n', 'For i = 0 To searchResult.Updates.Count - 1\n',
-      '    Set update = searchResult.Updates.Item(i)\n', '    \n', 'Next\n', 'End If\n', '\n', 'Main\n', '\n', 'Sub Main()\n',
-       '    Dim result, fso, fs\n', '    result = 1 / Cos(25)\n', '    Set fso = CreateObject("Scripting.FileSystemObject")\n',
-        '    Set fs  = fso.CreateTextFile("{output}", True)\n'.format(output=OutputOfPendingUpdates),
-         '    fs.Write searchResult.Updates.Count\n',
-         '    fs.Close\n', 'End Sub'] 
-    with open(CheckPendingUpdates, 'w') as f:
-        for item in vbsfile:
-            f.write(item)
-    os.system(CheckPendingUpdates)
-    with open(OutputOfPendingUpdates,'r') as file:
-        lines = file.readlines()     
-        if lines[0] == "0":
-            return False
-        else:
-            return True
+    try:
+        vbsfile = ['Set updateSession = CreateObject("Microsoft.Update.Session")\n', 
+        'Set updateSearcher = updateSession.CreateupdateSearcher()        \n', 
+        'Set searchResult = updateSearcher.Search("IsInstalled=0 and Type=\'Software\'")\n', '\n', '\n',
+        'If searchResult.Updates.Count <> 0 Then \n', '\n', 'For i = 0 To searchResult.Updates.Count - 1\n',
+        '    Set update = searchResult.Updates.Item(i)\n', '    \n', 'Next\n', 'End If\n', '\n', 'Main\n', '\n', 'Sub Main()\n',
+        '    Dim result, fso, fs\n', '    result = 1 / Cos(25)\n', '    Set fso = CreateObject("Scripting.FileSystemObject")\n',
+            '    Set fs  = fso.CreateTextFile("{output}", True)\n'.format(output=OutputOfPendingUpdates),
+            '    fs.Write searchResult.Updates.Count\n',
+            '    fs.Close\n', 'End Sub'] 
+        with open(CheckPendingUpdates, 'w') as f:
+            for item in vbsfile:
+                f.write(item)
+        os.system(CheckPendingUpdates)
+        with open(OutputOfPendingUpdates,'r') as file:
+            lines = file.readlines()     
+            if lines[0] == "0":
+                return False
+            else:
+                return True
+    except:
+        print("""
+Make sure when we launch the update assistant
+that the option to keep files and apps is selected
+when asked.""")
+        time.sleep(5)
+        logger("Failed in returnpendingupdates with error")
+        logger(str(traceback.format_exc()))
 
 
 def suspendbitlocker():
@@ -162,7 +171,8 @@ def suspendbitlocker():
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
         logger("Suspended bitlocker with output " + str(p))
     except:
-        logger("Did not suspend bitlocker")
+        logger("Did not suspend bitlocker with output " + p)
+        l
     
 def handleoutofdate():
     response = requests.get("https://github.com/Evernow/AutoDDU_CLI/raw/main/version.txt")
