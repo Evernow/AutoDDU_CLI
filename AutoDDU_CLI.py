@@ -182,6 +182,8 @@ def handleoutofdate():
         print("Note you are running a version that is not the one that is the latest.")
         print("Do you want to continue?")
         print("Type in 'Yes' and we'll continue along")
+        print("using this outdated version.")
+        print("")
         print("Type 'No' and we'll exit linking you to the latest release so you can launch it.")
         answer = ""
         while "yes" not in answer.lower() and "no" not in answer.lower():
@@ -190,6 +192,7 @@ def handleoutofdate():
             webbrowser.open('https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe')
             time.sleep(1)
             os._exit(1)
+        print("")
 
 
 def insafemode():
