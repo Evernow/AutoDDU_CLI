@@ -112,9 +112,9 @@ unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
    software.
    
-   Chika is dissapointed, but at least this error shows what is wrong.
-   Please share the below stacktrace to Evernow so he can fix it.
-   In addition above the stacktrace is the directory of where
+   Chika is disappointed, but at least this error shows what went wrong.
+   Please share the stacktrace below to Evernow so he can fix it.
+   In addition, above the stacktrace is the directory of where
    DDU and your drivers are downloaded if they were downloaded.
    
    {ddu_extracted_path}
