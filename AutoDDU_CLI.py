@@ -112,9 +112,9 @@ unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
    software.
    
-   Chika is dissapointed, but at least this error shows what is wrong.
-   Please share the below stacktrace to Evernow so he can fix it.
-   In addition above the stacktrace is the directory of where
+   Chika is disappointed, but at least this error shows what went wrong.
+   Please share the stacktrace below to Evernow so he can fix it.
+   In addition, above the stacktrace is the directory of where
    DDU and your drivers are downloaded if they were downloaded.
    
    {ddu_extracted_path}
@@ -179,7 +179,7 @@ def handleoutofdate():
     data = response.text
     if (Version_of_AutoDDU_CLI) != (data):
         logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data, local=Version_of_AutoDDU_CLI))
-        print("Note you are running a version that is not the one that is the latest.")
+        print("You are running a version that is not the latest.")
         print("Do you want to continue?")
         print("Type in 'Yes' and we'll continue along")
         print("using this outdated version.")
