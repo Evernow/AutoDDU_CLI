@@ -30,7 +30,7 @@ import webbrowser
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
-                                "nvidiastudio" : 0, "startedinsafemode" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
+                                "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -442,6 +442,11 @@ def change_AdvancedMenu(num):
             else:
                 advanced_options_dict["nvidiastudio"] = 0
 
+        if num == "98":
+            if advanced_options_dict["inteldriverassistant"] == 0:
+                advanced_options_dict["inteldriverassistant"] = 1
+            else:
+                advanced_options_dict["inteldriverassistant"] = 0
 
         if num == "99":
             if advanced_options_dict["startedinsafemode"] == 0:
@@ -819,8 +824,9 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     dict_of_GPUS = getgpus
     #  print(dict_of_GPUS)
     drivers_to_download = list()
+    # NVIDIA driver source loading
     with urllib.request.urlopen(
-            "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json") as url:
+            "https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json") as url:
         data_nvidia = json.loads(url.read().decode())
     NVIDIA_Consumer = data_nvidia["consumer"]["link"]
     NVIDIA_Consumer_Studio = data_nvidia["consumer_studio"]["link"]
@@ -830,11 +836,21 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     NVIDIA_R390 = data_nvidia["r390"]["link"]
     NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
+    # AMD driver source loading
+
     with urllib.request.urlopen(
-            "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/amd_gpu.json") as url:
-        amd_nvidia = json.loads(url.read().decode())
-    AMD_Consumer = amd_nvidia["consumer"]["link"]
-    AMD_Professional = amd_nvidia["professional"]["link"]
+            "https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
+        data_amd = json.loads(url.read().decode())
+    AMD_Consumer = data_amd["consumer"]["link"]
+    AMD_Professional = data_amd["professional"]["link"]
+    # Intel driver source loading
+    with urllib.request.urlopen(
+            "https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json") as url:
+        data_intel = json.loads(url.read().decode())
+    Intel_Consumer = data_intel["consumer"]["link"]
+    Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].replace('\'', '"')) # See comments here for replace reasoning: https://stackoverflow.com/a/35461204/17484902
+
+
     performing_DDU_on = "DDU will be performed on the following GPUs: \n"
     logger("Successfully grabbed NVIDIA drivers from CommonSoftware repo")
     for gpu in dict_of_GPUS:
@@ -892,9 +908,17 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                         drivers_to_download.append(AMD_Consumer)
                     # Consumer += 1
             if gpu[0] == '8086':  # Intel
-                if "https://dsadata.intel.com/installer" not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    drivers_to_download.append("https://dsadata.intel.com/installer")
-                    # Consumer += 1
+                if dict_of_GPUS[1].upper() in Intel_Consumer_Supported:
+                    if Intel_Consumer not in drivers_to_download:
+                        drivers_to_download.append(Intel_Consumer)
+                else:
+                    if "https://dsadata.intel.com/installer" not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
+                        drivers_to_download.append("https://dsadata.intel.com/installer")
+                        if obtainsetting("inteldriverassistant") == 0:
+                            # We need to record this, because we handle installation a bit differently
+                            # in this case.
+                            change_AdvancedMenu("98")
+                        # Consumer += 1
     if Consumer > 0 and Professional > 0:
         performing_DDU_on = "Cannot perform DDU due to seeing Professional and Consumer GPUs \n Which is not supported by NVIDIA: https://nvidia.custhelp.com/app/answers/detail/a_id/2280/~/can-i-use-a-geforce-and-quadro-card-in-the-same-system%3F \n For troubleshooting purposes please show this if this is a mistake: \n"
         performing_DDU_on = performing_DDU_on + dict_of_GPUS
@@ -998,7 +1022,7 @@ def download_drivers(list_to_download):
     os.makedirs(os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\"))
     for driver in list_to_download:
         url = driver.rstrip()  # Newline character is grabbed sometimes
-        if "intel.com" in url.lower():
+        if "intel.com" in url.lower() and obtainsetting("inteldriverassistant") == 1:
             fileextension = "inteldriver.exe"
         else:
             fileextension = url.split("/")[-1]
@@ -1580,7 +1604,7 @@ and then turn on your internet.
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
                 for driver in s:
-                    if "intel" not in driver:
+                    if "intel" not in driver or obtainsetting("inteldriverassistant") == 0:
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
                         logger("Opening driver executable: {}".format(driver))
