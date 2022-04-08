@@ -351,9 +351,9 @@ def AdvancedMenu_Options(num):
 
         if num == 4:
             if advanced_options_dict["disabletimecheck"] == 0:
-                return " Disable time check"
+                return " Placeholder (ignore)"
             else:
-                return " Enable time check"
+                return " Placeholder (ignore)"
 
         if num == 5:
             if advanced_options_dict["disableinternetturnoff"] == 0:
