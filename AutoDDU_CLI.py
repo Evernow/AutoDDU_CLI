@@ -179,7 +179,7 @@ def handleoutofdate():
     data = response.text
     if (Version_of_AutoDDU_CLI) != (data):
         logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data, local=Version_of_AutoDDU_CLI))
-        print("Note you are running a version that is not the one that is the latest.")
+        print("You are running a version that is not the latest.")
         print("Do you want to continue?")
         print("Type in 'Yes' and we'll continue along")
         print("using this outdated version.")
