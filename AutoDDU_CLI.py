@@ -154,7 +154,6 @@ def cleanupAutoLogin():
             try:
                 winreg.DeleteValue(Winlogon_key, 'AutoLogonCount') 
             except:
-                failed = 1 
                 logger("Failed in cleanupAutoLogin 4")
                 logger(str(traceback.format_exc()))
         winreg.CloseKey(Winlogon_key)
