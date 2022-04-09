@@ -136,23 +136,34 @@ def cleanupAutoLogin():
                 DeleteValue(Winlogon_key, 'AutoAdminLogon')
             except:
                 failed = 1 
+                logger("Failed in cleanupAutoLogin 1")
+                logger(str(traceback.format_exc()))
             try:
                 DeleteValue(Winlogon_key, 'DefaultUserName')
             except:
                 failed = 1  
+                logger("Failed in cleanupAutoLogin 2")
+                logger(str(traceback.format_exc()))
+
             try:
                 DeleteValue(Winlogon_key, 'DefaultPassword') 
             except:
                 failed = 1 
+                logger("Failed in cleanupAutoLogin 3")
+                logger(str(traceback.format_exc()))
             try:
                 DeleteValue(Winlogon_key, 'AutoLogonCount') 
             except:
                 failed = 1 
+                logger("Failed in cleanupAutoLogin 4")
+                logger(str(traceback.format_exc()))
         winreg.CloseKey(Winlogon_key)
         print("Finished AutoLogin cleanup")
         logger("Finished cleanupAutoLogin successfully")
     except:
         failed = 1
+        logger("Failed in cleanupAutoLogin 5")
+        logger(str(traceback.format_exc()))
     if failed == 1:
         print("WARNING: Something MAY have gone wrong in some cleanup")
         print("DDU finished just, just that when we log you out,")
@@ -635,7 +646,8 @@ def autologin():
         print("INFO: Successfully created autologin task")
         logger("Finished autologin successfully")
     except Exception as f:
-        logger("Failed autologin with this: " + str(f))
+        logger("Failed in autologin")
+        logger(str(traceback.format_exc()))
         global login_or_not
         login_or_not = """
         You will need to login manually to the DDU
