@@ -18,8 +18,7 @@ from subprocess import CREATE_NEW_CONSOLE
 import requests
 import wmi
 from win32com.shell import shell, shellcon
-from winreg import OpenKey, ConnectRegistry, HKEY_CURRENT_USER, KEY_READ
-
+import winreg
 import ctypes
 
 from win32event import CreateMutex
@@ -88,7 +87,7 @@ KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK1
 
 Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
 
-Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"]
+Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"] 
 
 
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
@@ -128,6 +127,40 @@ yourself manually.
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+def cleanupAutoLogin():
+    try:
+        Winlogon_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon')
+        if winreg.QueryValueEx(Winlogon_key, 'DefaultUserName')[0] == obtainsetting("ProfileUsed"):
+            try:
+                DeleteValue(Winlogon_key, 'AutoAdminLogon')
+            except:
+                failed = 1 
+            try:
+                DeleteValue(Winlogon_key, 'DefaultUserName')
+            except:
+                failed = 1  
+            try:
+                DeleteValue(Winlogon_key, 'DefaultPassword') 
+            except:
+                failed = 1 
+            try:
+                DeleteValue(Winlogon_key, 'AutoLogonCount') 
+            except:
+                failed = 1 
+        winreg.CloseKey(Winlogon_key)
+        print("Finished AutoLogin cleanup")
+        logger("Finished cleanupAutoLogin successfully")
+    except:
+        failed = 1
+    if failed == 1:
+        print("WARNING: Something MAY have gone wrong in some cleanup")
+        print("DDU finished just, just that when we log you out,")
+        print("you MAY be logged back into this DDU profile, if you are")
+        print("please log out then then restart, you may have to do this three times for it to stop.")
+        time.sleep(10)
+
+
 
 def returnpendingupdates():
     CheckPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "CheckPendingUpdates.vbs")
@@ -577,13 +610,28 @@ def autologin():
     #TODO this requires the hacky workaround of deleting the DDU user so it stops auto logging in.
     # https://superuser.com/questions/514265/set-user-for-auto-logon-on-windows-via-batch-script
     try:
-        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d {profile} /f'.format(profile=obtainsetting("ProfileUsed")), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        # https://docs.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon
+        Winlogon_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon')
+        try: # This checks to see if someone has setup AutoLogin before, and warns them if it does
+            checkthis = winreg.QueryValueEx(Winlogon_key, 'DefaultUserName')
+            if checkthis[0] != None:
+                print("Warning: Possible you have AutoLogin setup.")
+                print("AutoDDU will overwrite this, meaning you will have to")
+                print("set it up again yourself once everything is finished.")
+                print("We'll continue in 30 seconds, if you do not wish to continue exit before then.")
+                time.sleep(30)
+        except: # Fails when key does not exist, aka when someone does not have AutoLogin setup on their own.
+            pass
         
-        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d 1234 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        
-        
-        subprocess.call('reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /t REG_DWORD /d 1 /f', shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        winreg.SetValueEx(Winlogon_key, 'AutoAdminLogon', 0, reg.REG_SZ, '1')
+
+        winreg.SetValueEx(Winlogon_key, 'DefaultUserName', 0, reg.REG_SZ, '{}'.format(obtainsetting("ProfileUsed")))
+
+        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, reg.REG_SZ, '1234')
+
+        winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, reg.REG_DWORD, '4')
+
+        winreg.CloseKey(Winlogon_key)
         print("INFO: Successfully created autologin task")
         logger("Finished autologin successfully")
     except Exception as f:
@@ -1327,7 +1375,7 @@ def mainpain(TestEnvironment):
 
     # Wine Easter Egg
     try: # Tries to open key only present when running under Wine
-        aKey = OpenKey(ConnectRegistry(None,HKEY_CURRENT_USER), r"Software\Wine", 0, KEY_READ)
+        aKey = winreg.OpenKey(winreg.ConnectRegistry(None,winreg.HKEY_CURRENT_USER), r"Software\Wine", 0, winreg.KEY_READ)
 
         subprocess.run("winebrowser https://funny.computer/linux/", shell=True) # Nobody actually installs IE in their prefixes right?
         print("Someone actually ran this on Linux lol")
@@ -1560,6 +1608,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 while True:
                     time.sleep(1)
             print("DDU has been ran!", flush=True)
+            cleanupAutoLogin()
             print(r"""
 This will now boot you back into normal mode.
               
