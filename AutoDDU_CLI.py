@@ -634,13 +634,13 @@ def autologin():
         except: # Fails when key does not exist, aka when someone does not have AutoLogin setup on their own.
             pass
         
-        winreg.SetValueEx(Winlogon_key, 'AutoAdminLogon', 0, reg.REG_SZ, '1')
+        winreg.SetValueEx(Winlogon_key, 'AutoAdminLogon', 0, winreg.REG_SZ, '1')
 
-        winreg.SetValueEx(Winlogon_key, 'DefaultUserName', 0, reg.REG_SZ, '{}'.format(obtainsetting("ProfileUsed")))
+        winreg.SetValueEx(Winlogon_key, 'DefaultUserName', 0, winreg.REG_SZ, '{}'.format(obtainsetting("ProfileUsed")))
 
-        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, reg.REG_SZ, '1234')
+        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, winreg.REG_SZ, '1234')
 
-        winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, reg.REG_DWORD, '6')
+        winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, winreg.REG_DWORD, '6')
 
         winreg.CloseKey(Winlogon_key)
         print("INFO: Successfully created autologin task")
