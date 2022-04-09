@@ -168,7 +168,7 @@ def cleanupAutoLogin():
         print("WARNING: Something MAY have gone wrong in some cleanup")
         print("DDU finished just, just that when we log you out,")
         print("you MAY be logged back into this DDU profile, if you are")
-        print("please log out then then restart, you may have to do this three times for it to stop.")
+        print("please log out then then restart, you may have to do this FIVE times for it to stop.")
         time.sleep(10)
 
 
@@ -640,7 +640,7 @@ def autologin():
 
         winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, reg.REG_SZ, '1234')
 
-        winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, reg.REG_DWORD, '4')
+        winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, reg.REG_DWORD, '6')
 
         winreg.CloseKey(Winlogon_key)
         print("INFO: Successfully created autologin task")
