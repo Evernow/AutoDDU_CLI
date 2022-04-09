@@ -166,10 +166,11 @@ def cleanupAutoLogin():
         logger(str(traceback.format_exc()))
     if failed == 1:
         print("WARNING: Something MAY have gone wrong in some cleanup")
-        print("DDU finished just, just that when we log you out,")
+        print("DDU finished just fine, just that when we log you out,")
         print("you MAY be logged back into this DDU profile, if you are")
         print("please log out then then restart, you may have to do this FIVE times for it to stop.")
-        time.sleep(10)
+        print("We'll continue in 30 seconds.")
+        time.sleep(30)
 
 
 
