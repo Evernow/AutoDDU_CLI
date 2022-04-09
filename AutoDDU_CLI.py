@@ -133,26 +133,26 @@ def cleanupAutoLogin():
         Winlogon_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon')
         if winreg.QueryValueEx(Winlogon_key, 'DefaultUserName')[0] == obtainsetting("ProfileUsed"):
             try:
-                DeleteValue(Winlogon_key, 'AutoAdminLogon')
+                winreg.DeleteValue(Winlogon_key, 'AutoAdminLogon')
             except:
                 failed = 1 
                 logger("Failed in cleanupAutoLogin 1")
                 logger(str(traceback.format_exc()))
             try:
-                DeleteValue(Winlogon_key, 'DefaultUserName')
+                winreg.DeleteValue(Winlogon_key, 'DefaultUserName')
             except:
                 failed = 1  
                 logger("Failed in cleanupAutoLogin 2")
                 logger(str(traceback.format_exc()))
 
             try:
-                DeleteValue(Winlogon_key, 'DefaultPassword') 
+                winreg.DeleteValue(Winlogon_key, 'DefaultPassword') 
             except:
                 failed = 1 
                 logger("Failed in cleanupAutoLogin 3")
                 logger(str(traceback.format_exc()))
             try:
-                DeleteValue(Winlogon_key, 'AutoLogonCount') 
+                winreg.DeleteValue(Winlogon_key, 'AutoLogonCount') 
             except:
                 failed = 1 
                 logger("Failed in cleanupAutoLogin 4")
