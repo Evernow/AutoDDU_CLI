@@ -130,7 +130,7 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 
 def checkBatteryLevel():
     try:
-        if psutil.sensors_battery() != None and int(psutil.sensors_battery().percent) < 40:
+        if psutil.sensors_battery() != None and int(psutil.sensors_battery().percent) < 40 and psutil.sensors_battery().power_plugged == False:
             print("Your battery is less than 40%")
             print("Please connect your laptop to power, then continue with instructions below.")
             HandleOtherLanguages()
