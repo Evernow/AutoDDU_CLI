@@ -159,6 +159,7 @@ def cleanupAutoLogin():
                 logger("Failed in cleanupAutoLogin 4")
                 logger(str(traceback.format_exc()))
         else:
+            failed = 1
             logger("Did not log because DefaultUserName did not match ProfileUsed, used is {used} and defaultusername is {default}".format(default=winreg.QueryValueEx(Winlogon_key, 'DefaultUserName')[0], user=obtainsetting("ProfileUsed")))
         winreg.CloseKey(Winlogon_key)
         print("Finished AutoLogin cleanup")
