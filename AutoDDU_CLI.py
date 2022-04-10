@@ -1524,7 +1524,7 @@ This will also disable all GPU overclocks/undervolts/custom fan curves.
 Do not worry if you do not know what this is, it won't affect you.
                     
 When you are ready (this process can take up to 30 minutes 
-and CANNOT be paused) please type "Do it" 
+and CANNOT be paused) please do what it says above. 
                     
 Save all documents and prepare for your computer to restart
 without warning. 
