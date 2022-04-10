@@ -128,6 +128,15 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def checkBatteryLevel():
+    try:
+        if psutil.sensors_battery() != None and int(psutil.sensors_battery().percent) < 40:
+            print("Your battery is less than 40%")
+            print("Please connect your laptop to power, then continue with instructions below.")
+            HandleOtherLanguages()
+    except:
+        pass
+
 def cleanupAutoLogin():
     try:
         Winlogon_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon')
@@ -1444,6 +1453,7 @@ def mainpain(TestEnvironment):
     """, flush=True)
     sys.stdout.flush()
     print("\n", flush=True)
+    checkBatteryLevel()
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
         logger("Running under user {}".format(os.getlogin()))
