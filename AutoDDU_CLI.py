@@ -887,6 +887,7 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     Kepler = 0
 
     dict_of_GPUS = getgpus
+    logger(str(dict_of_GPUS))
     #  print(dict_of_GPUS)
     drivers_to_download = list()
     # NVIDIA driver source loading
@@ -973,7 +974,7 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                         drivers_to_download.append(AMD_Consumer)
                     # Consumer += 1
             if gpu[0] == '8086':  # Intel
-                if dict_of_GPUS[1].upper() in Intel_Consumer_Supported:
+                if gpu[1].upper() in Intel_Consumer_Supported:
                     if Intel_Consumer not in drivers_to_download:
                         drivers_to_download.append(Intel_Consumer)
                 else:
