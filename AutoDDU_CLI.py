@@ -136,7 +136,8 @@ def checkBatteryLevel():
             print("Please connect your laptop to power, then continue with instructions below.")
             HandleOtherLanguages()
     except:
-        pass
+        logger("Failed to check battery level with")
+        logger(str(traceback.format_exc()))
 
 def cleanupAutoLogin():
     try:
