@@ -1675,7 +1675,7 @@ and then turn on your internet.
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
                         logger("Opening driver executable: {}".format(driver))
-                        if "intel" in driver:
+                        if "igfx" in driver:
                             print("Note Intel driver installer can take")
                             print("up to 5 minutes just to appear")
                             print("and once it appears and it starts to install")
