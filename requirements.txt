@@ -2,3 +2,5 @@ wmi
 pyinstaller
 requests
 tqdm
+psutil
+
