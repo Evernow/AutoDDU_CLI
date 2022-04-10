@@ -631,10 +631,10 @@ def autologin():
         try: # This checks to see if someone has setup AutoLogin before, and warns them if it does
             checkthis = winreg.QueryValueEx(Winlogon_key, 'DefaultUserName')
             if checkthis[0] != None:
-                print("Warning: Possible you have AutoLogin setup.")
-                print("AutoDDU will overwrite this, meaning you will have to")
-                print("set it up again yourself once everything is finished.")
-                print("We'll continue in 30 seconds, if you do not wish to continue exit before then.")
+                print("If you have Windows setup so it auto logs")
+                print("you into your user at boot up, you will have to ")
+                print("set it up again yourself once everything is finished")
+                print("We'll continue in 30 seconds.")
                 time.sleep(30)
         except: # Fails when key does not exist, aka when someone does not have AutoLogin setup on their own.
             pass
@@ -1675,6 +1675,11 @@ and then turn on your internet.
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
                         logger("Opening driver executable: {}".format(driver))
+                        if "intel" in driver:
+                            print("Note Intel driver installer can take")
+                            print("up to 5 minutes just to appear")
+                            print("and once it appears and it starts to install")
+                            print("it can take up to 10 minutes to install.")
                         subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
                         logger("Sucessfully finished driver executable: {}".format(driver))
                     else:
