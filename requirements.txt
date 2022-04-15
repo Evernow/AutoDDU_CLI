@@ -3,4 +3,5 @@ pyinstaller
 requests
 tqdm
 psutil
+tinyaes
 
