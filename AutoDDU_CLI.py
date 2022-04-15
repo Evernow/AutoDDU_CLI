@@ -1440,7 +1440,8 @@ def mainpain(TestEnvironment):
             time.sleep(1)
     except:
         pass
-    os.system('mode con: cols=80 lines=40')
+    if len(TestEnvironment) == 0:
+        os.system('mode con: cols=80 lines=40')
     kernel32 = ctypes.windll.kernel32
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), (0x4|0x80|0x20|0x2|0x10|0x1|0x00|0x100))
     accountforoldcontinues()
@@ -1505,18 +1506,23 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                   """)
             sys.stdout.flush()
             while True:
-                time.sleep(1)
+                if len(TestEnvironment) == 0:
+                    time.sleep(1)
+                else:
+                    return("Duplicate app instance")
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
-            print_menu1()
+            if len(TestEnvironment) == 0:
+                print_menu1()
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
 Too little free space to continue.
 Please have at least 20GB of free space in C: drive.                 
                       """, flush=True)
                 sys.stdout.flush()
-                while True:
-                    time.sleep(1)
+                if len(TestEnvironment) == 0:
+                    while True:
+                        time.sleep(1)
 
 #             if not time_checker() and obtainsetting("disabletimecheck") == 0:
 #                 try:
@@ -1539,12 +1545,19 @@ Please have at least 20GB of free space in C: drive.
                 try:
                     # For testing you replace getgpuinfos() with proper dict such as:
                     # {'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}
-                    mainshit = checkifpossible(getsupportstatus(getgpuinfos()))
+                    if len(TestEnvironment) == 0:
+                        mainshit = checkifpossible(getsupportstatus(getgpuinfos()))
+                    else:
+                        mainshit = checkifpossible(getsupportstatus(TestEnvironment[0]))
                 except Exception:
                     print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
                     print(traceback.format_exc())
                     while True:
-                        time.sleep(1)
+                        if len(TestEnvironment) == 0:
+                            time.sleep(1)
+                        else:
+                            return("GPU REQ TEST  "  + str(traceback.format_exc())   )
+
                 print(mainshit[1])
                 if mainshit[0] == 0:
                     print(r"""
@@ -1556,7 +1569,10 @@ Please have at least 20GB of free space in C: drive.
         """, flush=True)
                     print(mainshit)
                     while True:
-                        time.sleep(1)
+                        if len(TestEnvironment) == 0:
+                            time.sleep(1)
+                        else:
+                            return("Incompatible GPU")
 
             print(r"""
 This will update Windows if out of date, download needed drivers,
@@ -1574,14 +1590,15 @@ Save all documents and prepare for your computer to restart
 without warning. 
  """, flush=True)
             sys.stdout.flush()
-            if BadLanguage() == False:
-                while True:
-                    DewIt = str(input("Type in 'Do it' then press enter to begin: "))
-                    if "do it" in DewIt.lower():
-                        break
-            else:
-                HandleOtherLanguages()
-            time.sleep(5)
+            if len(TestEnvironment) == 0:
+                if BadLanguage() == False:
+                    while True:
+                        DewIt = str(input("Type in 'Do it' then press enter to begin: "))
+                        if "do it" in DewIt.lower():
+                            break
+                else:
+                    HandleOtherLanguages()
+                time.sleep(5)
             if len(obtainsetting("provideowngpuurl")) != 0:
                 download_drivers(obtainsetting("provideowngpuurl"))
 
@@ -1600,7 +1617,8 @@ without warning.
             print("If you had one you will have to reapply after this process is done.")
             print("If you do not know what any of this is, don't worry, you don't have to do anything.")
             print("We will resume in 5 seconds.", flush=True)
-            time.sleep(5)
+            if len(TestEnvironment) == 0:
+                time.sleep(5)
             if obtainsetting("donotdisableoverclocks") == 0:
                 disable_clocking()
             print(r"""
@@ -1626,19 +1644,22 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
 (Read what is above, window to continue will appear in 15 seconds.)
             
                   """.format(login_or_not=login_or_not), flush=True)
-            time.sleep(15)
+            if len(TestEnvironment) == 0:
+                time.sleep(15)
             sys.stdout.flush()
-            if BadLanguage() == False:
-                while True:
-                    DewIt = str(input("Type in 'I understand' then enter once you understand what you must do: "))
-                    if "i understand" in DewIt.lower():
-                        break
-            else:
-                HandleOtherLanguages()
-            time.sleep(1)
+            if len(TestEnvironment) == 0:
+                if BadLanguage() == False:
+                    while True:
+                        DewIt = str(input("Type in 'I understand' then enter once you understand what you must do: "))
+                        if "i understand" in DewIt.lower():
+                            break
+                else:
+                    HandleOtherLanguages()
+                time.sleep(1)
             suspendbitlocker()
-            time.sleep(5)
-            safemode(1)
+            if len(TestEnvironment) == 0:
+                time.sleep(5)
+                safemode(1)
 
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
@@ -1646,25 +1667,28 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             enable_internet(False)
             changepersistent(2)
             autologin()
-            time.sleep(3)
-            subprocess.call('shutdown /r -t 5', shell=True)
-            time.sleep(2)
+            if len(TestEnvironment) == 0:
+                time.sleep(3)
+                subprocess.call('shutdown /r -t 5', shell=True)
+                time.sleep(2)
             print("Command to restart has been sent.")
-            while True:
-                time.sleep(1)
+            if len(TestEnvironment) == 0:
+                while True:
+                    time.sleep(1)
         if getpersistent() == 2:
             print("Welcome back, the hardest part is over.")
             print("This will take a minute or two, even though it may seem")
             print("like nothing is happening, please be patient.", flush=True)
             sys.stdout.flush()
-            try:
-                DDUCommands()
-            except Exception as oof:
-                print("Error while doing DDU. You can still run manually.")
-                print("Please send this to Evernow:")
-                print(traceback.format_exc(), flush=True)
-                while True:
-                    time.sleep(1)
+            if len(TestEnvironment) == 0:
+                try:
+                    DDUCommands()
+                except Exception as oof:
+                    print("Error while doing DDU. You can still run manually.")
+                    print("Please send this to Evernow:")
+                    print(traceback.format_exc(), flush=True)
+                    while True:
+                        time.sleep(1)
             print("DDU has been ran!", flush=True)
             cleanupAutoLogin()
             print(r"""
@@ -1679,7 +1703,8 @@ Will restart in 15 seconds.
               
                     """, flush=True)
 
-            safemode(0)
+            if len(TestEnvironment) == 0:    
+                safemode(0)
             changepersistent(3)
             possible_error = ""
             try:
@@ -1689,15 +1714,17 @@ Will restart in 15 seconds.
                     creationflags=CREATE_NEW_CONSOLE).communicate()
             except:
                 logger(str(possible_error))
-            time.sleep(5)
-            subprocess.call('shutdown /r -t 10', shell=True)
-            print("Command to restart has been sent.")
-            while True:
-                time.sleep(1)
+            if len(TestEnvironment) == 0:
+                time.sleep(5)
+                subprocess.call('shutdown /r -t 10', shell=True)
+                print("Command to restart has been sent.")
+                while True:
+                    time.sleep(1)
 
         if getpersistent() == 3:
             print("Please wait 5 seconds and we'll start the last process")
-            time.sleep(5)
+            if len(TestEnvironment) == 0:
+                time.sleep(5)
             print(r"""
 Almost done. Only thing left now is install drivers
 and then turn on your internet.
@@ -1707,6 +1734,7 @@ and then turn on your internet.
                 logger("Removed script startup at first of 3rd call")
             except:
                 pass
+            mimicinstalleddrivers = [] # Used for testing to see if all drivers were correctly grabbed as expected
             if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")):
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
@@ -1720,7 +1748,10 @@ and then turn on your internet.
                             print("up to 5 minutes just to appear")
                             print("and once it appears and it starts to install")
                             print("it can take up to 10 minutes to install.")
-                        subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
+                        if len(TestEnvironment) == 0:
+                            subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
+                        else:
+                            mimicinstalleddrivers.append(driver)
                         logger("Sucessfully finished driver executable: {}".format(driver))
                     else:
                         logger("I saw an Intel driver as {} to run later".format(driver))
@@ -1736,7 +1767,10 @@ and then turn on your internet.
                     else:
                         logger("Did not find Intel assistant driver, launching our own")
                         print("Installing Intel driver assistant")
-                        subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
+                        if len(TestEnvironment) == 0:
+                            subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
+                        else:
+                            mimicinstalleddrivers.append("inteldriver.exe")
                     try:
                         os.remove(Script_Location_For_startup)
                     except:
@@ -1756,26 +1790,35 @@ Closing in ten minutes. Feel free to close early if no problems
             changepersistent(0)
             if obtainsetting("startedinsafemode") == 1:
                 os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
-            time.sleep(600)
+            if len(TestEnvironment) == 0:
+                time.sleep(600)
+            else:
+                return mimicinstalleddrivers
             sys.exit(0)
         while True:
-            print("ERROR CONFIGURATION ERROR CONFIGURATION")
-            time.sleep(1)
+            if len(TestEnvironment) == 0:
+                print("ERROR CONFIGURATION ERROR CONFIGURATION")
+                time.sleep(1)
+            else:
+                return ("Config error")
     except Exception:
-        print(unrecoverable_error_print)
-        print(traceback.format_exc(), flush=True)
-        logger(str(traceback.format_exc()))
-        try:
-            if getpersistent() == 1:
-                changepersistent(0)
-            elif getpersistent() == 2:
-                changepersistent(1)
-            elif getpersistent() == 3:
-                changepersistent(2)
-        except:
-            pass
-        while True:
-            time.sleep(1)
+        if len(TestEnvironment) == 0:
+            print(unrecoverable_error_print)
+            print(traceback.format_exc(), flush=True)
+            logger(str(traceback.format_exc()))
+            try:
+                if getpersistent() == 1:
+                    changepersistent(0)
+                elif getpersistent() == 2:
+                    changepersistent(1)
+                elif getpersistent() == 3:
+                    changepersistent(2)
+            except:
+                pass
+            while True:
+                time.sleep(1)
+        else:
+            return ("Exception " + str(traceback.format_exc()))
 
 
 print(mainpain([]))
