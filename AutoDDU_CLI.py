@@ -129,6 +129,24 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+def checkifvaliddownload(url):
+   logger("Checking if custom URL {} is valid".format(str(url)))
+   try:
+        my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
+        file = urllib.request.Request(url)
+        file.add_header('Referer', my_referer)
+        file.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0')
+        file = urllib.request.urlopen(file, timeout=5)
+        logger("Got size of custom URL to be {}".format(str(file.length)))
+        if file.length < 6000000: # 6MB, which is size of intel driver assistant
+            return False
+        else:
+            return True
+   except:
+    logger("Failed valid check with error " +str(traceback.format_exc())  )
+    return False
+
+
 def checkBatteryLevel():
     try:
         if psutil.sensors_battery() != None and int(psutil.sensors_battery().percent) < 40 and psutil.sensors_battery().power_plugged == False:
@@ -464,8 +482,18 @@ def change_AdvancedMenu(num):
 
         if num == "3":
             if len(advanced_options_dict["provideowngpuurl"]) == 0:
-                option = str(input('Type in the driver download URL: '))
-                advanced_options_dict["provideowngpuurl"].append(option)
+                isitinvalid = True
+                while isitinvalid:
+                    option = str(input('Type in the driver download URL: '))
+                    if checkifvaliddownload(option):
+                        advanced_options_dict["provideowngpuurl"].append(option)
+                        isitinvalid = False
+                    else:
+                        print("The URL download you provided is invalid.")
+                        print("Please make sure it is a direct download link")
+                        print("If you are still having issues please contact Evernow")
+                        print("You can try inputing URL again.")
+
             else:
                 advanced_options_dict["provideowngpuurl"] = []
 
