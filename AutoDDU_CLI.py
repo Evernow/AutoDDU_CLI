@@ -51,40 +51,22 @@ log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
 
 # Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
-FERMI_NVIDIA = ["GF108", "GF108", "GF108-300-A1", "GF106", "GF106-250", "GF116-200", "GF104-225-A1", "GF104",
-                "GF104-300-KB-A1",
-                "GF114", "GF100-030-A3", "GF100-275-A3", "GF100-375-A3", "GF119", "GF108", "GF118",
-                "GF116", "GF116-400", "GF114-200-KB-A1", "GF114-325-A1", "GF114-400-A1", "GF110", "GF110-270-A1",
-                "GF110-275-A1", "GF110-375-A1", "2x GF110-351-A1", "GF100", "GF108", "GF106", "GF106", "GF108",
-                "GF119-300-A1", "GF108-100-KB-A1", "GF108-400-A1", "GF119 (N13M-GE)", "GF117 (N13M-GS)",
-                "GF108 (N13P-GL)", "GF117", "GF106 (N12E-GE2)", "GF116", "GF108", "GF114 (N13E-GS1-LP)",
-                "GF114 (N13E-GS1)", "GF117", "GF108", "GF117", "GF108"]
+FERMI_NVIDIA = ['GF100', 'GF100M', 'GF100G', 'GF100GL', 'GF100GLM', 'GF106', 'GF108', 'GF104', 'GF116', 'GF106M', 'GF106GL', 'GF106GLM', 'GF108M', 'GF108GL', 'GF108GLM', 'GF119', 'GF110', 'GF114', 'GF104M', 'GF104GLM', 'GF11', 'GF119M', 'GF110GL', 'GF117M', 'GF114M', 'GF116M']
 
-EOL_NVIDIA = ["G98", "G96b", "G94b", "G92b", "MCP79XT", "N10M-GE2(G98)", "N10M-GE1(G98)", "N10M-GE1(G96b)",
-              "N10P-GV1(G96b)", "N10P-GE1(G96b)", "N10E-GE1(G94b)", "N10E-GS1(G94b)", "GT218", "GT216", "GT215",
-              "MCP89", "GT215-301-A3", "G92", "GT216", "GT218", "MCP68S", "MCP67QV", "MCP73", "MCP76", "NV44", "G72",
-              "G73", "G73-B1", "G70", "G71", "2x G71", "MCP78", "G86", "G84", "G80", "GM108", "GM107", "NB8M(G86)",
-              "NB8P(G84)", "NB8P(G92)", "C77", "MCP79", "MCP7A-S", "MCP7A-U", "G96-200-c1", "G96a", "G96b",
-              "G96-300-C1", "G94a", "G92-150-A2", "G94a", "G94b", "G94-300-A1", "G92a2 G92b", "G92a", "G92b",
-              "G92-420-A2", "2x G92", "MCP77MH", "MCP79MH", "NB9M-GE(G98)", "NB9M-GE(G86)", "MCP79MX", "NB9P(G96)",
-              "NB9P-GV(G96)", "NB9P-GE2(G96)", "NB9P-GS(G96)", "NB9P-GS1(G84)", "NB9P-GT(G96)", "NB9E-GE(G96)",
-              "NB9E-GS(G94)", "NB9E-GT(G94)", "NB9E-GT2(G92)", "NB9E-GTX(G92)", "NV34", "NV34B", "NV31", "NV36", "NV30",
-              "NV35", "NV38", "NV34M", "NV31M", "NV36M", "C51M", "NV44M", "NV43M", "NV41M", "MCP67MV", "MCP67M", "G72M",
-              "G73M", "G73-N-B1", "G70M", "G71M", "NV11M", "NV1A (IGP) / NV11 (MX)", "NV15", "NV16", "NV1A", "NV11",
-              "NV20", "NV17M", "NV18M", "NV28M", "NV11", "G72GLM", "G86M", "G98M", "G84M", "GT218M", "GT216M", "NV1",
-              "NV3", "NV4", "NV6", "NV5", "NV37GL", "NV43GL", "NV41", "NV45GL", "NV40", "NV45GL A3", "NV40", "NV43",
-              "G71GLM", "G73GL", "G73GLM", "G92M", "G84GL", "G96M", "G94M", "G96", "GT218GL", "G100GL-U", "G94",
-              "GT200GL", "GT215M", "NV34GL", "NV35GL", "NV30GL", "NV36GL", "NV40GL", "NV17", "NV28", "NV18", "MCP51",
-              "2xG98", "2xNV43", "G94", "G100GL", "G100GL-U", "N13M-GE", "NV45GL", "NV40", "NV45GL A3", "NV11GL",
-              "G96C", "G94GLM"]
 
-KEPLER_NVIDIA = ["GK107", "GK208-301-A1", "GK208", "GK208-400-A1", "GK106", "GK107-450-A2", "GK-106-400-A1",
-                 "GK106-220-A1", "GK106-240-A1", "GK106-400-A1", "GK104-200-KD-A2", "GK104-300-KD-A2", "GK104-325-A2",
-                 "GK104-400-A2", "2x GK104-355-A2", "GK107 (N13P-LP)", "GK107 (N13P-GS)", "GK107 (N13P-GT)",
-                 "GK107 (N13E-GE)", "GK104 (N13E-GR)", "GK104 (N13E-GSR)", "GK104 (N13E-GTX)", "GK104", "GK208-203-B1",
-                 "GK208-201-B1", "GK107-425-A2", "GK104-225-A2", "GK104-425-A2", "GK110-300-A1", "GK110-425-B1",
-                 "GK110-400-A1", "GK110-430-B1", "2x GK110-350-B1", "GK110", "GK110B", "GK110GL", "GK104", "GK106",
-                 "GK208", "GK208B", "GK20A", "GK210"]
+EOL_NVIDIA = ['NV1', 'NV3', 'NV4', 'NV5', 'MCP04', 'NV40', 'NV40GL', 'CK804', 'nForce2', 'nForce', 'MCP2A', 'MCP2S', 'G70', 'G70M', 'G70GL', 'NV0A', 
+    'NV41', 'NV41M', 'NV41GLM', 'NV42GL', 'NV41GL', 'nForce3', 'CK8S', 'NV43', 'G70/G71', 'NV45GL', 'NV39', 'NV35', 'NV37GL', 'NV38GL', 'NV19', 
+    'NV10', 'NV10GL', 'NV11', 'NV11M', 'NV11GL', 'NV43M', 'NV43GL', 'NV15', 'NV15GL', 'NV44', 'NV44M', 'NV17', 'NV17M', 'NV17GL', 'NV18', 'NV18M', 
+    'NV18GL', 'G80', 'G80GL', 'G72', 'G7', 'G72M', 'G72GLM', 'G72GL', 'NV1F', 'NV20', 'NV20GL', 'NV48', 'NV44A', 'C51PV', 'C51', 'C51G', 'NV25', 
+    'NV25GL', 'MCP51', 'NV28', 'NV28M', 'NV28GL', 'NV28GLM', 'G71', 'G71M', 'G71GLM', 'G71GL', 'NV2A', 'MCPX', 'G73', 'NV30', 'NV30GL', 'NV31', 
+    'NV31G', 'NV31M', 'NV31GLM', 'NV34', 'NV34M', 'NV34GL', 'NV38', 'NV35GL', 'NV36', 'NV36M', 'NV36GL', 'MCP55', 'G73M', 'G73GLM', 'G73GL', 'C55', 
+    'C61', 'MCP61', 'G84', 'G84M', 'G84GL', 'G84GLM', 'G92', 'G86', 'G86M', 'G86GLM', 'MCP65', 'C67', 'C68', 'MCP67', 'MCP78S', 'MCP73', 'NF200', 
+    'GT200b', 'GT200', 'GT200GL', 'G92M', 'G92GL', 'G92GLM', 'G94', 'G94M', 'G94GL', 'G94GLM', 'G96C', 'G96', 'G96CM', 'G96M', 'G96GL', 'G96CGL', 
+    'G96GLM', 'G98', 'G98M', 'G98GL', 'G98GLM', 'MCP77', 'MCP72XE/MCP72P/MCP78U/MCP78S', 'C73', 'C77', 'C78', 'C79', 'MCP7A', 'MCP79', 
+    'MCP89', 'GT216', 'GT216M', 'GT216GL', 'GT216GLM', 'GT218', 'GT218M', 'GT218GL', 'GT218GLM', 'GT215', 'GT215M', 'GT215GLM', 
+    'Xavier', 'MCP78U', 'MCP72P' , 'MCP72XE']
+
+KEPLER_NVIDIA = ['GK104', 'GK106', 'GK208', 'GK110', 'GK107', 'GK107M', 'GK107GL', 'GK107GLM', 'GK110B', 'GK110GL', 'GK110BGL', 'GK180GL', 'GK210GL', 'GK104GL', 'GK104M', 'GK104GLM', 'GK106M', 'GK106GL', 'GK106GLM', 'GK208B', 'GK208M', 'GK208BM', 'GK20', 'GK208GLM']
 
 Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
 
@@ -94,19 +76,23 @@ Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"]
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
                       "740A"]  # Kepler laptops GPUs with no M in the name.
 
-EOL_AMD = ["16899-0", "Tahiti", "Tahiti XT", "Malta", "18800-1", "28800-5", "28800-6", "Broadway", "CW16800-A",
-           "CW16800-B", "Cedar", "Cypress", "ES1000", "Flipper", "Hemlock", "Hollywood", "IBM", "Juniper", "M1", "M10",
-           "M11", "M12", "M18", "M22", "M24", "M26", "M28", "M3", "M4", "M52", "M54", "M56", "M58", "M6", "M62", "M64",
-           "M66", "M68", "M7", "M71", "M72", "M74", "M76", "M82", "M86", "M88", "M9", "M9+", "M92", "M93", "M96", "M97",
-           "M98", "Mach32", "Mach64", "Mach64 GT", "Mach64 GT-B", "Mach64 LT", "Mach8", "Madison", "Park", "Pinewood",
-           "R100", "R200", "R250", "R300", "R350", "R360", "R420", "R423", "R430", "R480", "R481", "R520", "R580",
-           "R580+", "R600", "R680", "R700", "RC1000", "RC300", "RC410", "RS100", "RS200", "RS250", "RS300", "RS350",
-           "RS400", "RS480", "RS482", "RS485", "RS600", "RS690", "RS740", "RS780", "RS880", "RV100", "RV200", "RV250",
-           "RV280", "RV350", "RV370", "RV380", "RV410", "RV505", "RV515", "RV516", "RV530", "RV535", "RV560", "RV570",
-           "RV610", "RV620", "RV630", "RV635", "RV670", "RV710", "RV730", "RV740", "RV770", "RV790", "Rage 2", "Rage 3",
-           "Rage 3 Turbo", "Rage 4", "Rage 4 PRO", "Rage 6", "Rage Mobility", "Redwood", "Turks", "Xenos Corona",
-           "Xenos Falcon", "Xenos Jasper", "Xenos Vejle", "Xenos Xenon", "Rage", "Xenos", "CW16800", "16899", "18800",
-           "28800"]
+EOL_AMD = ['Kaver', 'Kaveri', 'Wrestler', 'Arie', 'Cyan', 'Kryptos', 'Garfiel', 'Arlen', 'Pook', 'Anubi', 
+'Fenghuang', 'Arde', 'Renoir', 'VanGogh', 'Rembrandt', 'Rembrand', 'BeaverCreek', 'RV380/M24', 'RV380', 'RV370/M22', 'RS100', 'RS200', 'R300', 'R350', 'RV350', 'RV360', 
+'68800AX', 'R200', 'RS200M', 'SB200', 'Crayola', '215CT', 'Mach64', 'SB300', 'IXP', 'SB600', 'SBx00', 'SB7x0/SB8x0/SB9x0', 'SB8x0/SB9x0', 'SB7x0', 'SB700/SB800/SB900', 
+'SB900', 'RS250', '210888ET', 'XENOS', 'Rage', '3D', 'Xilleon', 'RV250', 'R420', 'RV420/M18', 'R481', 'M1', '264LT', 'RV200/M7', 'RV100/M6', 'RV250/M9', 'Theater', 'R360', 
+'RV350/M10', 'RV360/M12', 'All-In-Wonder', 'R100', 'RV200', 'RV100', 'ES100', 'Mach', 'RV380/M24C', 'R423', 'R480', 'R430', 'RV410/M26', '264VT3', 'RV410', 'RS300', 'RS300M', 
+'RS480', 'RV280', 'RS480/RS482/RS485', 'RX480/RX482', 'RD580', 'RS480M', 'RD790', 'RX780/RX790', 'RD780', 'RS482/RS485', 'RS482M', 'RX780/RD790', 'RD890', 'RD890S/SR5650', 
+'RD9x0/RX980', 'RD890/RD9x0/RX980', 'RD890/RD9x0', 'RD890/RD990', 'RD890S/RD990', 'RC410', 'RS400', 'RS4xx', 'RC4xx/RS4xx', 'RS400M', 'RC410M', 'RV370', 'RV280/M9+', 'R423/M28', 
+'Mars', 'Opal', 'Oland', 'Olan', 'Saturn', 'Bonaire', 'Bonair', 'Tobago', 'Sun', 'Jet', 'Cayman', 'Antilles', 'Blackcomb', 'Barts', 'Whistler', 'Turks', 'Onega', 'Seymour',
+ 'Caico', 'Caicos', 'Tahiti', 'Malta', 'Tahit', 'Hawaii', 'Hawai', 'Vesuvius', 'Ellesmere', 'Baffin', 'Wimbledon', 'Neptune', 'Wimbledo', 'Neptun', 'Pitcairn', 'Curacao', 'Pitcair',
+  'Venus', 'Heathrow', 'Chelsea', 'Cape', 'Thames', 'Lexington', 'Cypress', 'Hemlock', 'Broadway', 'Granville', 'Juniper', 'Madison', 'Pinewood', 'Redwood', 'Redwoo', 'Park', 'Robson', 
+  'Ceda', 'Cedar', 'Topaz', 'Meso', 'Amethyst', 'Tonga', 'Lexa', 'RS200/RS250', 'R520', 'R520/M58', 'RV515', 'RV505', 'RV515/M54', 'RV515/M52', 'RV516', 'RV516/M64', 
+  'RV516/M64-S', 'RV516/M62', 'RV516/M62-CSP64', 'RV516/M64-CSP128', 'RV516/M62-S', 'RV530', 'RV535', 'RV530/M56', 'RV530/M56-P', 'RV530LE', 'RV530/M66', 'RV530/M66-P', 'RV530/M66-XT',
+   'RV550/M71', 'R580+', 'R580', 'RV570', 'RV560', 'Fiji', 'Arcturus', 'Aldebara', 'RS350', 'RS350M', 'RS690', 'RS690/RS740', 'RS690M', 'RS600', 'RS600M', 'RS740', 'R600', 'RV770', 'R700',
+    'RV770/M98L', 'RV770/M98', 'RV770/M98-XT', 'RV790', 'RV730/M96', 'RV730/M96-XT', 'RV730', 'RV730/M96-CSP', 'RV740/M97', 'RV740/M97-XT', 'RV740', 'RV610', 'RV610/M74', 'RV610/M72-S', 'RV670', 
+    'RV670/M88', 'RV670/M88-XT', 'R680', 'RV710', 'RV710/M92', 'RV711/M93', 'RV630', 'RV630/M76', 'RV635/M86', 'RV635', 'RV620', 'RV620/M82', 'RS780', 'RS780C', 'RS780M', 'RS780MC', 'RS780D', 'RS780E', 
+    'RS780L', 'Sumo', 'SuperSumo', 'Sum', 'RS880', 'RS880M', 'Kabini', 'Temash', 'Mullins', 'Mullin', 'Wani', 'Amu', 'Nola', 'Stoney', 'Trinity', 'Richland', 'Bishop', 'Liverpool', 'Starsh', 'Starsha2', 
+    'Gladiu', 'Kingston/Clayton/Jupiter/Gladius/Montego', 'Jupite', 'RV670/680', 'RV710/730', 'Cayman/Antilles', 'Oland/Hainan/Cape', 'Tiran', 'TV']
 
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
@@ -1483,6 +1469,8 @@ def mainpain(TestEnvironment):
 /,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@
     """, flush=True)
     sys.stdout.flush()
+    print("By using this software you agree to its MIT license.")
+    print("This software comes with no warranty as stated in the MIT License.")
     print("\n", flush=True)
     checkBatteryLevel()
     try:
