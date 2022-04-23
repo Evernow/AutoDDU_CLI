@@ -66,7 +66,9 @@ EOL_NVIDIA = ['NV1', 'NV3', 'NV4', 'NV5', 'MCP04', 'NV40', 'NV40GL', 'CK804', 'n
     'MCP89', 'GT216', 'GT216M', 'GT216GL', 'GT216GLM', 'GT218', 'GT218M', 'GT218GL', 'GT218GLM', 'GT215', 'GT215M', 'GT215GLM', 
     'Xavier', 'MCP78U', 'MCP72P' , 'MCP72XE']
 
-KEPLER_NVIDIA = ['GK104', 'GK106', 'GK208', 'GK110', 'GK107', 'GK107M', 'GK107GL', 'GK107GLM', 'GK110B', 'GK110GL', 'GK110BGL', 'GK180GL', 'GK210GL', 'GK104GL', 'GK104M', 'GK104GLM', 'GK106M', 'GK106GL', 'GK106GLM', 'GK208B', 'GK208M', 'GK208BM', 'GK20', 'GK208GLM']
+KEPLER_NVIDIA = ['GK104', 'GK106', 'GK208', 'GK110', 'GK107', 'GK107M', 'GK107GL', 'GK107GLM', 'GK110B',
+                 'GK110GL', 'GK110BGL', 'GK180GL', 'GK210GL', 'GK104GL', 'GK104M', 'GK104GLM', 'GK106M', 
+                 'GK106GL', 'GK106GLM', 'GK208B', 'GK208M', 'GK208BM', 'GK20', 'GK208GLM']
 
 Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
 
@@ -575,7 +577,10 @@ def PCIID(vendor, device):
     with urllib.request.urlopen(
             "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json") as url:
         data = json.loads(url.read().decode())
-        return data[vendor]['devices'][device]['name']
+        try:
+            return data[vendor]['devices'][device]['name']
+        except KeyError:
+            return None
 
 
 def logger(log):
@@ -792,6 +797,8 @@ def getgpuinfos():
                 # Us assuming a ven and dev ID is 4 characters long is a safe one: https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
                 Arch = PCIID(gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8],
                              gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8])
+                if Arch == None:
+                    return None
                 if '[' in Arch and ']' in Arch:
                     logger("Got more accurate name from PCI-IDS")
                     name = Arch[Arch.find('[')+1:Arch.find(']')]
@@ -809,6 +816,8 @@ todays_date = date.today().year
 
 
 def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Device_ID]
+    if parsed_gpus == None:
+        return None
     gpu_dictionary = dict()  # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer]
     logger("Working in getsupportstatus with this wmi output: ")
     for gpu in parsed_gpus:
@@ -904,6 +913,9 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
 # supportstatus = 0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL
 # [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT, supportstatus, professional/consumer] 
 def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU drivers to downloaded
+    if getgpus == None:
+        performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
+        return 0, performing_DDU_on, None
 
     # WIP to prevent different driver branches being installed (like R470 and R510 or R510 prof and R510 consumer)
     Consumer = 0
