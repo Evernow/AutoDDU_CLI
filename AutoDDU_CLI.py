@@ -234,7 +234,7 @@ when asked.""")
 def suspendbitlocker():
     try:
         p = str(subprocess.Popen(
-            "Suspend-BitLocker -MountPoint 'C:' -RebootCount 3",
+            "powershell.exe Suspend-BitLocker -MountPoint 'C:' -RebootCount 3",
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
         logger("Suspended bitlocker with output " + str(p))
     except:
