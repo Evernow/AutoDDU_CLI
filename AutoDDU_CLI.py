@@ -1573,10 +1573,8 @@ def mainpain(TestEnvironment):
 /@@%/(...((%#     .(///((               ,(#.............,///,&.%**..#.//,....*//
 @#(*..*%((,  %                       *#............,///////&%////*..#,//....///*
 .*/(&//(%,    #/,               .#(........,**///////%/,&(///////*..#*//,..////&
-/,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@
-    """, flush=True)
+/,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@""", flush=True)
     sys.stdout.flush()
-    print("By using this software you agree to its MIT license.")
     print("This software comes with no warranty as stated in the MIT License.")
     print("Copyright (c) 2022-present Daniel Suarez")
     print("\n", flush=True)
