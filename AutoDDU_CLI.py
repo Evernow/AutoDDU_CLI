@@ -185,8 +185,9 @@ def get_latest_geforce_driver(dev_id):
 
 
 
-def FindOutOfBranchDriver():
-    drv = get_latest_geforce_driver(['1BE0_10DE'])
+def FindOutOfBranchDriver(vendorid_deviceid):
+    # '1BE0_10DE'
+    drv = get_latest_geforce_driver([vendorid_deviceid])
     if drv is None:
         return None
 
@@ -875,14 +876,13 @@ def getgpuinfos():
                 # Us assuming a ven and dev ID is 4 characters long is a safe one: https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
                 Arch = PCIID(gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8],
                              gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8])
-                if Arch == None:
-                    return None
-                if '[' in Arch and ']' in Arch:
+                if Arch != None and '[' in Arch and ']' in Arch:
                     logger("Got more accurate name from PCI-IDS")
                     name = Arch[Arch.find('[')+1:Arch.find(']')]
                 else:
                     logger("Depending on Windows giving us correct GPU name")
-                Arch = Arch[:Arch.find(' ')]
+                if Arch != None:
+                    Arch = Arch[:Arch.find(' ')]
                 Vendor_ID = gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8]
                 Device_ID = gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8]
                 gpu_dictionary[name] = [Arch, Vendor_ID, Device_ID]
@@ -894,8 +894,6 @@ todays_date = date.today().year
 
 
 def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Device_ID]
-    if parsed_gpus == None:
-        return None
     gpu_dictionary = dict()  # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer]
     logger("Working in getsupportstatus with this wmi output: ")
     for gpu in parsed_gpus:
@@ -918,7 +916,7 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
         if Vendor_ID == '1002':  # AMD
             logger("Got AMD GPU")
             for possibility in EOL_AMD:
-                if Arch in possibility:
+                if  Arch != None and Arch in possibility:
                     logger("Got EOL AMD GPU with code " + Arch)
                     supportstatus = 4
             if supportstatus != 4:
@@ -927,7 +925,7 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
             Consumer_or_Professional = "Consumer"  # There are professional AMD GPUs but are EXTREMELY rare and I haven't built a driver search for them, nor intend to.
 
         if Vendor_ID == '10de':  # NVIDIA
-            logger("Got NVIDIA GPU with code " + Arch)
+            logger("Got NVIDIA GPU with code " + str(Arch))
 
             # Check if professional or consumer
             for seeifprof in Professional_NVIDIA_GPU:
@@ -945,11 +943,11 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
                 Consumer_or_Professional = "Consumer"
             # Nightmare begins
             for possibility in EOL_NVIDIA:
-                if Arch in possibility:
+                if Arch != None and Arch in possibility:
                     logger("Got EOL NVIDIA")
                     supportstatus = 4  # EOL
             for possibility in FERMI_NVIDIA:
-                if Arch in possibility:
+                if Arch != None and Arch in possibility:
                     logger("Got NVIDIA FERMI")
                     for _ in Professional_NVIDIA_GPU:
 
@@ -960,7 +958,7 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
                         logger("Got consumer fermi")
                         supportstatus = 4  # EOL
             for possibility in KEPLER_NVIDIA:
-                if Arch in possibility:
+                if Arch != None and Arch in possibility:
                     logger("Got Kepler")
                     if "M" in name.upper():
                         logger("Got laptop kepler (main)")
@@ -991,9 +989,10 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
 # supportstatus = 0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL
 # [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT, supportstatus, professional/consumer] 
 def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU drivers to downloaded
-    if getgpus == None:
-        performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
-        return 0, performing_DDU_on, None
+
+    # if getgpus == None:
+    #     performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
+    #     return 0, performing_DDU_on, None
 
     # WIP to prevent different driver branches being installed (like R470 and R510 or R510 prof and R510 consumer)
     Consumer = 0
@@ -1017,6 +1016,7 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     NVIDIA_R390 = data_nvidia["r390"]["link"]
     NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
+    NVIDIA_Supported_Products = data_nvidia["consumer"]["SupportedGPUs"] + data_nvidia["professional"]["SupportedGPUs"] + data_nvidia["datacenter"]["SupportedGPUs"] + data_nvidia["datacenter_kepler"]["SupportedGPUs"] + data_nvidia["r390"]["SupportedGPUs"] + data_nvidia["r470_consumer"]["SupportedGPUs"] + data_nvidia["r470_professional"]["SupportedGPUs"]
     # AMD driver source loading
 
     with urllib.request.urlopen(
@@ -1038,17 +1038,34 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
         name = gpu
         gpu = dict_of_GPUS[gpu]
         # print(gpu)
+        if (gpu[2] == None or gpu[1].upper() not in NVIDIA_Supported_Products) and gpu[0] == '10de' :
+            try:
+                vendorid_deviceid = gpu[1].upper() + "_" + gpu[0].upper()
+                possibledriver = FindOutOfBranchDriver(vendorid_deviceid)
+                if possibledriver != None:
+                    performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
+                    drivers_to_download.append(possibledriver) 
+                    continue
+                else:
+                    performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
+                    return 0, performing_DDU_on, None
+            except:
+                performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
+                return 0, performing_DDU_on, None
+        elif gpu[2] == None:
+            performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
+            return 0, performing_DDU_on, None
         if gpu[-2] == 4:  # EOL
             performing_DDU_on = "Cannot perform DDU due to the following incompatible GPU found: \n"
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
+            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
             return 0, performing_DDU_on, None
         if gpu[-2] == 3:  # fermiprof
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
+            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
             drivers_to_download.append(NVIDIA_R390)
             Fermi += 1
         if gpu[-2] == 2:  # Kepler
             if gpu[-1] == "Consumer":
-                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
+                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
                 if NVIDIA_R470_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                     drivers_to_download.append(NVIDIA_R470_Consumer)
                 Kepler += 1
@@ -1057,14 +1074,14 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                 if NVIDIA_Datacenter_Kepler not in drivers_to_download:
                     drivers_to_download.append(NVIDIA_Datacenter_Kepler)
             else:  # Professional.. probably (edge cases, TODO)
-                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
+                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
                 if NVIDIA_R470_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
                     drivers_to_download.append(NVIDIA_R470_Professional)
                 Kepler += 1
                 Professional += 1
         if gpu[-2] == 1:  # Supported
             # print("test")
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=gpu[2])
+            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
             if gpu[0] == '10de':  # NVIDIA
                 if gpu[-1] == 'Professional':
                     if NVIDIA_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
@@ -1076,7 +1093,7 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
                         Professional += 1
                 else:
                     if NVIDIA_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                        if obtainsetting("nvidiastudio") == 1 and ("GK" not in gpu[2] and "GM" not in gpu[2]): # Unlike normal driver, Studio only supports Pascal and above
+                        if obtainsetting("nvidiastudio") == 1 and ("GK" not in str(gpu[2]) and "GM" not in str(gpu[2])): # Unlike normal driver, Studio only supports Pascal and above
                             drivers_to_download.append(NVIDIA_Consumer_Studio)
                         else:
                             drivers_to_download.append(NVIDIA_Consumer)
