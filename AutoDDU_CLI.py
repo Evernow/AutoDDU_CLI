@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.0.6"
+Version_of_AutoDDU_CLI = "0.0.7"
 import json
 import os
 import platform
@@ -10,7 +10,6 @@ import traceback
 import urllib.request
 # import wexpect
 import zipfile
-# Default settings
 from datetime import datetime, timezone, date
 from subprocess import CREATE_NEW_CONSOLE
 
@@ -26,6 +25,10 @@ from win32api import CloseHandle, GetLastError
 from winerror import ERROR_ALREADY_EXISTS
 import webbrowser
 import psutil
+import urllib.error
+import posixpath
+import codecs
+
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
@@ -116,6 +119,81 @@ yourself manually.
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
+
+
+def serialize_req(obj):
+    return json.dumps(obj, separators=(',', ':'))
+
+
+def getDispDrvrByDevid(query_obj, timeout=10):
+    ENDPOINT = 'https://gfwsl.geforce.com/nvidia_web_services/' \
+        'controller.gfeclientcontent.NG.php/' \
+        'com.nvidia.services.GFEClientContent_NG.getDispDrvrByDevid'
+    url = posixpath.join(ENDPOINT, serialize_req(query_obj))
+    http_req = urllib.request.Request(
+        url,
+        data=None,
+        headers={
+            'User-Agent': 'NvBackend/36.0.0.0'
+        }
+    )
+    with urllib.request.urlopen(http_req, None, timeout) as resp:
+        coding = resp.headers.get_content_charset()
+        coding = coding if coding is not None else 'utf-8-sig'
+        decoder = codecs.getreader(coding)(resp)
+        res = json.load(decoder)
+    return res
+
+
+def get_latest_geforce_driver(dev_id):
+
+    notebook=False
+    x86_64=True
+    os_version="10.0"
+    os_build="19044"
+    language=1033
+    beta=False
+    dch=True
+    crd=False
+    timeout=10
+    query_obj = {
+        "dIDa": dev_id,                   # Device PCI IDs:
+                                          # ["DEVID_VENID_DEVID_VENID"]
+        "osC": os_version,                # OS version (Windows 10)
+        "osB": os_build,                  # OS build
+        "is6": "1" if x86_64 else "0",    # 0 - 32bit, 1 - 64bit
+        "lg": str(language),              # Language code
+        "iLp": "1" if notebook else "0",  # System Is Laptop
+        "prvMd": "0",                     # Private Model?
+        "gcV": "3.25.1.27",               # GeForce Experience client version
+        "gIsB": "1" if beta else "0",     # Beta?
+        "dch": "1" if dch else "0",       # 0 - Standard Driver, 1 - DCH Driver
+        "upCRD": "1" if crd else "0",     # Searched driver: 0 - GameReady Driver, 1 - CreatorReady Driver
+        "isCRD": "1" if crd else "0",     # Installed driver: 0 - GameReady Driver, 1 - CreatorReady Driver
+    }
+    print(query_obj)
+    try:
+        res = getDispDrvrByDevid(query_obj, timeout)
+    except urllib.error.HTTPError as e:
+        print(e)
+        if e.code == 404:
+            res = None
+        else:
+            raise e
+    return res
+
+
+
+
+def FindOutOfBranchDriver():
+    drv = get_latest_geforce_driver(['1BE0_10DE'])
+    if drv is None:
+        return None
+
+    else:
+        return drv['DriverAttributes']['DownloadURLAdmin']
+
+
 
 def checkifvaliddownload(url):
    logger("Checking if custom URL {} is valid".format(str(url)))
