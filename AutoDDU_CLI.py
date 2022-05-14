@@ -214,6 +214,7 @@ def checkifvaliddownload(url):
     return False
 
 
+
 def checkBatteryLevel():
     try:
         if psutil.sensors_battery() != None and int(psutil.sensors_battery().percent) < 40 and psutil.sensors_battery().power_plugged == False:
@@ -1228,6 +1229,12 @@ def download_drivers(list_to_download):
         download_helper(url, os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\", fileextension))
 
 
+def exists(path):
+    r = requests.head(path)
+    return r.status_code == requests.codes.ok
+
+
+
 def ddu_download():
     if os.path.exists(ddu_extracted_path) and os.path.isdir(ddu_extracted_path):
         shutil.rmtree(ddu_extracted_path)
@@ -1249,13 +1256,9 @@ def ddu_download():
             Latest_DDU_Version_Raw = DDU_Version_Candidate[
                                      DDU_Version_Candidate.find('("') + 2:DDU_Version_Candidate.find('")')]
     logger("Almost done with simple DDU search")
-    try:
-        download_helper(
-            'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
-            ddu_zip_path
-        )
-        logger("Finished DDU search")
-    except:  # Normal error checking would not catch the error that would occur here.
+    countofloop = 0
+    
+    while not exists('https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe'):  # Normal error checking would not catch the error that would occur here.
         # You don't really need to understand this, basically
         # I have been looking at commit history, and there are instances where
         # he updates the github repos with a new version but doesn't make a release
@@ -1268,6 +1271,7 @@ def ddu_download():
 
         # Doesn't work for all cases (and I don't think it's possible for it to do so)
         # but it works 99.99% of the time.
+        logger("Landed in complicated DDU search with number " + str(Latest_DDU_Version_Raw))
         logger("Trying complicated DDU search")
         nums = Latest_DDU_Version_Raw.split(".")
 
@@ -1284,20 +1288,15 @@ def ddu_download():
 
         Latest_DDU_Version_Raw = '.'.join(nums)
         logger("Almost finished with complicated DDU search....")
-        try:
+        countofloop += 1
+        if countofloop > 5:
+            raise ValueError('Unable to find DDU version after 5 tries.')
+        time.sleep(2)
 
-            download_helper(
-                'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
-                ddu_zip_path)
-            logger("Finished with complicated DDU search....")
-        except Exception as f:
-            logger("Failed complicated DDU search with error " + str(f))
-            print(
-                'DDU Download failed! Check your internet connection, if it works please contact Evernow and share with him this error:')
-            print(f)
-            while True:
-                time.sleep(5)
-
+    download_helper(
+            'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
+            ddu_zip_path
+        )
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
