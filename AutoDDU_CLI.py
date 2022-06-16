@@ -774,7 +774,7 @@ def workaroundwindowsissues():
         logger("In Safemode while working around windows issues, falling back to Default folder copying method")
         try:
             time.sleep(0.5)
-            shutil.copyfile(sys.executable, os.path.join(Users_directory, "Desktop","Default", "AutoDDU_CLI.exe"))
+            shutil.copyfile(sys.executable, os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
             logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
@@ -787,7 +787,7 @@ def workaroundwindowsissues():
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                            os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
+                            os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
