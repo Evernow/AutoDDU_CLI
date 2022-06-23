@@ -120,6 +120,9 @@ yourself manually.
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
+# Suggestion by Arron to bypass fucked PATH environment variable
+powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
 
 def serialize_req(obj):
     return json.dumps(obj, separators=(',', ':'))
@@ -314,7 +317,7 @@ when asked.""")
 def suspendbitlocker():
     try:
         p = str(subprocess.Popen(
-            "powershell.exe Suspend-BitLocker -MountPoint 'C:' -RebootCount 3",
+            "{powershell} Suspend-BitLocker -MountPoint 'C:' -RebootCount 3".format(powershell=powershelldirectory),
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
         logger("Suspended bitlocker with output " + str(p))
     except:
@@ -1399,31 +1402,31 @@ def uptodate():
 def disable_clocking():
     try:
         subprocess.call(
-            'powershell.exe  Unregister-ScheduledTask -TaskName "MSIAfterburner" -Confirm:$false',
+            '{powershell}  Unregister-ScheduledTask -TaskName "MSIAfterburner" -Confirm:$false'.format(powershell=powershelldirectory),
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'powershell.exe  Remove-Item -Path HKLM:\SYSTEM\CurrentControlSet\Services\RTCore64',
+            r'{powershell}  Remove-Item -Path HKLM:\SYSTEM\CurrentControlSet\Services\RTCore64'.format(powershell=powershelldirectory),
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'powershell.exe Unregister-ScheduledTask -TaskName "EVGAPrecisionX" -Confirm:$false',
+            r'{powershell} Unregister-ScheduledTask -TaskName "EVGAPrecisionX" -Confirm:$false'.format(powershell=powershelldirectory),
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'powershell.exe Unregister-ScheduledTask -TaskName "GPU Tweak II" -Confirm:$false',
+            r'{powershell} Unregister-ScheduledTask -TaskName "GPU Tweak II" -Confirm:$false'.format(powershell=powershelldirectory),
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'powershell.exe Unregister-ScheduledTask -TaskName "Launcher GIGABYTE AORUS GRAPHICS ENGINE" -Confirm:$false',
+            r'{powershell} Unregister-ScheduledTask -TaskName "Launcher GIGABYTE AORUS GRAPHICS ENGINE" -Confirm:$false'.format(powershell=powershelldirectory),
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
@@ -1791,7 +1794,7 @@ Will restart in 15 seconds.
             possible_error = ""
             try:
                 possible_error = subprocess.Popen(
-                    'powershell.exe Remove-LocalUser -Name "{profile}"'.format(profile=obtainsetting("ProfileUsed")),
+                    '{powershell} Remove-LocalUser -Name "{profile}"'.format(profile=obtainsetting("ProfileUsed"),powershell=powershelldirectory),
                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                     creationflags=CREATE_NEW_CONSOLE).communicate()
             except:
