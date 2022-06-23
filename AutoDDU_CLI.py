@@ -81,24 +81,6 @@ Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"]
 Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
                       "740A"]  # Kepler laptops GPUs with no M in the name.
 
-EOL_AMD = ['Kaver', 'Kaveri', 'Wrestler', 'Arie', 'Cyan', 'Kryptos', 'Garfiel', 'Arlen', 'Pook', 'Anubi', 
-'Fenghuang', 'Arde', 'Renoir', 'VanGogh', 'Rembrandt', 'Rembrand', 'BeaverCreek', 'RV380/M24', 'RV380', 'RV370/M22', 'RS100', 'RS200', 'R300', 'R350', 'RV350', 'RV360', 
-'68800AX', 'R200', 'RS200M', 'SB200', 'Crayola', '215CT', 'Mach64', 'SB300', 'IXP', 'SB600', 'SBx00', 'SB7x0/SB8x0/SB9x0', 'SB8x0/SB9x0', 'SB7x0', 'SB700/SB800/SB900', 
-'SB900', 'RS250', '210888ET', 'XENOS', 'Rage', '3D', 'Xilleon', 'RV250', 'R420', 'RV420/M18', 'R481', 'M1', '264LT', 'RV200/M7', 'RV100/M6', 'RV250/M9', 'Theater', 'R360', 
-'RV350/M10', 'RV360/M12', 'All-In-Wonder', 'R100', 'RV200', 'RV100', 'ES100', 'Mach', 'RV380/M24C', 'R423', 'R480', 'R430', 'RV410/M26', '264VT3', 'RV410', 'RS300', 'RS300M', 
-'RS480', 'RV280', 'RS480/RS482/RS485', 'RX480/RX482', 'RD580', 'RS480M', 'RD790', 'RX780/RX790', 'RD780', 'RS482/RS485', 'RS482M', 'RX780/RD790', 'RD890', 'RD890S/SR5650', 
-'RD9x0/RX980', 'RD890/RD9x0/RX980', 'RD890/RD9x0', 'RD890/RD990', 'RD890S/RD990', 'RC410', 'RS400', 'RS4xx', 'RC4xx/RS4xx', 'RS400M', 'RC410M', 'RV370', 'RV280/M9+', 'R423/M28', 
-'Mars', 'Opal', 'Oland', 'Olan', 'Saturn', 'Bonaire', 'Bonair', 'Tobago', 'Sun', 'Jet', 'Cayman', 'Antilles', 'Blackcomb', 'Barts', 'Whistler', 'Turks', 'Onega', 'Seymour',
- 'Caico', 'Caicos', 'Tahiti', 'Malta', 'Tahit', 'Hawaii', 'Hawai', 'Vesuvius', 'Ellesmere', 'Baffin', 'Wimbledon', 'Neptune', 'Wimbledo', 'Neptun', 'Pitcairn', 'Curacao', 'Pitcair',
-  'Venus', 'Heathrow', 'Chelsea', 'Cape', 'Thames', 'Lexington', 'Cypress', 'Hemlock', 'Broadway', 'Granville', 'Juniper', 'Madison', 'Pinewood', 'Redwood', 'Redwoo', 'Park', 'Robson', 
-  'Ceda', 'Cedar', 'Topaz', 'Meso', 'Amethyst', 'Tonga', 'Lexa', 'RS200/RS250', 'R520', 'R520/M58', 'RV515', 'RV505', 'RV515/M54', 'RV515/M52', 'RV516', 'RV516/M64', 
-  'RV516/M64-S', 'RV516/M62', 'RV516/M62-CSP64', 'RV516/M64-CSP128', 'RV516/M62-S', 'RV530', 'RV535', 'RV530/M56', 'RV530/M56-P', 'RV530LE', 'RV530/M66', 'RV530/M66-P', 'RV530/M66-XT',
-   'RV550/M71', 'R580+', 'R580', 'RV570', 'RV560', 'Fiji', 'Arcturus', 'Aldebara', 'RS350', 'RS350M', 'RS690', 'RS690/RS740', 'RS690M', 'RS600', 'RS600M', 'RS740', 'R600', 'RV770', 'R700',
-    'RV770/M98L', 'RV770/M98', 'RV770/M98-XT', 'RV790', 'RV730/M96', 'RV730/M96-XT', 'RV730', 'RV730/M96-CSP', 'RV740/M97', 'RV740/M97-XT', 'RV740', 'RV610', 'RV610/M74', 'RV610/M72-S', 'RV670', 
-    'RV670/M88', 'RV670/M88-XT', 'R680', 'RV710', 'RV710/M92', 'RV711/M93', 'RV630', 'RV630/M76', 'RV635/M86', 'RV635', 'RV620', 'RV620/M82', 'RS780', 'RS780C', 'RS780M', 'RS780MC', 'RS780D', 'RS780E', 
-    'RS780L', 'Sumo', 'SuperSumo', 'Sum', 'RS880', 'RS880M', 'Kabini', 'Temash', 'Mullins', 'Mullin', 'Wani', 'Amu', 'Nola', 'Stoney', 'Trinity', 'Richland', 'Bishop', 'Liverpool', 'Starsh', 'Starsha2', 
-    'Gladiu', 'Kingston/Clayton/Jupiter/Gladius/Montego', 'Jupite', 'RV670/680', 'RV710/730', 'Cayman/Antilles', 'Oland/Hainan/Cape', 'Tiran', 'TV']
-
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
    software.
@@ -919,10 +901,12 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
             Consumer_or_Professional = "Consumer"
         if Vendor_ID == '1002':  # AMD
             logger("Got AMD GPU")
-            for possibility in EOL_AMD:
-                if  Arch != None and Arch in possibility:
-                    logger("Got EOL AMD GPU with code " + Arch)
-                    supportstatus = 4
+            with urllib.request.urlopen("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
+                supported_amd = json.loads(url.read().decode())
+                supported_amd = supported_amd["consumer"]["SupportedGPUs"] + supported_amd["professional"]["SupportedGPUs"]
+            if Arch != None and Device_ID.upper() not in supported_amd:
+                logger("Got EOL AMD GPU with code " + Arch)
+                supportstatus = 4
             if supportstatus != 4:
                 logger("Got Supported AMD GPU with code " + Arch)
                 supportstatus = 1
