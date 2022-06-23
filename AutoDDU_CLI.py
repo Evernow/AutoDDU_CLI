@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.0.7"
+Version_of_AutoDDU_CLI = "0.0.8"
 import json
 import os
 import platform
@@ -1855,7 +1855,7 @@ Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
             enable_internet(True)
-            cleanup()  # TODO: Very basic, does not fully cleanup (DDU user folder remains, our executable remains... but everything that occupies space is gone)
+            cleanup()
             changepersistent(0)
             if obtainsetting("startedinsafemode") == 1:
                 os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
