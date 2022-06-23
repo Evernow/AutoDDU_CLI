@@ -1312,24 +1312,11 @@ def ddu_download():
 
 
 def latest_windows_version(majorversion):
-    download_helper("https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1",
-                    os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1"))
-    p = str(subprocess.Popen(
-        "powershell.exe -ExecutionPolicy Bypass -file {directorytofido} -Win {version} -Rel List".format(
-            version=majorversion, directorytofido=os.path.join(Appdata_AutoDDU_CLI, "Fido.ps1")),
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
-    # p = str(subprocess.Popen('powershell.exe -ExecutionPolicy RemoteSigned -file "C:\\Users\\Daniel\\Videos\\Ps7\ps7\\Fido.ps1" -Win 7 -Rel List', stdout=sys.stdout, shell=True).communicate())
-    logger("Got following output from FIDO " + str(p))
-    dictionarytest = {}
-    for release in p.split('\\n'):
-        release = release.replace('build', 'Build')
-        if "Build" in release:
-            logger("Parsing this line into the release dictionary: " + release)
-            dictionarytest[release[3:release.index("(Build") - 1]] = \
-                release[release.index("(Build") + 7:release.rfind("-", release.index("(Build"))].split(".", 1)[0]
+    with urllib.request.urlopen(
+            "https://github.com/24HourSupport/CommonSoftware/raw/main/WindowsReleases.json") as url:
+        WindowsReleases = json.loads(url.read().decode())
 
-    logger("Working with this finished dictionary: " + str(dictionarytest))
-    return list(dictionarytest.values())[0]
+    return max(WindowsReleases[majorversion])
 
 
 def uptodate():
@@ -1402,6 +1389,8 @@ def uptodate():
     elif "11" in current_major_version: # No update assistant for W11 yet afaik
         print("Windows already up to date")
         changepersistent(1)
+    elif int(platform.version().split('.')[2]) > latest_windows_version("10"):
+        logger("No idea what version of Windows it is but is later than latest Windows with " + str(platform.version().split('.')[2]))
     else:
         print("Something catastrophically went wrong. Cannot detect Windows version.")
         while True:
