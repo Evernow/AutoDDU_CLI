@@ -1553,6 +1553,7 @@ def mainpain(TestEnvironment):
     print("This software comes with no warranty as stated in the MIT License.")
     print("Copyright (c) 2022-present Daniel Suarez")
     print("\n", flush=True)
+    print(str(log_file_location))
     checkBatteryLevel()
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
