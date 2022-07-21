@@ -13,6 +13,6 @@ List_of_tests = [
 
 for test in List_of_tests:
     try:
-        mainpain(test)
+        print(mainpain(test))
     except:
         raise Exception("I am at the end of my rope")
