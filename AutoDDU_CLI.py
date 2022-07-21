@@ -351,7 +351,7 @@ class singleinstance:
         if self.mutex:
             CloseHandle(self.mutex)
 
-def accountforoldcontinues():
+def accountforoldcontinues(num):
     if os.path.exists(Persistent_File_location):
         if abs(int(time.time()) - os.path.getmtime(Persistent_File_location)) > 86400:
             try:
@@ -359,6 +359,8 @@ def accountforoldcontinues():
                 os.remove(AutoDDU_CLI_Settings)
                 logger("Deleted persistent file in 24hrs check")
             except:
+                if num == 1:
+                    raise Exception("Failure in accountforoldcontinues")
                 print("""
 Warning: Saw this session is continuing after over
 24 hours. This is possibily a bug.
@@ -1510,9 +1512,11 @@ def mainpain(TestEnvironment):
         pass
     if len(TestEnvironment) == 0:
         os.system('mode con: cols=80 lines=40')
-    kernel32 = ctypes.windll.kernel32
-    kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), (0x4|0x80|0x20|0x2|0x10|0x1|0x00|0x100))
-    accountforoldcontinues()
+        kernel32 = ctypes.windll.kernel32
+        kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), (0x4|0x80|0x20|0x2|0x10|0x1|0x00|0x100))
+        accountforoldcontinues(0)
+    else:
+        accountforoldcontinues(1)
     myapp = singleinstance()
     print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1594,20 +1598,6 @@ Please have at least 20GB of free space in C: drive.
                     while True:
                         time.sleep(1)
 
-#             if not time_checker() and obtainsetting("disabletimecheck") == 0:
-#                 try:
-#                     print("""
-# Fatal error:
-# Your system clock is either incorrect or 
-# your system is blocking critical domains to determine
-# the correct time. """)
-#                     while True:
-#                         pass
-#                 except:
-#                     print("NOTE: TIME CHECK FAILED. ISSUES MAY ARISE LATER. LOGS RECORDED.")
-#                     logger(str(traceback.format_exc()))
-#                     time.sleep(5)
-
             print("This process will attempt to perform DDU automatically.", flush=True)
             time.sleep(1)
             mainshit = ""
@@ -1675,11 +1665,13 @@ without warning.
             elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
                 download_drivers(mainshit[2])
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
-                uptodate()
+                if len(TestEnvironment) == 0:
+                    uptodate()
             changepersistent(1)
         if getpersistent() == 1:
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
-                uptodate()
+                if len(TestEnvironment) == 0:
+                    uptodate()
             BackupProfile()
             ddu_download()
             print(
@@ -1734,7 +1726,8 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             makepersist()
-            enable_internet(False)
+            if len(TestEnvironment) == 0:
+                enable_internet(False)
             changepersistent(2)
             autologin()
             if len(TestEnvironment) == 0:
@@ -1759,6 +1752,11 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                     print(traceback.format_exc(), flush=True)
                     while True:
                         time.sleep(1)
+            else:
+                try:
+                    DDUexeDirectory = os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'))
+                except:
+                    return("DDU file missing")
             print("DDU has been ran!", flush=True)
             cleanupAutoLogin()
             print(r"""
@@ -1829,7 +1827,8 @@ and then turn on your internet.
                 if intel == 1:
                     print("Intel driver needed, will turn on internet (needed for installer), please wait a bit",
                           flush=True)
-                    enable_internet(True)
+                    if len(TestEnvironment) == 0:
+                        enable_internet(True)
                     time.sleep(10)
                     if os.path.exists(os.path.join(PROGRAM_FILESX86,"Intel", "Driver and Support Assistant")):
                         print("Your Intel GPU driver will be pushed in by Windows Updates after this exists, we're done here")
@@ -1855,7 +1854,8 @@ Due to no drivers being detected, our work is done.
 Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
-            enable_internet(True)
+            if len(TestEnvironment) == 0:
+                enable_internet(True)
             cleanup()
             changepersistent(0)
             if obtainsetting("startedinsafemode") == 1:
