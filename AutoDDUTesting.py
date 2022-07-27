@@ -1,5 +1,6 @@
 import urllib.request
 import requests
+import json
 # NVIDIA driver source loading
 with urllib.request.urlopen(
         "https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json") as url:
@@ -30,6 +31,9 @@ Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].re
 # [{'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}, []]
 #                   GPU infos                           , 
 
+import subprocess
+subprocess.run('pip install tqdm',shell=True)
+
 def download_helper(url, fname):
     from tqdm.auto import tqdm
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
@@ -46,9 +50,12 @@ def download_helper(url, fname):
             size = file.write(data)
             bar.update(size)
 
-download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/AutoDDU_CLI.py", "AutoDDU_CLI.py")
+download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/AutoDDU_CLI.py", "AutoDDU_CLI.py")
+download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/requirements.txt", "requirements.txt")
+subprocess.run('pip install -r requirements.txt',shell=True)
 
 from AutoDDU_CLI import mainpain
+import requests
 
 
 List_of_tests = [
