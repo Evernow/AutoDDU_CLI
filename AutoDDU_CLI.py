@@ -105,6 +105,33 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def CheckIfBackupAccountExists():
+    userprofiles = list()
+    for group in wmi.WMI().Win32_UserAccount():
+        userprofiles.append(group.Caption.replace((group.Domain + '\\'), ''))
+    if 'BackupDDUProfile' in userprofiles:
+        return True
+
+def BackupLocalAccount():
+    # Prevents a situation where the user has an MS Account on W11 Home
+    # And they cannot log back in after DDU (where DDU profile no longer exists)
+    # Due to MS requiring an internet connection.
+    if CheckIfBackupAccountExists == False:
+        firstcommand = "net user /add BackupDDUProfile"
+        secondcommand = "net localgroup {administrators} BackupDDUProfile /add".format(administrators=AdminGroupName())
+        subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(secondcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+
+
+def AdminGroupName():
+    # This exists because german localizes group names, so administrator is not the name of the admin group
+    # in german.
+    for group in wmi.WMI().Win32_Group(): # https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-group
+        if group.SID == 'S-1-5-32-544': # https://docs.microsoft.com/en-US/windows/security/identity-protection/access-control/security-identifiers
+            adminname = group.Caption.replace((group.Domain + '\\'), '') 
+    return(adminname)
+
 
 def serialize_req(obj):
     return json.dumps(obj, separators=(',', ':'))
@@ -678,7 +705,7 @@ def cleanup():
                 try:
                     subprocess.call('takeown /R /A /F "{}" /D N'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     time.sleep(1)
-                    subprocess.call('icacls "{}" /grant Administrators:F /T /C'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                    subprocess.call('icacls "{Profile}" /grant {Administrators}:F /T /C'.format(Profile=os.path.join(Users_directory, obtainsetting("ProfileUsed")), Administrators=AdminGroupName()), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     time.sleep(1)
                     subprocess.call('rmdir /S /Q "{}"'.format(os.path.join(Users_directory, obtainsetting("ProfileUsed"))), shell=True, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                     logger("Deleted {} folder".format(obtainsetting("ProfileUsed")))
@@ -690,6 +717,13 @@ def cleanup():
                 logger("Was going to delete used {} profile but was logged in as user somehow".format(obtainsetting("ProfileUsed")))
         else:
             logger("Was going to delete used {} profile but was older than 4 hours".format(obtainsetting("ProfileUsed")))
+    try:
+        possible_error = subprocess.Popen(
+                    '{powershell} Remove-LocalUser -Name "{profile}"'.format(profile='BackupDDUProfile',powershell=powershelldirectory),
+                    shell=True, check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    creationflags=CREATE_NEW_CONSOLE).communicate()
+    except:
+        logger(str(possible_error))
 
     logger("Exited cleanup()")
 
@@ -1164,7 +1198,7 @@ def BackupProfile():
             while True:
                 time.sleep(1)
         firstcommand = "net user /add {profile}".format(profile=obtainsetting("ProfileUsed"))
-        secondcommand = "net localgroup administrators {profile} /add".format(profile=obtainsetting("ProfileUsed"))
+        secondcommand = "net localgroup {administrators} {profile} /add".format(profile=obtainsetting("ProfileUsed"),administrators=AdminGroupName())
         subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         logger("Running command to add created to user to administrators")
         subprocess.run(secondcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -1726,6 +1760,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             makepersist()
+            BackupLocalAccount()
             if len(TestEnvironment) == 0:
                 enable_internet(False)
             changepersistent(2)
