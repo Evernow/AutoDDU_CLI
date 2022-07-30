@@ -1762,7 +1762,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             print("May seem frozen for a bit, do not worry, we're working in the background.")
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             makepersist()
-            BackupLocalAccount()
+           # BackupLocalAccount()
             if len(TestEnvironment) == 0:
                 enable_internet(False)
             changepersistent(2)
