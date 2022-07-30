@@ -111,6 +111,8 @@ def CheckIfBackupAccountExists():
         userprofiles.append(group.Caption.replace((group.Domain + '\\'), ''))
     if 'BackupDDUProfile' in userprofiles:
         return True
+    else:
+        return False
 
 def BackupLocalAccount():
     # Prevents a situation where the user has an MS Account on W11 Home
