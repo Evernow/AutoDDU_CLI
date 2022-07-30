@@ -67,6 +67,7 @@ List_of_tests = [
 ]
 
 for test in List_of_tests:
+    print(test)
     try:
         result = (mainpain(test))
         if type(result) == str:

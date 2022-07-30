@@ -1533,7 +1533,7 @@ def enable_internet(enable):
 #                   GPU infos                           , 
 def mainpain(TestEnvironment):
 
-
+    print(TestEnvironment)
     # Wine Easter Egg
     try: # Tries to open key only present when running under Wine
         aKey = winreg.OpenKey(winreg.ConnectRegistry(None,winreg.HKEY_CURRENT_USER), r"Software\Wine", 0, winreg.KEY_READ)
