@@ -118,7 +118,7 @@ def BackupLocalAccount():
     # Prevents a situation where the user has an MS Account on W11 Home
     # And they cannot log back in after DDU (where DDU profile no longer exists)
     # Due to MS requiring an internet connection.
-    if CheckIfBackupAccountExists == False:
+    if CheckIfBackupAccountExists() == False:
         firstcommand = "net user /add BackupDDUProfile"
         secondcommand = "net localgroup {administrators} BackupDDUProfile /add".format(administrators=AdminGroupName())
         subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
