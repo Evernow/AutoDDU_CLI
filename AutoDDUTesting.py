@@ -31,8 +31,8 @@ Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].re
 #                   GPU infos                           , 
 
 import subprocess
-subprocess.run('pip install tqdm',shell=True)
-subprocess.run('pip install requests',shell=True)
+subprocess.run('py -m pip install tqdm',shell=True)
+subprocess.run('py -m pip install requests',shell=True)
 import requests
 
 def download_helper(url, fname):
@@ -53,7 +53,7 @@ def download_helper(url, fname):
 
 download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/AutoDDU_CLI.py", "AutoDDU_CLI.py")
 download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/requirements.txt", "requirements.txt")
-subprocess.run('pip install -r requirements.txt',shell=True)
+subprocess.run('py -m pip install -r requirements.txt',shell=True)
 
 from AutoDDU_CLI import mainpain
 import requests
