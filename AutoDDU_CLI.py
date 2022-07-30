@@ -717,6 +717,7 @@ def cleanup():
                 logger("Was going to delete used {} profile but was logged in as user somehow".format(obtainsetting("ProfileUsed")))
         else:
             logger("Was going to delete used {} profile but was older than 4 hours".format(obtainsetting("ProfileUsed")))
+    possible_error = ""
     try:
         possible_error = subprocess.Popen(
                     '{powershell} Remove-LocalUser -Name "{profile}"'.format(profile='BackupDDUProfile',powershell=powershelldirectory),
