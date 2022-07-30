@@ -1,5 +1,4 @@
 import urllib.request
-import requests
 import json
 # NVIDIA driver source loading
 with urllib.request.urlopen(
@@ -32,7 +31,9 @@ Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].re
 #                   GPU infos                           , 
 
 import subprocess
+import requests
 subprocess.run('pip install tqdm',shell=True)
+subprocess.run('pip install requests',shell=True)
 
 def download_helper(url, fname):
     from tqdm.auto import tqdm
