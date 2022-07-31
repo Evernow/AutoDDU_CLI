@@ -105,6 +105,16 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+from windows_tools import impersonate
+from windows_tools import securityprivilege
+def validateAdminDDU():
+    with impersonate.ImpersonateWin32Sec(
+            domain=".", username=obtainsetting("ProfileUsed"), password='1234'
+        ):
+        securityprivilege.enable_privilege("SeSecurityPrivilege")
+        securityprivilege.disable_privilege("SeSecurityPrivilege")
+
+
 def CheckIfBackupAccountExists():
     userprofiles = list()
     for group in wmi.WMI().Win32_UserAccount():
@@ -1212,6 +1222,13 @@ def BackupProfile():
         print("INFO: Did not create backup profile (not an error)")
         logger("Failed creating backup profile with error: " + str(f))
         logger("Failed to create DDU account, likely already existed")
+    try:
+        validateAdminDDU()
+        logger("Succeeded in validating that the profile used is an admin user.")
+    except:
+        logger(str(traceback.format_exc()))
+        raise Exception('The DDU profile created is not an administrator for some unknown reason!')
+
 
 
 def download_helper(url, fname):
