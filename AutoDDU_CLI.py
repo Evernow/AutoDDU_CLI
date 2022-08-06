@@ -105,6 +105,17 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def IsKasperskyInstalled():
+    software = []
+    for p in wmi.WMI().Win32_Product():
+        if p.Caption is not None:
+            software.append (str(p.Caption))
+    for softwarepossibility in software:
+        if 'kaspersky' in softwarepossibility.lower():
+            return True
+    return False
+
+
 def CheckIfBackupAccountExists():
     userprofiles = list()
     for group in wmi.WMI().Win32_UserAccount():
@@ -1623,6 +1634,17 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
             if len(TestEnvironment) == 0:
+                if IsKasperskyInstalled() == True:
+                    print("Kaspersky is installed. This software is known to cause")
+                    print(" issues with running AutoDDU at multiple steps, and has")
+                    print(" caused many headaches. Highly recommended to either fully")
+                    print(" uninstall Kaspersky or at the very least completely ")
+                    print( " disabling it. I've tried to send AutoDDU for analysis")
+                    print(" to Kaspersky multiple times but they keep saying all is good.")
+                    print(" We'll continue in 3 minutes, between now and 3 minutes please disable it.")
+                    time.sleep(180)
+                    print("Continuing with normal setup now with the assumption you disabled it.")
+                    print(" ")
                 print_menu1()
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
@@ -1754,6 +1776,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 else:
                     HandleOtherLanguages()
                 time.sleep(1)
+            os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe')) # Makes sure nothing like Kaspersky has fucked us over, will make AutoDDU error out before doing anything annoying to recover from.
             suspendbitlocker()
             if len(TestEnvironment) == 0:
                 time.sleep(5)
@@ -1765,6 +1788,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
            # BackupLocalAccount()
             if len(TestEnvironment) == 0:
                 enable_internet(False)
+                
             changepersistent(2)
             autologin()
             if len(TestEnvironment) == 0:
