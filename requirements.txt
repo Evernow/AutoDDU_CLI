@@ -3,6 +3,5 @@ pyinstaller
 requests
 tqdm
 psutil
-windows_tools
 tinyaes
 
