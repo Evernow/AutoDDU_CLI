@@ -33,7 +33,8 @@ import codecs
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
-                                "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
+                                "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0,
+                                "dnsoverwrite" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -104,6 +105,20 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+def GPUDriversFallback(url):
+        # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
+        # Credit to RandoNando for figuring this out
+        from dns import resolver
+        res = resolver.Resolver()
+        res.nameservers = ['8.8.8.8'] # Google DNS
+        answers = res.resolve('raw.githubusercontent.com')
+        for rdata in answers:
+            address = (rdata.address)
+        r = requests.get(f'http://{address}/{url}', headers={'Host' : 'raw.githubusercontent.com'})
+    #r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/nvidia_gpu.json', headers={'Host' : 'raw.githubusercontent.com'})
+
+        return r.json()
 
 def IsKasperskyInstalled():
     software = []
@@ -412,7 +427,7 @@ I tried to restart but it failed. This could cuase issues.""")
 
 def internet_on():
     try:
-        urllib.request.urlopen('https://www.github.com/', timeout=3)
+        urllib.request.urlopen('https://www.google.com/', timeout=3)
         return True
     except:
         return False
@@ -482,7 +497,7 @@ def default_config():
 def AdvancedMenu():
     logger("User entered AdvancedMenu")
     option = -1
-    while option != "10":
+    while option != "11":
         clear()
         time.sleep(1)
         print("WARNING: THIS MAY BEHAVE UNEXPECTADLY!", flush=True)
@@ -495,7 +510,8 @@ def AdvancedMenu():
         print('7 --' + AdvancedMenu_Options(7), flush=True)  # Disable 20GB free storage requirement
         print('8 --' + AdvancedMenu_Options(8), flush=True)  # Use AMD Enterprise driver
         print('9 --' + AdvancedMenu_Options(9), flush=True)  # Use NVIDIA Studio driver (Pascal and up)
-        print('10 -- Start', flush=True)
+        print('10 --' + AdvancedMenu_Options(9), flush=True)  # Manual DNS Resolving
+        print('11 -- Start', flush=True)
         option = str(input('Enter your choice: '))
         change_AdvancedMenu(option)
 
@@ -554,6 +570,11 @@ def AdvancedMenu_Options(num):
                 return " Use NVIDIA Studio driver (Pascal and up)"
             else:
                 return " Use NVIDIA Game Ready driver"
+        if num == 10:
+            if advanced_options_dict["dnsoverwrite"] == 0:
+                return " Do Manual DNS Resolving"
+            else:
+                return " Let OS Perform DNS Resolving"
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
@@ -624,6 +645,11 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["nvidiastudio"] = 1
             else:
                 advanced_options_dict["nvidiastudio"] = 0
+        if num == "10":
+            if advanced_options_dict["dnsoverwrite"] == 0:
+                advanced_options_dict["dnsoverwrite"] = 1
+            else:
+                advanced_options_dict["dnsoverwrite"] = 0
 
         if num == "98":
             if advanced_options_dict["inteldriverassistant"] == 0:
@@ -681,14 +707,25 @@ def HandleOtherLanguages():
 
 
 def PCIID(vendor, device):
-    with urllib.request.urlopen(
-            "https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json") as url:
+    try:
+        if obtainsetting("dnsoverwrite") == 1:
+            raise ValueError('Purposeful error.')
+        url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json")
         data = json.loads(url.read().decode())
-        try:
-            return data[vendor]['devices'][device]['name']
-        except KeyError:
-            return None
-
+    except:
+        from dns import resolver
+        res = resolver.Resolver()
+        res.nameservers = ['8.8.8.8']
+        answers = res.resolve('raw.githubusercontent.com')
+        for rdata in answers:
+            address = (rdata.address)
+        import requests
+        r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/PCI-IDS.json', headers={'Host' : 'raw.githubusercontent.com'})
+        data = r.json()
+    try:
+        return data[vendor]['devices'][device]['name']
+    except KeyError:
+        return None
 
 def logger(log):
     # The goal is to log everything that is practical to log. 
@@ -951,9 +988,24 @@ def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Devi
             Consumer_or_Professional = "Consumer"
         if Vendor_ID == '1002':  # AMD
             logger("Got AMD GPU")
-            with urllib.request.urlopen("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
+            try:
+                if obtainsetting("dnsoverwrite") == 1:
+                    raise ValueError('Purposeful error.')
+                url = urllib.request.urlopen("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json")
                 supported_amd = json.loads(url.read().decode())
                 supported_amd = supported_amd["consumer"]["SupportedGPUs"] + supported_amd["professional"]["SupportedGPUs"]
+            except:
+                from dns import resolver
+                res = resolver.Resolver()
+                res.nameservers = ['8.8.8.8']
+                answers = res.resolve('raw.githubusercontent.com')
+                for rdata in answers:
+                    address = (rdata.address)
+                r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/amd_gpu.json', headers={'Host' : 'raw.githubusercontent.com'})
+                supported_amd = r.json()
+                supported_amd = supported_amd["consumer"]["SupportedGPUs"] + supported_amd["professional"]["SupportedGPUs"]
+
+
             if Arch != None and Device_ID.upper() not in supported_amd:
                 logger("Got EOL AMD GPU with code " + Arch)
                 supportstatus = 4
@@ -1043,9 +1095,15 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     #  print(dict_of_GPUS)
     drivers_to_download = list()
     # NVIDIA driver source loading
-    with urllib.request.urlopen(
-            "https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json") as url:
-        data_nvidia = json.loads(url.read().decode())
+    if obtainsetting("dnsoverwrite") == 0:
+        try:
+            with urllib.request.urlopen(
+                    "https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json") as url:
+                data_nvidia = json.loads(url.read().decode())
+        except: # For bad DNS issues
+            data_nvidia = GPUDriversFallback('24HourSupport/CommonSoftware/main/nvidia_gpu.json')
+    else:
+        data_nvidia = GPUDriversFallback('24HourSupport/CommonSoftware/main/nvidia_gpu.json')
     NVIDIA_Consumer = data_nvidia["consumer"]["link"]
     NVIDIA_Consumer_Studio = data_nvidia["consumer_studio"]["link"]
     NVIDIA_Professional = data_nvidia["professional"]["link"]
@@ -1056,16 +1114,27 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
     NVIDIA_Supported_Products = data_nvidia["consumer"]["SupportedGPUs"] + data_nvidia["professional"]["SupportedGPUs"] + data_nvidia["datacenter"]["SupportedGPUs"] + data_nvidia["datacenter_kepler"]["SupportedGPUs"] + data_nvidia["r390"]["SupportedGPUs"] + data_nvidia["r470_consumer"]["SupportedGPUs"] + data_nvidia["r470_professional"]["SupportedGPUs"]
     # AMD driver source loading
-
-    with urllib.request.urlopen(
-            "https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
-        data_amd = json.loads(url.read().decode())
+    if obtainsetting("dnsoverwrite") == 0:
+        try:
+            with urllib.request.urlopen(
+                    "https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
+                data_amd = json.loads(url.read().decode())
+        except:
+            data_amd = GPUDriversFallback('24HourSupport/CommonSoftware/main/amd_gpu.json')
+    else:
+        data_amd = GPUDriversFallback('24HourSupport/CommonSoftware/main/amd_gpu.json')
     AMD_Consumer = data_amd["consumer"]["link"]
     AMD_Professional = data_amd["professional"]["link"]
     # Intel driver source loading
-    with urllib.request.urlopen(
-            "https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json") as url:
-        data_intel = json.loads(url.read().decode())
+    if obtainsetting("dnsoverwrite") == 0:
+        try:
+            with urllib.request.urlopen(
+                    "https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json") as url:
+                data_intel = json.loads(url.read().decode())
+        except:
+            data_intel = GPUDriversFallback('24HourSupport/CommonSoftware//main/intel_gpu.json')
+    else:
+        data_intel = GPUDriversFallback('24HourSupport/CommonSoftware//main/intel_gpu.json')
     Intel_Consumer = data_intel["consumer"]["link"]
     Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].replace('\'', '"')) # See comments here for replace reasoning: https://stackoverflow.com/a/35461204/17484902
 
