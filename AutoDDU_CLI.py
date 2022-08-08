@@ -510,7 +510,7 @@ def AdvancedMenu():
         print('7 --' + AdvancedMenu_Options(7), flush=True)  # Disable 20GB free storage requirement
         print('8 --' + AdvancedMenu_Options(8), flush=True)  # Use AMD Enterprise driver
         print('9 --' + AdvancedMenu_Options(9), flush=True)  # Use NVIDIA Studio driver (Pascal and up)
-        print('10 --' + AdvancedMenu_Options(9), flush=True)  # Manual DNS Resolving
+        print('10 --' + AdvancedMenu_Options(10), flush=True)  # Manual DNS Resolving
         print('11 -- Start', flush=True)
         option = str(input('Enter your choice: '))
         change_AdvancedMenu(option)
