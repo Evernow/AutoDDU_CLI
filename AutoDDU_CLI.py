@@ -863,21 +863,45 @@ def workaroundwindowsissues():
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
-        download_helper("https://download.sysinternals.com/files/PSTools.zip",
-                        os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
-        with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
-            zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
+        if os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
+                os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
+        try:
+            time.sleep(0.5)
+            shutil.copyfile(sys.executable, os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe"))
+            logger("Successfully copied executable to new user")
+        except:
+            logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            try:
+                logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
+                logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"Default"))) )
+                logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+                logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+
+            except:
+                logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
+            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                            os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        try:
-            subprocess.call(
-                '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
-                                                                                    directory_to_exe=os.path.join(
-                                                                                        Appdata_AutoDDU_CLI, "PsTools",
-                                                                                        "PsExec.exe")), shell=True,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except:
-            pass  
+        if not os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
+        ### Old Approach but unfortunately Kaspersky (and like others) did not like PSTools. Now only here as a backup because people always seem to do fucky things with crap like this.
+            logger("Fell back to PSExec logic because this idiot did something to his user folders, probably some 'But I don't use these folders so lemme delete them' mentality")
+            download_helper("https://download.sysinternals.com/files/PSTools.zip",
+                            os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
+            with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
+                zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
+            subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                subprocess.call(
+                    '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
+                                                                                        directory_to_exe=os.path.join(
+                                                                                            Appdata_AutoDDU_CLI, "PsTools",
+                                                                                            "PsExec.exe")), shell=True,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except:
+                pass  
+
         logger("Did prep work for working around Windows issue")
         try:
             time.sleep(0.5)
@@ -1703,17 +1727,17 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
             if len(TestEnvironment) == 0:
-                if IsKasperskyInstalled() == True:
-                    print("Kaspersky is installed. This software is known to cause")
-                    print(" issues with running AutoDDU at multiple steps, and has")
-                    print(" caused many headaches. Highly recommended to either fully")
-                    print(" uninstall Kaspersky or at the very least completely ")
-                    print( " disabling it. I've tried to send AutoDDU for analysis")
-                    print(" to Kaspersky multiple times but they keep saying all is good.")
-                    print(" We'll continue in 3 minutes, between now and 3 minutes please disable it.")
-                    time.sleep(180)
-                    print("Continuing with normal setup now with the assumption you disabled it.")
-                    print(" ")
+                # if IsKasperskyInstalled() == True:
+                #     print("Kaspersky is installed. This software is known to cause")
+                #     print(" issues with running AutoDDU at multiple steps, and has")
+                #     print(" caused many headaches. Highly recommended to either fully")
+                #     print(" uninstall Kaspersky or at the very least completely ")
+                #     print( " disabling it. I've tried to send AutoDDU for analysis")
+                #     print(" to Kaspersky multiple times but they keep saying all is good.")
+                #     print(" We'll continue in 3 minutes, between now and 3 minutes please disable it.")
+                #     time.sleep(180)
+                #     print("Continuing with normal setup now with the assumption you disabled it.")
+                #     print(" ")
                 print_menu1()
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
@@ -1988,7 +2012,7 @@ Closing in ten minutes. Feel free to close early if no problems
                 enable_internet(True)
             cleanup()
             changepersistent(0)
-            if obtainsetting("startedinsafemode") == 1:
+            if os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
                 os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
             if len(TestEnvironment) == 0:
                 time.sleep(600)
