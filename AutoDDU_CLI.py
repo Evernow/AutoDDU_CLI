@@ -841,6 +841,9 @@ def autologin():
         profile account we created."""
 
 def workaroundwindowsissues():
+    subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
     if insafemode():
         change_AdvancedMenu("99")
         logger("In Safemode while working around windows issues, falling back to Default folder copying method")
@@ -860,8 +863,6 @@ def workaroundwindowsissues():
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
             download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
                             os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
-        subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         if os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
                 os.remove(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe"))
@@ -891,8 +892,6 @@ def workaroundwindowsissues():
                             os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
             with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
                 zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
-            subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             try:
                 subprocess.call(
                     '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
