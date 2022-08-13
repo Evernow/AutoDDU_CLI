@@ -863,8 +863,8 @@ def workaroundwindowsissues():
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
-        if os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
-                os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
+        if os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
+                os.remove(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe"))
         try:
             time.sleep(0.5)
             shutil.copyfile(sys.executable, os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe"))
@@ -883,7 +883,7 @@ def workaroundwindowsissues():
                             os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
         subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if not os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
+        if not os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
         ### Old Approach but unfortunately Kaspersky (and like others) did not like PSTools. Now only here as a backup because people always seem to do fucky things with crap like this.
             logger("Fell back to PSExec logic because this idiot did something to his user folders, probably some 'But I don't use these folders so lemme delete them' mentality")
             download_helper("https://download.sysinternals.com/files/PSTools.zip",
