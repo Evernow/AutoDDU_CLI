@@ -106,6 +106,25 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def CheckPublisherOfDriver(driver):
+    logger("Dealing with driver {} in CheckPublisherOfDriver".format(driver))
+    p = str(subprocess.Popen(
+            "{powershell} (Get-AuthenticodeSignature '{driver}').SignerCertificate.subject".format(powershell=powershelldirectory, driver=driver),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
+    logger("Got output {} which I'm going to assume is:".format(p))
+    if 'NVIDIA' in p.upper():
+        logger('NVIDIA')
+        return 'NVIDIA'
+    if 'AMD' in p.upper() or 'advanced micro devices' in p.lower():
+        logger('AMD')
+        return 'AMD'
+    if 'intel' in p.lower():
+        logger('intel')
+        return 'Intel'
+    logger('Do not know who publisher is.')
+    return None
+
+
 def GPUDriversFallback(url):
         # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
         # Credit to RandoNando for figuring this out
@@ -1962,6 +1981,14 @@ and then turn on your internet.
                 intel = 0
                 for driver in s:
                     if "intel" not in driver or obtainsetting("inteldriverassistant") == 0:
+                        print("Please wait, we're verifying integrity of driver.")
+                        publisherofdriver = CheckPublisherOfDriver(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver))
+                        if publisherofdriver == None:
+                            print("Warning: We could not verify who published the driver ")
+                            print("we were going to launch. This could be a result of some ")
+                            print("sort of third party driver somehow making it in here.")
+                            print("As a result we're not going to install this driver.")
+                            continue
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
                         logger("Opening driver executable: {}".format(driver))
