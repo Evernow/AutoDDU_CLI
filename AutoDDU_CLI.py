@@ -879,10 +879,11 @@ def workaroundwindowsissues():
 
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                            os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
-        subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                                os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
+            except:
+                logger("Failed to also download to Default folder, going to back to PSExec method.")
         if not os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
         ### Old Approach but unfortunately Kaspersky (and like others) did not like PSTools. Now only here as a backup because people always seem to do fucky things with crap like this.
             logger("Fell back to PSExec logic because this idiot did something to his user folders, probably some 'But I don't use these folders so lemme delete them' mentality")
@@ -902,24 +903,24 @@ def workaroundwindowsissues():
             except:
                 pass  
 
-        logger("Did prep work for working around Windows issue")
-        try:
-            time.sleep(0.5)
-            shutil.copyfile(sys.executable, os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
-            logger("Successfully copied executable to new user")
-        except:
-            logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+            logger("Did prep work for working around Windows issue")
             try:
-                logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
-                logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"{}".format(obtainsetting("ProfileUsed"))))) )
-                logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
-                logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
-
+                time.sleep(0.5)
+                shutil.copyfile(sys.executable, os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
+                logger("Successfully copied executable to new user")
             except:
-                logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
+                logger("Falled back to downloading from github method for going to new user folder due to error: " + str(traceback.format_exc()))
+                try:
+                    logger("Directory of Users folder is: " + str(os.listdir(os.path.join(Users_directory))) )
+                    logger("Directory of Default User is: " + str(os.listdir(os.path.join(Users_directory,"{}".format(obtainsetting("ProfileUsed"))))) )
+                    logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+                    logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
 
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
-                            os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
+                except:
+                    logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
+
+                download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                                os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
     
     # This was old approach, leaving here for now incase we need a failback one day.
 
