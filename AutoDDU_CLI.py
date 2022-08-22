@@ -1352,13 +1352,16 @@ def download_helper(url, fname):
         print("Retrying in 30 seconds")
         time.sleep(30)
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
-    my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
     print("Downloading file {}".format(fname.split("\\")[-1]))
-    remaining_download_tries = 10
+    remaining_download_tries = 15
     while remaining_download_tries > 0:
         if os.path.exists(fname):
             os.remove(fname)
         try:
+            opener = urllib.request.build_opener()
+            opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'),
+                                ('Referer', "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt")]
+            urllib.request.install_opener(opener)
             with DownloadProgressBar(unit='B', unit_scale=True,
                                     miniters=1, desc=url.split('/')[-1]) as t:
                 urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
