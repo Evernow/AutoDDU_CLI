@@ -28,6 +28,7 @@ import psutil
 import urllib.error
 import posixpath
 import codecs
+from tqdm import tqdm
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
@@ -1337,6 +1338,12 @@ def BackupProfile():
         logger("Failed to create DDU account, likely already existed")
 
 
+class DownloadProgressBar(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
+
 def download_helper(url, fname):
     while not internet_on():
         logger("Saw no internet, asking user to connect")
@@ -1344,23 +1351,26 @@ def download_helper(url, fname):
         print("Please make sure internet is enabled")
         print("Retrying in 30 seconds")
         time.sleep(30)
-    from tqdm.auto import tqdm
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
     my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
     print("Downloading file {}".format(fname.split("\\")[-1]))
-    resp = requests.get(url, stream=True, headers={'referer': my_referer,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'})
-    total = int(resp.headers.get('content-length', 0))
-    with open(fname, 'wb') as file, tqdm(
-        total=total,
-        unit='iB',
-        unit_scale=True,
-        unit_divisor=1024,
-    ) as bar:
-        for data in resp.iter_content(chunk_size=1024):
-            size = file.write(data)
-            bar.update(size)
-    print("\n")
+    remaining_download_tries = 10
+    while remaining_download_tries > 0:
+        if os.path.exists(fname):
+            os.remove(fname)
+        try:
+            with DownloadProgressBar(unit='B', unit_scale=True,
+                                    miniters=1, desc=url.split('/')[-1]) as t:
+                urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
+            break
+        except:
+            if remaining_download_tries < 0:
+                raise Exception("Could not download file after 15 tries.")
+            logger("Failed to download file, {} retries left".format(remaining_download_tries))
+            print("Download failed, retrying in 5 seconds")
+            time.sleep(5)
+            remaining_download_tries = remaining_download_tries - 1
+
     logger("Successfully finished download")
 
 
