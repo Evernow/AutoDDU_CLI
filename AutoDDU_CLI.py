@@ -1730,6 +1730,14 @@ def mainpain(TestEnvironment):
     print("This software comes with no warranty as stated in the MIT License.")
     print("Copyright (c) 2022-present Daniel Suarez")
     print("\n", flush=True)
+    if getpersistent() != 2 and os.getlogin() == obtainsetting("ProfileUsed"):
+        logger("User logged into DDU profile early for some reason.")
+        print("You logged into the DDU profile too early, you only log into it")
+        print("When AutoDDU either auto logs you in or says it will.")
+        print("Get out of this profile then login to your main one.")
+        while True:
+            time.sleep(1)
+
     checkBatteryLevel()
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
