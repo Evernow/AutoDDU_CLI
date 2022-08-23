@@ -1605,15 +1605,15 @@ def DDUCommands():
     if insafemode() == True:
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                         '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
-                        '-RemoveNvidiaDirs', '-cleannvidia', '-logging'])
+                        '-RemoveNvidiaDirs', '-cleannvidia', '-logging'],check=True)
         print("1/3 finished with DDU", flush=True)
         sys.stdout.flush()
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                        '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'])
+                        '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'],check=True)
         print("2/3 finished with DDU", flush=True)
         sys.stdout.flush()
         subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                        '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'])
+                        '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'],check=True)
         print("3/3 finished with DDU", flush=True)
         sys.stdout.flush()
         logger("Successfully finished DDU commands in safe mode.")
@@ -1730,14 +1730,16 @@ def mainpain(TestEnvironment):
     print("This software comes with no warranty as stated in the MIT License.")
     print("Copyright (c) 2022-present Daniel Suarez")
     print("\n", flush=True)
-    if getpersistent() != 2 and os.getlogin() == obtainsetting("ProfileUsed"):
-        logger("User logged into DDU profile early for some reason.")
-        print("You logged into the DDU profile too early, you only log into it")
-        print("When AutoDDU either auto logs you in or says it will.")
-        print("Get out of this profile then login to your main one.")
-        while True:
-            time.sleep(1)
-
+    try:
+        if getpersistent() != 2 and os.getlogin() == obtainsetting("ProfileUsed"):
+            logger("User logged into DDU profile early for some reason.")
+            print("You logged into the DDU profile too early, you only log into it")
+            print("When AutoDDU either auto logs you in or says it will.")
+            print("Get out of this profile then login to your main one.")
+            while True:
+                time.sleep(1)
+    except: # obtainsetting when unset will error out
+        logger("Expected first failure to check if user is in incorrect profile, this means we're good.") 
     checkBatteryLevel()
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
