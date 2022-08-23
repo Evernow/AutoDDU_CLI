@@ -1603,16 +1603,16 @@ def safemode(ONorOFF):
 
 def DDUCommands():
     if insafemode() == True:
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+        subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                         '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
                         '-RemoveNvidiaDirs', '-cleannvidia', '-logging'],check=True)
         print("1/3 finished with DDU", flush=True)
         sys.stdout.flush()
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+        subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                         '-RemoveVulkan', '-RemoveAMDDirs', '-RemoveCrimsonCache', '-RemoveAMDCP', '-cleanamd', '-logging'],check=True)
         print("2/3 finished with DDU", flush=True)
         sys.stdout.flush()
-        subprocess.call([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+        subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
                         '-RemoveVulkan', '-RemoveINTELCP', '-cleanintel', '-logging'],check=True)
         print("3/3 finished with DDU", flush=True)
         sys.stdout.flush()
