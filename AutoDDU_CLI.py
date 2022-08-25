@@ -1415,63 +1415,17 @@ def ddu_download():
         shutil.rmtree(ddu_extracted_path)
     if not os.path.exists(os.path.join(root_for_ddu_assembly)):
         os.makedirs(os.path.join(root_for_ddu_assembly))
-    logger("Starting simple DDU search")
-    download_helper(
-        'https://raw.githubusercontent.com/Wagnard/display-drivers-uninstaller/WPF/display-driver-uninstaller/Display%20Driver%20Uninstaller/My%20Project/AssemblyInfo.vb',
-        ddu_AssemblyInfo)
-
-    my_file = open(ddu_AssemblyInfo, "r")
-
-    content = my_file.readlines()
-
-    Latest_DDU_Version_Raw = ""
-
-    for DDU_Version_Candidate in content:
-        if 'AssemblyFileVersion' in DDU_Version_Candidate:
-            Latest_DDU_Version_Raw = DDU_Version_Candidate[
-                                     DDU_Version_Candidate.find('("') + 2:DDU_Version_Candidate.find('")')]
-    logger("Almost done with simple DDU search")
-    countofloop = 0
-    
-    while not exists('https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe'):  # Normal error checking would not catch the error that would occur here.
-        # You don't really need to understand this, basically
-        # I have been looking at commit history, and there are instances where
-        # he updates the github repos with a new version but doesn't make a release
-        # yet, so this accounts for that possibility. Why is it so complicated?
-        # It accounts for stuff like this:
-
-        # 18.0.4.0 -> 18.0.3.9
-
-        # 18.0.4.7 -> 18.0.4.6
-
-        # Doesn't work for all cases (and I don't think it's possible for it to do so)
-        # but it works 99.99% of the time.
-        logger("Landed in complicated DDU search with number " + str(Latest_DDU_Version_Raw))
-        logger("Trying complicated DDU search")
-        nums = Latest_DDU_Version_Raw.split(".")
-
-        skip = 0
-
-        for ind in range(skip, len(nums)):
-            curr_num = nums[-1 - ind]
-            if int(curr_num) > 0:
-                nums[-1 - ind] = str(int(curr_num) - 1)
-                break
-            else:
-                nums[
-                    -1 - ind] = "9"  # DDU seems to stop at 9th versions: https://www.wagnardsoft.com/content/display-driver-uninstaller-ddu-v18039-released
-
-        Latest_DDU_Version_Raw = '.'.join(nums)
-        logger("Almost finished with complicated DDU search....")
-        countofloop += 1
-        if countofloop > 5:
-            raise ValueError('Unable to find DDU version after 5 tries.')
-        time.sleep(2)
 
     download_helper(
-            'https://www.wagnardsoft.com/DDU/download/DDU%20v' + Latest_DDU_Version_Raw + '.exe',
+            'https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/DDU.exe',
             ddu_zip_path
         )
+
+
+    url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/DDUVersion.json")
+    data = json.loads(url.read().decode())
+
+    Latest_DDU_Version_Raw = data['version']
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
