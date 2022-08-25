@@ -29,7 +29,7 @@ import urllib.error
 import posixpath
 import codecs
 from tqdm import tqdm
-import packaging
+import packaging.version 
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
@@ -395,7 +395,7 @@ def suspendbitlocker():
         logger("Did not suspend bitlocker with output " + p)
     
 def handleoutofdate():
-    url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json")
+    url = urllib.request.urlopen("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/Version.json")
     data = json.loads(url.read().decode())
 
     if (packaging.version.parse(Version_of_AutoDDU_CLI)) < packaging.version.parse(data['version']):
