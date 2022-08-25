@@ -1373,7 +1373,7 @@ def download_helper(url, fname):
             print("Download failed, retrying in 5 seconds")
             time.sleep(5)
             remaining_download_tries = remaining_download_tries - 1
-
+    print("\n")
     logger("Successfully finished download")
 
 
