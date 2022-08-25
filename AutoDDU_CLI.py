@@ -29,6 +29,7 @@ import urllib.error
 import posixpath
 import codecs
 from tqdm import tqdm
+import packaging
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
@@ -394,10 +395,11 @@ def suspendbitlocker():
         logger("Did not suspend bitlocker with output " + p)
     
 def handleoutofdate():
-    response = requests.get("https://github.com/Evernow/AutoDDU_CLI/raw/main/version.txt")
-    data = response.text
-    if (Version_of_AutoDDU_CLI) != (data):
-        logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data, local=Version_of_AutoDDU_CLI))
+    url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json")
+    data = json.loads(url.read().decode())
+
+    if (packaging.version.parse(Version_of_AutoDDU_CLI)) < packaging.version.parse(data['version']):
+        logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data['version'], local=Version_of_AutoDDU_CLI))
         print("You are running a version that is not the latest.")
         print("Do you want to continue?")
         print("Type in 'Yes' and we'll continue along")

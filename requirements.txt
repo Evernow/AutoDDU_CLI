@@ -3,6 +3,7 @@ pyinstaller
 requests
 tqdm
 psutil
+packaging
 dnspython
 tinyaes
 
