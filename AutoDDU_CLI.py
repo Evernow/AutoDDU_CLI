@@ -1193,8 +1193,12 @@ def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU dr
     else:
         data_intel = GPUDriversFallback('24HourSupport/CommonSoftware//main/intel_gpu.json')
     Intel_Consumer = data_intel["consumer"]["link"]
-    Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].replace('\'', '"')) # See comments here for replace reasoning: https://stackoverflow.com/a/35461204/17484902
 
+
+    if type(data_intel["consumer"]["SupportedGPUs"]) == str: # Used as a stopover while I switch repo from str to list, this version of AutoDDU will work with both, next one will only work with list.
+        Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].replace('\'', '"')) # See comments here for replace reasoning: https://stackoverflow.com/a/35461204/17484902
+    else:
+        Intel_Consumer_Supported =  data_intel["consumer"]["SupportedGPUs"]
 
     performing_DDU_on = "DDU will be performed on the following GPUs: \n"
     logger("Successfully grabbed NVIDIA drivers from CommonSoftware repo")
