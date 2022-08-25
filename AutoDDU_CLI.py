@@ -107,6 +107,19 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def RestartPending():
+    # Checks to see if a restart is pending for updates, this is to prevent issues with us restarting and not landing in safe mode.
+    key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+    reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
+    try:
+        k = winreg.OpenKey(reg, key) # if the key exists then we have an update pending that needs a restart to finish.
+        logger("Got a pending Windows update restart.")
+        return True
+    except:
+        logger("I believe there is not a Windows update restart pending.")
+        logger(str(traceback.format_exc()))
+        return False
+
 def CheckPublisherOfDriver(driver):
     logger("Dealing with driver {} in CheckPublisherOfDriver".format(driver))
     p = str(subprocess.Popen(
@@ -1618,6 +1631,9 @@ def DDUCommands():
         sys.stdout.flush()
         logger("Successfully finished DDU commands in safe mode.")
     else:
+        logger("Somehow failed in DDUCOmmands due to not in safe mode?")
+        logger(str(wmi.WMI().Win32_ComputerSystem()[0].BootupState.encode("ascii", "ignore").decode(
+            "utf-8")))
         print("Something catastrophically went wrong.")
         print("Somehow tried to run DDU not in safe mode.")
         print("Resetting all settings to default, please run again.")
@@ -1791,6 +1807,13 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                 #     print("Continuing with normal setup now with the assumption you disabled it.")
                 #     print(" ")
                 print_menu1()
+                if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
+                    print("There is pending Windows Updates that require a Restart")
+                    print("Due to possible issues that can occur with AutoDDU running")
+                    print("with a pending restart please check Windows Settings for updates")
+                    print("and then restart. You may need to restart, check for updates, then restart again.")
+                    while True:
+                        time.sleep(1)
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
 Too little free space to continue.
@@ -1872,6 +1895,14 @@ without warning.
                     uptodate()
             changepersistent(1)
         if getpersistent() == 1:
+            if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
+                    print("There is pending Windows Updates that require a Restart")
+                    print("Due to possible issues that can occur with AutoDDU running")
+                    print("with a pending restart please check Windows Settings for updates")
+                    print("and then restart. You may need to restart, check for updates, then restart again.")
+                    while True:
+                        time.sleep(1)
+
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
                 if len(TestEnvironment) == 0:
                     uptodate()
