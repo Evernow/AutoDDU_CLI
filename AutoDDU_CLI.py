@@ -1187,7 +1187,7 @@ class DownloadProgressBar(tqdm):
             self.total = tsize
         self.update(b * bsize - self.n)
 
-def download_helper(url, fname,showbar=False):
+def download_helper(url, fname,showbar=True):
     while not internet_on():
         logger("Saw no internet, asking user to connect")
         print("No internet connection")
@@ -1205,9 +1205,13 @@ def download_helper(url, fname,showbar=False):
             opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'),
                                 ('Referer', "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt")]
             urllib.request.install_opener(opener)
-            with DownloadProgressBar(unit='B', unit_scale=True,
-                                    miniters=1, desc=url.split('/')[-1]) as t:
-                urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
+            if showbar==True:
+                with DownloadProgressBar(unit='B', unit_scale=True,
+                                        miniters=1, desc=url.split('/')[-1]) as t:
+                    urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
+                print("\n")
+            else:
+                urllib.request.urlretrieve(url, filename=fname)
             break
         except:
             if remaining_download_tries < 0:
@@ -1216,7 +1220,7 @@ def download_helper(url, fname,showbar=False):
             print("Download failed, retrying in 5 seconds")
             time.sleep(5)
             remaining_download_tries = remaining_download_tries - 1
-    print("\n")
+    
     logger("Successfully finished download")
 
 
