@@ -1435,34 +1435,45 @@ def enable_internet(enable):
 # https://stackoverflow.com/questions/59668995/how-do-i-discover-pci-information-from-an-msft-netadapter
 # https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/hh968170(v=vs.85)
     if obtainsetting("disableinternetturnoff") == 0:
-        wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
-        logger("In enable_internet with argument to " + str(enable))
-        list_of_names = list()
-        list_test = list()
-        for adapter in wrxAdapter:
-            list_of_names.append(adapter.Name)
-            if adapter.Virtual == False and adapter.LinkTechnology != 10:
-                try:
-                    if enable == False:
-                        if adapter.State == 2:
-                            adapter.Disable()
-                            list_test.append(str(adapter.Name))
-                            logger("Successfully disabled this : " + str(adapter.Name))
-                    else:
-                        if str(adapter.Name) in obtainsetting("disabledadapters"):
-                                logger("Successfully enabled this : " + str(adapter.Name))
-                                adapter.Enable()
-                except:
-                    logger("Got exception in enable_internet when trying something with " + adapter.Name)
-                    logger(str(traceback.format_exc()))
-                    pass
-        if not enable:
-            with open(AutoDDU_CLI_Settings, 'r+') as f:
-                advanced_options_dict = json.load(f)
-                advanced_options_dict["disabledadapters"] = list_test
-                f.seek(0)
-                json.dump(advanced_options_dict, f, indent=4)
-                f.truncate()
+        print("Do not worry if this seems frozen for a bit")
+        try:
+            with timeout(seconds=30): # Found an issue in NVIDIA Server where a malfunctioning network card can hang WMI.
+                wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
+                logger("In enable_internet with argument to " + str(enable))
+                list_of_names = list()
+                list_test = list()
+                for adapter in wrxAdapter:
+                    try:
+                        with timeout(seconds=5):
+                            list_of_names.append(adapter.Name)
+                            if adapter.Virtual == False and adapter.LinkTechnology != 10:
+                                try:
+                                    if enable == False:
+                                        if adapter.State == 2:
+                                            adapter.Disable()
+                                            list_test.append(str(adapter.Name))
+                                            logger("Successfully disabled this : " + str(adapter.Name))
+                                    else:
+                                        if str(adapter.Name) in obtainsetting("disabledadapters"):
+                                                logger("Successfully enabled this : " + str(adapter.Name))
+                                                adapter.Enable()
+                                except:
+                                    logger("Got exception in enable_internet when trying something with " + adapter.Name)
+                                    logger(str(traceback.format_exc()))
+                                    pass
+                    except:
+                        logger("Failed in enable_internet with")
+                        logger(str(traceback.format_exc()))
+        except:
+                logger("Failed in enable_internet with")
+                logger(str(traceback.format_exc()))                
+            if not enable:
+                with open(AutoDDU_CLI_Settings, 'r+') as f:
+                    advanced_options_dict = json.load(f)
+                    advanced_options_dict["disabledadapters"] = list_test
+                    f.seek(0)
+                    json.dump(advanced_options_dict, f, indent=4)
+                    f.truncate()
         logger("Working with these adapters in enable_internet")
         logger(str(list_of_names))
 
