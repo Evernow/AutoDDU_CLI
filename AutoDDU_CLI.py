@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.0.9"
+Version_of_AutoDDU_CLI = "0.1.0"
 import json
 import os
 import platform
