@@ -1116,6 +1116,16 @@ def GetGPUStatus(testing=None):
     stringtouser = "Performing DDU on the following GPUs: "
     for gpuname in DictOfGPUs:
         stringtouser += gpuname + " (" + DictOfGPUs[gpuname][0] + ') \n'
+    if len(list_of_gpu_downloads) == 0:
+        stringtouser = """
+WARNING: NO GPUS HAVE BEEN DETECTED BY WINDOWS.
+THIS PROCESS WILL CONTINUE BUT YOU WILL NEED TO
+INSTALL DRIVERS MANUALLY YOURSELF AFTER THIS PROCESS 
+IS OVER. 
+        
+PLEASE REPORT THIS TO EVERNOW IF IT IS A BUG.
+        
+Chika is mad and confused at the same time."""
     return stringtouser ,list_of_gpu_downloads
 
 
