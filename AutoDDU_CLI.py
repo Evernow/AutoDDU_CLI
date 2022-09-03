@@ -1583,6 +1583,18 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     print("MAKE SURE TO HAVE AN INTERNET CONNECTION")
                     while True:
                         time.sleep(1)
+                if IsKasperskyInstalled() == True:
+                    logger("Kaspersky is installed, informing the user.")
+                    print("Kaspersky is installed. This software is known to cause")
+                    print(" issues with running AutoDDU at multiple steps, and has")
+                    print(" caused many headaches. Highly recommended to either fully")
+                    print(" uninstall Kaspersky or at the very least completely ")
+                    print( " disabling it. I've tried to send AutoDDU for analysis")
+                    print(" to Kaspersky multiple times but they keep saying all is good.")
+                    print(" We'll continue in 5 minutes, between now and 5 minutes please disable it.")
+                    time.sleep(300)
+                    print("Continuing with normal setup now with the assumption you disabled it.")
+                    print(" ")
                 print_menu1()
                 if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
                     print("There is pending Windows Updates that require a Restart")
