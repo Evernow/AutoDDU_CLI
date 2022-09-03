@@ -1568,8 +1568,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     handleoutofdate()
                 except:
                     logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
-                else:
-                    return("Duplicate app instance")
+                
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
             if len(TestEnvironment) == 0:
