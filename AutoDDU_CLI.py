@@ -56,9 +56,7 @@ Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSI
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
 
-# Only Fermi professional (NVS, Quadro, Tesla) is supported, and only till the end of 2022.
-FERMI_NVIDIA = ['GF100', 'GF100M', 'GF100G', 'GF100GL', 'GF100GLM', 'GF106', 'GF108', 'GF104', 'GF116', 'GF106M', 'GF106GL', 'GF106GLM', 'GF108M', 'GF108GL', 'GF108GLM', 'GF119', 'GF110', 'GF114', 'GF104M', 'GF104GLM', 'GF11', 'GF119M', 'GF110GL', 'GF117M', 'GF114M', 'GF116M']
-
+Jsoninfofileslocation = os.path.join(Appdata_AutoDDU_CLI, "JsonInfoFiles")
 
 EOL_NVIDIA = ['NV1', 'NV3', 'NV4', 'NV5', 'MCP04', 'NV40', 'NV40GL', 'CK804', 'nForce2', 'nForce', 'MCP2A', 'MCP2S', 'G70', 'G70M', 'G70GL', 'NV0A', 
     'NV41', 'NV41M', 'NV41GLM', 'NV42GL', 'NV41GL', 'nForce3', 'CK8S', 'NV43', 'G70/G71', 'NV45GL', 'NV39', 'NV35', 'NV37GL', 'NV38GL', 'NV19', 
@@ -70,19 +68,11 @@ EOL_NVIDIA = ['NV1', 'NV3', 'NV4', 'NV5', 'MCP04', 'NV40', 'NV40GL', 'CK804', 'n
     'GT200b', 'GT200', 'GT200GL', 'G92M', 'G92GL', 'G92GLM', 'G94', 'G94M', 'G94GL', 'G94GLM', 'G96C', 'G96', 'G96CM', 'G96M', 'G96GL', 'G96CGL', 
     'G96GLM', 'G98', 'G98M', 'G98GL', 'G98GLM', 'MCP77', 'MCP72XE/MCP72P/MCP78U/MCP78S', 'C73', 'C77', 'C78', 'C79', 'MCP7A', 'MCP79', 
     'MCP89', 'GT216', 'GT216M', 'GT216GL', 'GT216GLM', 'GT218', 'GT218M', 'GT218GL', 'GT218GLM', 'GT215', 'GT215M', 'GT215GLM', 
-    'Xavier', 'MCP78U', 'MCP72P' , 'MCP72XE']
-
-KEPLER_NVIDIA = ['GK104', 'GK106', 'GK208', 'GK110', 'GK107', 'GK107M', 'GK107GL', 'GK107GLM', 'GK110B',
+    'Xavier', 'MCP78U', 'MCP72P' , 'MCP72XE','GK104', 'GK106', 'GK208', 'GK110', 'GK107', 'GK107M', 'GK107GL', 'GK107GLM', 'GK110B',
                  'GK110GL', 'GK110BGL', 'GK180GL', 'GK210GL', 'GK104GL', 'GK104M', 'GK104GLM', 'GK106M', 
-                 'GK106GL', 'GK106GLM', 'GK208B', 'GK208M', 'GK208BM', 'GK20', 'GK208GLM']
-
-Professional_NVIDIA_GPU = ["Quadro", "NVS", "RTX A"]
-
-Datacenter_NVIDIA_GPU = ["Tesla", "HGX", "M", "T"] 
-
-
-Exceptions_laptops = ["710A", "745A", "760A", "805A", "810A", "810A", "730A",
-                      "740A"]  # Kepler laptops GPUs with no M in the name.
+                 'GK106GL', 'GK106GLM', 'GK208B', 'GK208M', 'GK208BM', 'GK20', 'GK208GLM','GF100', 'GF100M', 'GF100G', 'GF100GL', 'GF100GLM', 'GF106', 
+                 'GF108', 'GF104', 'GF116', 'GF106M', 'GF106GL', 'GF106GLM', 'GF108M', 'GF108GL', 'GF108GLM', 'GF119', 'GF110', 'GF114', 'GF104M', 
+                 'GF104GLM', 'GF11', 'GF119M', 'GF110GL', 'GF117M', 'GF114M', 'GF116M']
 
 unrecoverable_error_print = (r"""
    An unrecoverable error has occured in this totally bug free 
@@ -245,7 +235,6 @@ def get_latest_geforce_driver(dev_id):
         "upCRD": "1" if crd else "0",     # Searched driver: 0 - GameReady Driver, 1 - CreatorReady Driver
         "isCRD": "1" if crd else "0",     # Installed driver: 0 - GameReady Driver, 1 - CreatorReady Driver
     }
-    print(query_obj)
     try:
         res = getDispDrvrByDevid(query_obj, timeout)
     except urllib.error.HTTPError as e:
@@ -741,27 +730,6 @@ def HandleOtherLanguages():
     print("Starting!")
 
 
-def PCIID(vendor, device):
-    try:
-        if obtainsetting("dnsoverwrite") == 1:
-            raise ValueError('Purposeful error.')
-        url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json")
-        data = json.loads(url.read().decode())
-    except:
-        from dns import resolver
-        res = resolver.Resolver()
-        res.nameservers = ['8.8.8.8']
-        answers = res.resolve('raw.githubusercontent.com')
-        for rdata in answers:
-            address = (rdata.address)
-        import requests
-        r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/PCI-IDS.json', headers={'Host' : 'raw.githubusercontent.com'})
-        data = r.json()
-    try:
-        return data[vendor]['devices'][device]['name']
-    except KeyError:
-        return None
-
 def logger(log):
     # The goal is to log everything that is practical to log. 
     # I'm at the end of my rope! 
@@ -990,7 +958,21 @@ def workaroundwindowsissues():
     # TODO: investigate this workaround later: https://community.spiceworks.com/topic/247395-create-a-user-profile-without-logon?page=1#entry-6915365
 
 
-def getgpuinfos():
+
+
+def PCIID(vendor, device):
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json", os.path.join(Jsoninfofileslocation,'PCI-IDS.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'PCI-IDS.json')) as json_file:
+        data = json.load(json_file)
+    try:
+        return data[vendor]['devices'][device]['name']
+    except KeyError:
+        return None
+
+def getgpuinfos(testing=None):
+    if os.path.exists(Jsoninfofileslocation):
+        shutil.rmtree(Jsoninfofileslocation)
+    os.mkdir(Jsoninfofileslocation)
     controllers = wmi.WMI().Win32_VideoController()
     gpu_dictionary = dict()  # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer]
     logger("Working in getgpuinfos with this wmi output: ")
@@ -1017,296 +999,127 @@ def getgpuinfos():
                     Arch = Arch[:Arch.find(' ')]
                 Vendor_ID = gpu[gpu.find('ven_') + 4:gpu.find('ven_') + 8]
                 Device_ID = gpu[gpu.find('dev_') + 4:gpu.find('dev_') + 8]
-                gpu_dictionary[name] = [Arch, Vendor_ID, Device_ID]
+                if Arch == None: # Can happen when we're dealing with a new GPU release that may not be in the database yet.
+                    Arch = "Unknown"
+                gpu_dictionary[name] = [Arch, Vendor_ID, Device_ID] # overwriting by name is fine, helps us filter out SLI setups early on
+    if testing != None:
+        gpu_dictionary = testing
     logger(str(gpu_dictionary))
     return gpu_dictionary
 
+def GetGPUStatus(testing=None):
+    # testing = {'GeForce RTX 3080': ['GA102', '10DE', '2206']}
 
-todays_date = date.today().year
+    DictOfGPUs = getgpuinfos(testing)
+    # NVIDIA Support status loading
+    time.sleep(1)
+    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json", os.path.join(Jsoninfofileslocation,'nvidia_gpu.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'nvidia_gpu.json')) as json_file:
+        nvidia_gpu = json.load(json_file)
 
+    # AMD Support status loading
+    time.sleep(1)
+    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json", os.path.join(Jsoninfofileslocation,'amd_gpu.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'amd_gpu.json')) as json_file:
+        amd_gpu = json.load(json_file)
 
-def getsupportstatus(parsed_gpus):  # parsed_gpus[name] = [Arch, Vendor_ID, Device_ID]
-    gpu_dictionary = dict()  # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer]
-    logger("Working in getsupportstatus with this wmi output: ")
-    for gpu in parsed_gpus:
+    # Intel Support status loading
+    time.sleep(1)
+    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json", os.path.join(Jsoninfofileslocation,'intel_gpu.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'intel_gpu.json')) as json_file:
+        intel_gpu = json.load(json_file)
 
-        todays_date = date.today().year
-        name = gpu
-        Arch = parsed_gpus[gpu][0]
-        Vendor_ID = parsed_gpus[gpu][1]
-        Device_ID = parsed_gpus[gpu][2]
-        supportstatus = 0
-        Consumer_or_Professional = ""
-        if Vendor_ID == '121a':  # Voodoo (wtf lol)
-            logger("Got Voodoo GPU")
-            supportstatus = 4
-            Consumer_or_Professional = "Consumer"
-        if Vendor_ID == '8086':  # Intel
-            logger("Got Intel GPU")
-            supportstatus = 1
-            Consumer_or_Professional = "Consumer"
-        if Vendor_ID == '1002':  # AMD
-            logger("Got AMD GPU")
-            try:
-                if obtainsetting("dnsoverwrite") == 1:
-                    raise ValueError('Purposeful error.')
-                url = urllib.request.urlopen("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json")
-                supported_amd = json.loads(url.read().decode())
-                supported_amd = supported_amd["consumer"]["SupportedGPUs"] + supported_amd["professional"]["SupportedGPUs"]
-            except:
-                from dns import resolver
-                res = resolver.Resolver()
-                res.nameservers = ['8.8.8.8']
-                answers = res.resolve('raw.githubusercontent.com')
-                for rdata in answers:
-                    address = (rdata.address)
-                r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/amd_gpu.json', headers={'Host' : 'raw.githubusercontent.com'})
-                supported_amd = r.json()
-                supported_amd = supported_amd["consumer"]["SupportedGPUs"] + supported_amd["professional"]["SupportedGPUs"]
+    list_of_gpu_downloads = []
+    for GPU in DictOfGPUs:
+        logger("Handling GPU " + str(GPU))
+        if DictOfGPUs[GPU][1].lower() == '10de': # NVIDIA 
+            driver = None
+            lastpriority = 99
+            for possibledriver in nvidia_gpu:
+                if DictOfGPUs[GPU][2].upper() in nvidia_gpu[possibledriver]['SupportedGPUs'] and int(nvidia_gpu[possibledriver]['priority']) < lastpriority:
+                    
+                    driver = nvidia_gpu[possibledriver]['link']
+                    logger("Applicable GPU driver is " + driver )
+                    lastpriority = int(nvidia_gpu[possibledriver]['priority'])
+            if driver == None and DictOfGPUs[GPU][0] not in EOL_NVIDIA:
+                logger("Not end of life and not in known drivers, trying GFE backend")
+                # '1BE0_10DE'
+                try:
+                    driver = FindOutOfBranchDriver(DictOfGPUs[GPU][2].upper() + '_' + DictOfGPUs[GPU][1].upper())
+                except:
+                    logger("Issue with GFE backend, following error")
+                    logger(str(traceback.format_exc()))
+                if checkifvaliddownload(driver) == False:
+                    logger("Driver provided by GFE is invalid, it is " + str(driver))
+                    driver = None
+            if obtainsetting('nvidiastudio') == 1 and DictOfGPUs[GPU][2].upper() in nvidia_gpu['consumer_studio']['SupportedGPUs']:
+                driver = nvidia_gpu['consumer_studio']['link']
+                logger("User asked for studio driver and it is supported, providing it.")
+            if driver == None:
+                logger("No known GPU driver found, assuming end of life")
 
+                return "Unsupported"
+            if driver not in list_of_gpu_downloads:
+                list_of_gpu_downloads.append(driver)
 
-            if Arch != None and Device_ID.upper() not in supported_amd:
-                logger("Got EOL AMD GPU with code " + Arch)
-                supportstatus = 4
-            if supportstatus != 4:
-                logger("Got Supported AMD GPU with code " + Arch)
-                supportstatus = 1
-            Consumer_or_Professional = "Consumer"  # There are professional AMD GPUs but are EXTREMELY rare and I haven't built a driver search for them, nor intend to.
+        if DictOfGPUs[GPU][1].lower() == '1002': # AMD 
+            driver = None
+            lastpriority = 99
+            for possibledriver in amd_gpu:
+                if DictOfGPUs[GPU][2].upper() in amd_gpu[possibledriver]['SupportedGPUs'] and int(amd_gpu[possibledriver]['priority']) < lastpriority:
+                    
+                    driver = amd_gpu[possibledriver]['link']
+                    logger("Applicable GPU driver is " + driver )
+                    lastpriority = int(amd_gpu[possibledriver]['priority'])
+                if obtainsetting('amdenterprise') == 1 and DictOfGPUs[GPU][2].upper() in amd_gpu['professional']['SupportedGPUs']:
+                    logger("User asked for professional driver and it is supported, providing it.")
+                    driver = amd_gpu['professional']['link']
+                if driver == None:
+                    logger("No known GPU driver found, assuming end of life")
+                    return "Unsupported"
+            if driver not in list_of_gpu_downloads:
+                list_of_gpu_downloads.append(driver)
+        if DictOfGPUs[GPU][1].lower() == '8086': # Intel 
+            driver = None
+            lastpriority = 99
+            for possibledriver in intel_gpu:
+                if DictOfGPUs[GPU][2].upper() in intel_gpu[possibledriver]['SupportedGPUs'] and int(intel_gpu[possibledriver]['priority']) < lastpriority:
+                    
+                    driver = intel_gpu[possibledriver]['link']
+                    logger("Applicable GPU driver is " + driver )
+                    lastpriority = int(intel_gpu[possibledriver]['priority'])
+                if driver == None:
+                    logger("No known GPU driver found, assuming end of life")
+                    return "Unsupported"
+            if driver not in list_of_gpu_downloads:
+                list_of_gpu_downloads.append(driver)
+    
+    # Checks to make sure we aren't installing multiple different drivers from the same vendor. 
+    # This prevents configs like Consumer and Quadros being together which is unsupported: https://nvidia.custhelp.com/app/answers/detail/a_id/2280/~/can-i-use-a-geforce-and-quadro-card-in-the-same-system%3F
 
-        if Vendor_ID == '10de':  # NVIDIA
-            logger("Got NVIDIA GPU with code " + str(Arch))
-
-            # Check if professional or consumer
-            for seeifprof in Professional_NVIDIA_GPU:
-                if seeifprof.lower() in name.lower():
-                    logger("Got NVIDIA prof")
-                    Consumer_or_Professional = "Professional"
-            if Consumer_or_Professional == "":
-                for seeifdatacenter in Datacenter_NVIDIA_GPU:
-                    if len(seeifdatacenter) >= len(name):
-                        if name[:len(seeifdatacenter)].lower() == seeifdatacenter.lower():
-                            logger("Got NVIDIA datacenter")
-                            Consumer_or_Professional = "Datacenter"
-            if Consumer_or_Professional == "":
-                logger("Got NVIDIA consumer")
-                Consumer_or_Professional = "Consumer"
-            # Nightmare begins
-            for possibility in EOL_NVIDIA:
-                if Arch != None and Arch in possibility:
-                    logger("Got EOL NVIDIA")
-                    supportstatus = 4  # EOL
-            for possibility in FERMI_NVIDIA:
-                if Arch != None and Arch in possibility:
-                    logger("Got NVIDIA FERMI")
-                    for _ in Professional_NVIDIA_GPU:
-
-                        if Consumer_or_Professional == "Professional" and todays_date < 2023:  # EOL For Fermi prof
-                            logger("Got professional fermi")
-                            supportstatus = 3  # fermiprof
-                    if supportstatus != 3:
-                        logger("Got consumer fermi")
-                        supportstatus = 4  # EOL
-            for possibility in KEPLER_NVIDIA:
-                if Arch != None and Arch in possibility:
-                    logger("Got Kepler")
-                    if "M" in name.upper():
-                        logger("Got laptop kepler (main)")
-                        supportstatus = 4  # EOL
-                    else:
-                        for exception_fuckinglaptops in Professional_NVIDIA_GPU:
-                            if exception_fuckinglaptops in name.upper():
-                                logger("Got laptop kepler (secondary)")
-                                supportstatus = 4  # EOL
-                        if supportstatus != 4 and todays_date < 2025:  # In reality it ends in mid 2024, but this is fine.
-                            if "GRID" not in name:
-                                logger("Got desktop supported kepler")
-                                supportstatus = 2  # kepler
-                            else:
-                                logger("Got GRID GPU with {}".format(name))
-                                supportstatus = 4  # EOL, all GRID GPUs are EOL now
-
-            if supportstatus == 0:
-                logger("Got supported NVIDIA")
-                supportstatus = 1
-
-        # This approach covers for stupid SLI or dual GPUs (looking at you Anderson)
-        gpu_dictionary[name] = [Vendor_ID, Device_ID, Arch, gpu, supportstatus, Consumer_or_Professional]
-    logger("Finished getsupportstatus with this dictionary: " + str(gpu_dictionary))
-    return gpu_dictionary
+    intel = 0
+    amd = 0
+    nvidia = 0
+    for driverdownloadlink in list_of_gpu_downloads:
+        if 'intel' in driverdownloadlink.lower():
+            intel += 1
+            if intel > 1:
+                return "Unsupported"
+        if 'amd' in driverdownloadlink.lower():
+            amd += 1
+            if amd > 1:
+                return "Unsupported"
+        if 'nvidia' in driverdownloadlink.lower():
+            nvidia += 1
+            if nvidia > 1:
+                return "Unsupported"
+    stringtouser = "Performing DDU on the following GPUs: "
+    for gpuname in DictOfGPUs:
+        stringtouser += gpuname + " (" + DictOfGPUs[gpuname][0] + ') \n'
+    return stringtouser ,list_of_gpu_downloads
 
 
-# supportstatus = 0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL
-# [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT, supportstatus, professional/consumer] 
-def checkifpossible(getgpus):  # Checks edge GPU cases and return list of GPU drivers to downloaded
 
-    # if getgpus == None:
-    #     performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
-    #     return 0, performing_DDU_on, None
-
-    # WIP to prevent different driver branches being installed (like R470 and R510 or R510 prof and R510 consumer)
-    Consumer = 0
-    Professional = 0
-    Fermi = 0
-    Kepler = 0
-
-    dict_of_GPUS = getgpus
-    logger(str(dict_of_GPUS))
-    #  print(dict_of_GPUS)
-    drivers_to_download = list()
-    # NVIDIA driver source loading
-    if obtainsetting("dnsoverwrite") == 0:
-        try:
-            with urllib.request.urlopen(
-                    "https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json") as url:
-                data_nvidia = json.loads(url.read().decode())
-        except: # For bad DNS issues
-            data_nvidia = GPUDriversFallback('24HourSupport/CommonSoftware/main/nvidia_gpu.json')
-    else:
-        data_nvidia = GPUDriversFallback('24HourSupport/CommonSoftware/main/nvidia_gpu.json')
-    NVIDIA_Consumer = data_nvidia["consumer"]["link"]
-    NVIDIA_Consumer_Studio = data_nvidia["consumer_studio"]["link"]
-    NVIDIA_Professional = data_nvidia["professional"]["link"]
-    NVIDIA_Datacenter = data_nvidia["datacenter"]["link"]
-    NVIDIA_Datacenter_Kepler = data_nvidia["datacenter_kepler"]["link"]
-    NVIDIA_R390 = data_nvidia["r390"]["link"]
-    NVIDIA_R470_Consumer = data_nvidia["r470_consumer"]["link"]
-    NVIDIA_R470_Professional = data_nvidia["r470_professional"]["link"]
-    NVIDIA_Supported_Products = data_nvidia["consumer"]["SupportedGPUs"] + data_nvidia["professional"]["SupportedGPUs"] + data_nvidia["datacenter"]["SupportedGPUs"] + data_nvidia["datacenter_kepler"]["SupportedGPUs"] + data_nvidia["r390"]["SupportedGPUs"] + data_nvidia["r470_consumer"]["SupportedGPUs"] + data_nvidia["r470_professional"]["SupportedGPUs"]
-    # AMD driver source loading
-    if obtainsetting("dnsoverwrite") == 0:
-        try:
-            with urllib.request.urlopen(
-                    "https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json") as url:
-                data_amd = json.loads(url.read().decode())
-        except:
-            data_amd = GPUDriversFallback('24HourSupport/CommonSoftware/main/amd_gpu.json')
-    else:
-        data_amd = GPUDriversFallback('24HourSupport/CommonSoftware/main/amd_gpu.json')
-    AMD_Consumer = data_amd["consumer"]["link"]
-    AMD_Professional = data_amd["professional"]["link"]
-    # Intel driver source loading
-    if obtainsetting("dnsoverwrite") == 0:
-        try:
-            with urllib.request.urlopen(
-                    "https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json") as url:
-                data_intel = json.loads(url.read().decode())
-        except:
-            data_intel = GPUDriversFallback('24HourSupport/CommonSoftware//main/intel_gpu.json')
-    else:
-        data_intel = GPUDriversFallback('24HourSupport/CommonSoftware//main/intel_gpu.json')
-    Intel_Consumer = data_intel["consumer"]["link"]
-
-
-    if type(data_intel["consumer"]["SupportedGPUs"]) == str: # Used as a stopover while I switch repo from str to list, this version of AutoDDU will work with both, next one will only work with list.
-        Intel_Consumer_Supported = json.loads(data_intel["consumer"]["SupportedGPUs"].replace('\'', '"')) # See comments here for replace reasoning: https://stackoverflow.com/a/35461204/17484902
-    else:
-        Intel_Consumer_Supported =  data_intel["consumer"]["SupportedGPUs"]
-
-    performing_DDU_on = "DDU will be performed on the following GPUs: \n"
-    logger("Successfully grabbed NVIDIA drivers from CommonSoftware repo")
-    for gpu in dict_of_GPUS:
-        name = gpu
-        gpu = dict_of_GPUS[gpu]
-        # print(gpu)
-        if (gpu[2] == None or gpu[1].upper() not in NVIDIA_Supported_Products) and gpu[0] == '10de' :
-            try:
-                vendorid_deviceid = gpu[1].upper() + "_" + gpu[0].upper()
-                possibledriver = FindOutOfBranchDriver(vendorid_deviceid)
-                if possibledriver != None:
-                    performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-                    drivers_to_download.append(possibledriver) 
-                    continue
-                else:
-                    performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
-                    return 0, performing_DDU_on, None
-            except:
-                performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
-                return 0, performing_DDU_on, None
-        elif gpu[2] == None:
-            performing_DDU_on = "Cannot perform AutoDDU due to GPU not being in our database. \n"
-            return 0, performing_DDU_on, None
-        if gpu[-2] == 4:  # EOL
-            performing_DDU_on = "Cannot perform DDU due to the following incompatible GPU found: \n"
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-            return 0, performing_DDU_on, None
-        if gpu[-2] == 3:  # fermiprof
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-            drivers_to_download.append(NVIDIA_R390)
-            Fermi += 1
-        if gpu[-2] == 2:  # Kepler
-            if gpu[-1] == "Consumer":
-                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-                if NVIDIA_R470_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    drivers_to_download.append(NVIDIA_R470_Consumer)
-                Kepler += 1
-                Consumer += 1
-            elif gpu[-1] == "Datacenter":
-                if NVIDIA_Datacenter_Kepler not in drivers_to_download:
-                    drivers_to_download.append(NVIDIA_Datacenter_Kepler)
-            else:  # Professional.. probably (edge cases, TODO)
-                performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-                if NVIDIA_R470_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    drivers_to_download.append(NVIDIA_R470_Professional)
-                Kepler += 1
-                Professional += 1
-        if gpu[-2] == 1:  # Supported
-            # print("test")
-            performing_DDU_on = performing_DDU_on + name + "({Arch}) \n".format(Arch=str(gpu[2]))
-            if gpu[0] == '10de':  # NVIDIA
-                if gpu[-1] == 'Professional':
-                    if NVIDIA_Professional not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                        drivers_to_download.append(NVIDIA_Professional)
-                    Professional += 1
-                elif gpu[-1] == "Datacenter":
-                    if NVIDIA_Datacenter not in drivers_to_download:
-                        drivers_to_download.append(NVIDIA_Datacenter)
-                        Professional += 1
-                else:
-                    if NVIDIA_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                        if obtainsetting("nvidiastudio") == 1 and ("GK" not in str(gpu[2]) and "GM" not in str(gpu[2])): # Unlike normal driver, Studio only supports Pascal and above
-                            drivers_to_download.append(NVIDIA_Consumer_Studio)
-                        else:
-                            drivers_to_download.append(NVIDIA_Consumer)
-                    Consumer += 1
-            if gpu[0] == '1002':  # AMD
-                if AMD_Consumer not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                    if obtainsetting("amdenterprise") == 1:
-                        drivers_to_download.append(AMD_Professional)
-                    else:
-                        drivers_to_download.append(AMD_Consumer)
-                    # Consumer += 1
-            if gpu[0] == '8086':  # Intel
-                if gpu[1].upper() in Intel_Consumer_Supported:
-                    if Intel_Consumer not in drivers_to_download:
-                        drivers_to_download.append(Intel_Consumer)
-                else:
-                    if "https://dsadata.intel.com/installer" not in drivers_to_download:  # Damn you Anderson. Damn you. It sucks we even need to check for this but.. god dammit...
-                        drivers_to_download.append("https://dsadata.intel.com/installer")
-                        if obtainsetting("inteldriverassistant") == 0:
-                            # We need to record this, because we handle installation a bit differently
-                            # in this case.
-                            change_AdvancedMenu("98")
-                        # Consumer += 1
-    if Consumer > 0 and Professional > 0:
-        performing_DDU_on = "Cannot perform DDU due to seeing Professional and Consumer GPUs \n Which is not supported by NVIDIA: https://nvidia.custhelp.com/app/answers/detail/a_id/2280/~/can-i-use-a-geforce-and-quadro-card-in-the-same-system%3F \n For troubleshooting purposes please show this if this is a mistake: \n"
-        performing_DDU_on = performing_DDU_on + dict_of_GPUS
-        return 0, performing_DDU_on, None
-    if Fermi > 0 and Kepler > 0:
-        performing_DDU_on = "Cannot perform DDU due to seeing Fermi and Kepler GPUs \n For troubleshooting purposes please show this if this is a mistake: \n"
-        performing_DDU_on = performing_DDU_on + dict_of_GPUS
-        return 0, performing_DDU_on, None
-    if len(drivers_to_download) == 0:
-        performing_DDU_on = """
-WARNING: NO GPUS HAVE BEEN DETECTED BY WINDOWS.
-THIS PROCESS WILL CONTINUE BUT YOU WILL NEED TO
-INSTALL DRIVERS MANUALLY YOURSELF AFTER THIS PROCESS 
-IS OVER. 
-        
-PLEASE REPORT THIS TO EVERNOW IF IT IS A BUG.
-        
-Chika is mad and confused at the same time."""
-    # logger("Finished checkifpossible with these values: " + 1 + " " + performing_DDU_on + " " + drivers_to_download)
-    return 1, performing_DDU_on, drivers_to_download
 
 
 # This keeps track of where we are in the process in a text file. 
@@ -1363,7 +1176,7 @@ class DownloadProgressBar(tqdm):
             self.total = tsize
         self.update(b * bsize - self.n)
 
-def download_helper(url, fname):
+def download_helper(url, fname,showbar=False):
     while not internet_on():
         logger("Saw no internet, asking user to connect")
         print("No internet connection")
@@ -1755,17 +1568,6 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     print("MAKE SURE TO HAVE AN INTERNET CONNECTION")
                     while True:
                         time.sleep(1)
-                # if IsKasperskyInstalled() == True:
-                #     print("Kaspersky is installed. This software is known to cause")
-                #     print(" issues with running AutoDDU at multiple steps, and has")
-                #     print(" caused many headaches. Highly recommended to either fully")
-                #     print(" uninstall Kaspersky or at the very least completely ")
-                #     print( " disabling it. I've tried to send AutoDDU for analysis")
-                #     print(" to Kaspersky multiple times but they keep saying all is good.")
-                #     print(" We'll continue in 3 minutes, between now and 3 minutes please disable it.")
-                #     time.sleep(180)
-                #     print("Continuing with normal setup now with the assumption you disabled it.")
-                #     print(" ")
                 print_menu1()
                 if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
                     print("There is pending Windows Updates that require a Restart")
@@ -1785,16 +1587,14 @@ Please have at least 20GB of free space in C: drive.
                         time.sleep(1)
 
             print("This process will attempt to perform DDU automatically.", flush=True)
-            time.sleep(1)
-            mainshit = ""
             if obtainsetting("bypassgpureq") == 0:
                 try:
-                    # For testing you replace getgpuinfos() with proper dict such as:
+                    # for testing you pass something like this inside gpustatus
                     # {'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}
                     if len(TestEnvironment) == 0:
-                        mainshit = checkifpossible(getsupportstatus(getgpuinfos()))
+                        mainshit = GetGPUStatus()
                     else:
-                        mainshit = checkifpossible(getsupportstatus(TestEnvironment[0]))
+                        mainshit = GetGPUStatus(TestEnvironment[0])
                 except Exception:
                     print("ERROR UNRECOVERABLE PLEASE REPORT THIS TO EVERNOW: \n", flush=True)
                     print(traceback.format_exc())
@@ -1804,22 +1604,22 @@ Please have at least 20GB of free space in C: drive.
                         else:
                             return("GPU REQ TEST  "  + str(traceback.format_exc())   )
 
-                print(mainshit[1])
-                if mainshit[0] == 0:
+                
+                if mainshit == "Unsupported":
                     print(r"""
     INCOMPATIBLE GPU CONFIGURATION FOUND.
     
     CURRENTLY NO WAY TO RUN AUTODDU WITH THIS CONFIGURATION.
-    
-    IF THIS IS A MISTAKE PLEASE SHARE THIS WITH EVERNOW:
         """, flush=True)
-                    print(mainshit)
                     while True:
                         if len(TestEnvironment) == 0:
                             time.sleep(1)
                         else:
                             return("Incompatible GPU")
 
+                print(mainshit[0])
+                time.sleep(3)
+                
             print(r"""
 This will update Windows if out of date, download needed drivers,
 disable internet (needed to prevent Windows from fucking it up), 
@@ -1828,10 +1628,8 @@ YOU DO NOT NEED TO DO ANYTHING EXCEPT LAUNCH THIS APP ONCE RESTARTED
 IN SAFE MODE
 This will also disable all GPU overclocks/undervolts/custom fan curves.
 Do not worry if you do not know what this is, it won't affect you.
-                    
 When you are ready (this process can take up to 30 minutes 
 and CANNOT be paused) please do what it says above. 
-                    
 Save all documents and prepare for your computer to restart
 without warning. 
  """, flush=True)
@@ -1849,7 +1647,7 @@ without warning.
                 download_drivers(obtainsetting("provideowngpuurl"))
 
             elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
-                download_drivers(mainshit[2])
+                download_drivers(mainshit[1])
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
                 if len(TestEnvironment) == 0:
                     uptodate()
