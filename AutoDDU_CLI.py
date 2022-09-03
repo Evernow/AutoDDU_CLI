@@ -1432,55 +1432,41 @@ def DDUCommands():
         changepersistent(0)
 
 
-def disableOrEnableAdapter(adapter, enable):
-    wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
-    if adapter.Virtual == False and adapter.LinkTechnology != 10:
-        try:
-                                    if enable == False:
-                                        if adapter.State == 2:
-                                            adapter.Disable()
-                                            
-                                            logger("Successfully disabled this : " + str(adapter.Name))
-                                    else:
-                                        if str(adapter.Name) in obtainsetting("disabledadapters"):
-                                                logger("Successfully enabled this : " + str(adapter.Name))
-                                                adapter.Enable()
-        except:
-                                    logger("Got exception in enable_internet when trying something with " + adapter.Name)
-                                    logger(str(traceback.format_exc()))
-                                    pass
-        return 
-
 def enable_internet(enable):
 # https://stackoverflow.com/questions/59668995/how-do-i-discover-pci-information-from-an-msft-netadapter
 # https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/hh968170(v=vs.85)
     if obtainsetting("disableinternetturnoff") == 0:
-        print("Do not worry if this seems frozen for a bit")
-        try:
-            wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
-            logger("In enable_internet with argument to " + str(enable))
-            list_of_names = list()
-            list_test = list()
-            for adapter in wrxAdapter:
-                list_test.append(str(adapter.Name))
-                # Found in the NVIDIA Server that a malfunctioning network card can hang WMI for all eternity. Best add a timeout for that..
-                proc = multiprocessing.Process(target=disableOrEnableAdapter, args=(adapter, enable,)) 
-                proc.start()
-                time.sleep(5)
-                proc.terminate()
-
-        except:
-                logger("Failed in enable_internet with")
-                logger(str(traceback.format_exc()))                
+        wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
+        logger("In enable_internet with argument to " + str(enable))
+        list_of_names = list()
+        list_test = list()
+        for adapter in wrxAdapter:
+            list_of_names.append(adapter.Name)
+            if adapter.Virtual == False and adapter.LinkTechnology != 10:
+                try:
+                    if enable == False:
+                        if adapter.State == 2:
+                            adapter.Disable()
+                            list_test.append(str(adapter.Name))
+                            logger("Successfully disabled this : " + str(adapter.Name))
+                    else:
+                        if str(adapter.Name) in obtainsetting("disabledadapters"):
+                                logger("Successfully enabled this : " + str(adapter.Name))
+                                adapter.Enable()
+                except:
+                    logger("Got exception in enable_internet when trying something with " + adapter.Name)
+                    logger(str(traceback.format_exc()))
+                    pass
         if not enable:
-                with open(AutoDDU_CLI_Settings, 'r+') as f:
-                    advanced_options_dict = json.load(f)
-                    advanced_options_dict["disabledadapters"] = list_test
-                    f.seek(0)
-                    json.dump(advanced_options_dict, f, indent=4)
-                    f.truncate()
+            with open(AutoDDU_CLI_Settings, 'r+') as f:
+                advanced_options_dict = json.load(f)
+                advanced_options_dict["disabledadapters"] = list_test
+                f.seek(0)
+                json.dump(advanced_options_dict, f, indent=4)
+                f.truncate()
         logger("Working with these adapters in enable_internet")
         logger(str(list_of_names))
+
 
 # For testing you pass in a list with
 # [{'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}, []]
@@ -1747,9 +1733,11 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
             makepersist()
            # BackupLocalAccount()
             if len(TestEnvironment) == 0:
+                 # Found in the NVIDIA Server that a malfunctioning network card can hang WMI for all eternity. Best add a timeout for that..
+                print("Please wait ~10 seconds for us to disable the internet.")
                 proc = multiprocessing.Process(target=enable_internet, args=(False,)) 
                 proc.start()
-                time.sleep(15)
+                time.sleep(10)
                 proc.terminate()
                 
             changepersistent(2)
@@ -1860,9 +1848,10 @@ and then turn on your internet.
                     print("Intel driver needed, will turn on internet (needed for installer), please wait a bit",
                           flush=True)
                     if len(TestEnvironment) == 0:
+                        print("Please wait ~10 seconds for us to enable the internet.")
                         proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                         proc.start()
-                        time.sleep(15)
+                        time.sleep(10)
                         proc.terminate()
                     time.sleep(10)
                     if os.path.exists(os.path.join(PROGRAM_FILESX86,"Intel", "Driver and Support Assistant")):
@@ -1892,7 +1881,8 @@ Closing in ten minutes. Feel free to close early if no problems
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                     proc.start()
-                    time.sleep(15)
+                    print("Please wait ~10 seconds for us to enable the internet.")
+                    time.sleep(10)
                     proc.terminate()
             cleanup()
             changepersistent(0)
@@ -1928,5 +1918,6 @@ Closing in ten minutes. Feel free to close early if no problems
         else:
             return ("Exception " + str(traceback.format_exc()))
 
-
-print(mainpain([]))
+if __name__ == '__main__':
+    multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+    print(mainpain([]))
