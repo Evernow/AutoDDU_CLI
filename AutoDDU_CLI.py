@@ -1195,7 +1195,8 @@ def download_helper(url, fname,showbar=True):
         print("Retrying in 30 seconds")
         time.sleep(30)
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
-    print("Downloading file {}".format(fname.split("\\")[-1]))
+    if showbar==True:
+        print("Downloading file {}".format(fname.split("\\")[-1]))
     remaining_download_tries = 15
     while remaining_download_tries > 0:
         if os.path.exists(fname):
