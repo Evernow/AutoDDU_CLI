@@ -91,7 +91,7 @@ unrecoverable_error_print = (r"""
 login_or_not = """
 You should be logged in automatically to a
 user profile we created, if it doesn't then login
-yourself manually.
+yourself manually (password is 1234).
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
@@ -804,7 +804,6 @@ def makepersist():
             f.write(line)
             f.write('\n')
 
-    print("INFO: Successfully created autorun task for in normal mode.")
     logger("Finished makepersist")
 
 
@@ -821,6 +820,7 @@ def autologin():
                 print("you into your user at boot up, you will have to ")
                 print("set it up again yourself once everything is finished")
                 print("We'll continue in 30 seconds.")
+                print("")
                 time.sleep(30)
         except: # Fails when key does not exist, aka when someone does not have AutoLogin setup on their own.
             pass
@@ -1535,6 +1535,14 @@ def mainpain(TestEnvironment):
     print("This software comes with no warranty as stated in the MIT License.")
     print("Copyright (c) 2022-present Daniel Suarez")
     print("\n", flush=True)
+    if myapp.alreadyrunning():
+            print(r"""
+THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
+CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.                  
+                  """)
+            while True:
+                time.sleep(1)
+
     try:
         if getpersistent() != 2 and os.getlogin() == obtainsetting("ProfileUsed"):
             logger("User logged into DDU profile early for some reason.")
@@ -1560,15 +1568,6 @@ def mainpain(TestEnvironment):
                     handleoutofdate()
                 except:
                     logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
-        if myapp.alreadyrunning():
-            print(r"""
-THERE IS A POSSIBILITY YOU OPENED THIS MORE THAN ONCE BY ACCIDENT. PLEASE 
-CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.                  
-                  """)
-            sys.stdout.flush()
-            while True:
-                if len(TestEnvironment) == 0:
-                    time.sleep(1)
                 else:
                     return("Duplicate app instance")
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
