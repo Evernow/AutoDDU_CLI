@@ -1072,12 +1072,12 @@ def GetGPUStatus(testing=None):
                     driver = amd_gpu[possibledriver]['link']
                     logger("Applicable GPU driver is " + driver )
                     lastpriority = int(amd_gpu[possibledriver]['priority'])
-                if obtainsetting('amdenterprise') == 1 and DictOfGPUs[GPU][2].upper() in amd_gpu['professional']['SupportedGPUs']:
-                    logger("User asked for professional driver and it is supported, providing it.")
-                    driver = amd_gpu['professional']['link']
-                if driver == None:
-                    logger("No known GPU driver found, assuming end of life")
-                    return "Unsupported"
+            if obtainsetting('amdenterprise') == 1 and DictOfGPUs[GPU][2].upper() in amd_gpu['professional']['SupportedGPUs']:
+                logger("User asked for professional driver and it is supported, providing it.")
+                driver = amd_gpu['professional']['link']
+            if driver == None:
+                logger("No known GPU driver found, assuming end of life")
+                return "Unsupported"
             if driver not in list_of_gpu_downloads:
                 list_of_gpu_downloads.append(driver)
         if DictOfGPUs[GPU][1].lower() == '8086': # Intel 
@@ -1089,9 +1089,9 @@ def GetGPUStatus(testing=None):
                     driver = intel_gpu[possibledriver]['link']
                     logger("Applicable GPU driver is " + driver )
                     lastpriority = int(intel_gpu[possibledriver]['priority'])
-                if driver == None:
-                    logger("No known GPU driver found, assuming end of life")
-                    return "Unsupported"
+            if driver == None:
+                logger("No known GPU driver found, assuming end of life")
+                return "Unsupported"
             if driver not in list_of_gpu_downloads:
                 list_of_gpu_downloads.append(driver)
     
