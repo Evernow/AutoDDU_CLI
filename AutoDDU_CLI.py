@@ -193,7 +193,7 @@ def BackupLocalAccount():
 
 def AdminGroupName():
     # This exists because german localizes group names, so administrator is not the name of the admin group
-    # in german.
+    # in german. https://youtu.be/APbJcnH1brg
     for group in wmi.WMI().Win32_Group(): # https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-group
         if group.SID == 'S-1-5-32-544': # https://docs.microsoft.com/en-US/windows/security/identity-protection/access-control/security-identifiers
             adminname = group.Caption.replace((group.Domain + '\\'), '') 
@@ -1888,6 +1888,9 @@ Closing in ten minutes. Feel free to close early if no problems
             changepersistent(0)
             if os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
                 os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
+            # RIP Chika ASCII Art tormenting the lives of people at the beginning
+            # March 2022 - September 2022
+            # Killed at the hands of Arron who said "you're scaring people away, at least hide it at the end where it's too late for them to turn back"
             print(r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%%&................... @@@@@@@@@@@@@@@@@@@@@@
