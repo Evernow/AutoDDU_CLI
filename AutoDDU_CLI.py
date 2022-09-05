@@ -91,13 +91,26 @@ unrecoverable_error_print = (r"""
 login_or_not = """
 You should be logged in automatically to a
 user profile we created, if it doesn't then login
-yourself manually (password is 1234).
+yourself manually (password is Y97Aoa72VzN8dr).
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
 
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+
+def VerifyDDUAccountCreated():
+    listofusers = []
+    for profile in wmi.WMI().Win32_UserAccount() :
+        if len(profile.FullName) > 0:
+            listofusers.append(profile.FullName)
+    logger("List of users in Windows install is:")
+    logger(str(listofusers))
+    if obtainsetting("ProfileUsed") not in listofusers:
+        return False
+    return True
+
 
 def RestartPending():
     # Checks to see if a restart is pending for updates, this is to prevent issues with us restarting and not landing in safe mode.
@@ -829,7 +842,7 @@ def autologin():
 
         winreg.SetValueEx(Winlogon_key, 'DefaultUserName', 0, winreg.REG_SZ, '{}'.format(obtainsetting("ProfileUsed")))
 
-        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, winreg.REG_SZ, '1234')
+        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, winreg.REG_SZ, 'Y97Aoa72VzN8dr')
 
         winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, winreg.REG_DWORD, '6')
 
@@ -845,8 +858,9 @@ def autologin():
         profile account we created."""
 
 def workaroundwindowsissues():
-    subprocess.call('NET USER {profile} 1234 '.format(profile=obtainsetting("ProfileUsed")), shell=True,
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.call('NET USER {profile} Y97Aoa72VzN8dr'.format(profile=obtainsetting("ProfileUsed")), shell=True,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+                        # Reason for password being complex is that gg5489 discovered that with gpo settings there are policies for what a password can be: https://activedirectorypro.com/how-to-configure-a-domain-password-policy/
 
     if insafemode():
         change_AdvancedMenu("99")
@@ -898,7 +912,7 @@ def workaroundwindowsissues():
                 zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
             try:
                 subprocess.call(
-                    '{directory_to_exe} -accepteula -u {profile} -p 1234 i- exit'.format(profile=obtainsetting("ProfileUsed"),
+                    '{directory_to_exe} -accepteula -u {profile} -p Y97Aoa72VzN8dr i- exit'.format(profile=obtainsetting("ProfileUsed"),
                                                                                         directory_to_exe=os.path.join(
                                                                                             Appdata_AutoDDU_CLI, "PsTools",
                                                                                             "PsExec.exe")), shell=True,
@@ -1738,13 +1752,20 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                     HandleOtherLanguages()
                 time.sleep(1)
             os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe')) # Makes sure nothing like Kaspersky has fucked us over, will make AutoDDU error out before doing anything annoying to recover from.
+            
+            workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
+            
+            if VerifyDDUAccountCreated() == False:
+                print("Something went wrong with creating user profile, unable to continue.")
+                while True:
+                    time.sleep(1)
+
             suspendbitlocker()
             if len(TestEnvironment) == 0:
                 time.sleep(5)
                 safemode(1)
 
             print("May seem frozen for a bit, do not worry, we're working in the background.")
-            workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             makepersist()
            # BackupLocalAccount()
             if len(TestEnvironment) == 0:
