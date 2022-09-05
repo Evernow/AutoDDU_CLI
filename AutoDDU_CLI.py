@@ -398,8 +398,11 @@ def suspendbitlocker():
         logger("Did not suspend bitlocker with output " + p)
     
 def handleoutofdate():
-    url = urllib.request.urlopen("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/Version.json")
-    data = json.loads(url.read().decode())
+
+
+    download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/Version.json", os.path.join(Jsoninfofileslocation,'Version.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'Version.json')) as json_file:
+        data = json.load(json_file)
 
     if (packaging.version.parse(Version_of_AutoDDU_CLI)) < packaging.version.parse(data['version']):
         logger("Version did not match, version in local variable is {local} while version on GitHub is {git}".format(git=data['version'], local=Version_of_AutoDDU_CLI))
@@ -985,9 +988,6 @@ def PCIID(vendor, device):
         return None
 
 def getgpuinfos(testing=None):
-    if os.path.exists(Jsoninfofileslocation):
-        shutil.rmtree(Jsoninfofileslocation)
-    os.mkdir(Jsoninfofileslocation)
     controllers = wmi.WMI().Win32_VideoController()
     gpu_dictionary = dict()  # GPU NAME = [VENDOR ID, DEVICE ID, ARCHITECTURE , RAW OUTPUT (for troubleshooting purposes), supportstatus (0=unchecked, 1=supported, 2=kepler, 3=fermiprof, 4=EOL), professional/consumer]
     logger("Working in getgpuinfos with this wmi output: ")
@@ -1253,11 +1253,6 @@ def download_drivers(list_to_download):
         download_helper(url, os.path.join(Appdata, "AutoDDU_CLI", "Drivers\\", fileextension))
 
 
-def exists(path):
-    r = requests.head(path)
-    return r.status_code == requests.codes.ok
-
-
 
 def ddu_download():
     if os.path.exists(ddu_extracted_path) and os.path.isdir(ddu_extracted_path):
@@ -1271,8 +1266,9 @@ def ddu_download():
         )
 
 
-    url = urllib.request.urlopen("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/DDUVersion.json")
-    data = json.loads(url.read().decode())
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/DDUVersion.json", os.path.join(Jsoninfofileslocation,'DDUVersion.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'DDUVersion.json')) as json_file:
+        data = json.load(json_file)
 
     Latest_DDU_Version_Raw = data['version']
 
@@ -1290,10 +1286,9 @@ def ddu_download():
 
 
 def latest_windows_version(majorversion):
-    with urllib.request.urlopen(
-            "https://github.com/24HourSupport/CommonSoftware/raw/main/WindowsReleases.json") as url:
-        WindowsReleases = json.loads(url.read().decode())
-
+    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/WindowsReleases.json", os.path.join(Jsoninfofileslocation,'WindowsReleases.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'WindowsReleases.json')) as json_file:
+        WindowsReleases = json.load(json_file)
     return max(WindowsReleases[majorversion])
 
 
@@ -1569,6 +1564,8 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
     except: # obtainsetting when unset will error out
         logger("Expected first failure to check if user is in incorrect profile, this means we're good.") 
     checkBatteryLevel()
+    if not os.path.exists(Jsoninfofileslocation):
+        os.mkdir(Jsoninfofileslocation)
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
         logger("Running under user {}".format(os.getlogin()))
