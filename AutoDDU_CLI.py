@@ -104,8 +104,8 @@ powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.ex
 def VerifyDDUAccountCreated():
     listofusers = []
     for profile in wmi.WMI().Win32_UserAccount() :
-        if len(profile.FullName) > 0:
-            listofusers.append(profile.FullName)
+        if len(profile.Name) > 0:
+            listofusers.append(profile.Name)
     logger("List of users in Windows install is:")
     logger(str(listofusers))
     if obtainsetting("ProfileUsed") not in listofusers:
