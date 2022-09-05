@@ -1915,7 +1915,7 @@ Closing in ten minutes. Feel free to close early if no problems
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                     proc.start()
-                    print("Please wait ~10 seconds for us to enable the internet.")
+                    print("Please wait ~10 seconds for us to enable the internet. Once it's enabled feel free to close this window.")
                     time.sleep(10)
                     proc.terminate()
             cleanup()
