@@ -91,7 +91,8 @@ unrecoverable_error_print = (r"""
 login_or_not = """
 You should be logged in automatically to a
 user profile we created, if it doesn't then login
-yourself manually (password is Y97Aoa72VzN8dr).
+yourself manually (password is Evident@Omega@Winnings4@Matted@Swear@Handled
+).
 """
 
 AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.json")
@@ -845,7 +846,7 @@ def autologin():
 
         winreg.SetValueEx(Winlogon_key, 'DefaultUserName', 0, winreg.REG_SZ, '{}'.format(obtainsetting("ProfileUsed")))
 
-        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, winreg.REG_SZ, 'Y97Aoa72VzN8dr')
+        winreg.SetValueEx(Winlogon_key, 'DefaultPassword', 0, winreg.REG_SZ, 'Evident@Omega@Winnings4@Matted@Swear@Handled')
 
         winreg.SetValueEx(Winlogon_key, 'AutoLogonCount', 0, winreg.REG_DWORD, '6')
 
@@ -861,7 +862,7 @@ def autologin():
         profile account we created."""
 
 def workaroundwindowsissues():
-    subprocess.call('NET USER {profile} Y97Aoa72VzN8dr'.format(profile=obtainsetting("ProfileUsed")), shell=True,
+    subprocess.call('NET USER {profile} Evident@Omega@Winnings4@Matted@Swear@Handled'.format(profile=obtainsetting("ProfileUsed")), shell=True,
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
                         # Reason for password being complex is that gg5489 discovered that with gpo settings there are policies for what a password can be: https://activedirectorypro.com/how-to-configure-a-domain-password-policy/
 
@@ -915,7 +916,7 @@ def workaroundwindowsissues():
                 zip_ref.extractall(os.path.join(Appdata_AutoDDU_CLI, "PsTools"))
             try:
                 subprocess.call(
-                    '{directory_to_exe} -accepteula -u {profile} -p Y97Aoa72VzN8dr i- exit'.format(profile=obtainsetting("ProfileUsed"),
+                    '{directory_to_exe} -accepteula -u {profile} -p Evident@Omega@Winnings4@Matted@Swear@Handled i- exit'.format(profile=obtainsetting("ProfileUsed"),
                                                                                         directory_to_exe=os.path.join(
                                                                                             Appdata_AutoDDU_CLI, "PsTools",
                                                                                             "PsExec.exe")), shell=True,
