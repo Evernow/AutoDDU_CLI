@@ -1490,15 +1490,15 @@ def mainpain(TestEnvironment):
 
     print(TestEnvironment)
     # Wine Easter Egg
-    try: # Tries to open key only present when running under Wine
-        aKey = winreg.OpenKey(winreg.ConnectRegistry(None,winreg.HKEY_CURRENT_USER), r"Software\Wine", 0, winreg.KEY_READ)
+    # try: # Tries to open key only present when running under Wine
+    #     aKey = winreg.OpenKey(winreg.ConnectRegistry(None,winreg.HKEY_CURRENT_USER), r"Software\Wine", 0, winreg.KEY_READ)
 
-        subprocess.run("winebrowser https://funny.computer/linux/", shell=True) # Nobody actually installs IE in their prefixes right?
-        print("Someone actually ran this on Linux lol")
-        while True:
-            time.sleep(1)
-    except:
-        pass
+    #     subprocess.run("winebrowser https://funny.computer/linux/", shell=True) # Nobody actually installs IE in their prefixes right?
+    #     print("Someone actually ran this on Linux lol")
+    #     while True:
+    #         time.sleep(1)
+    # except:
+    #     pass
     if len(TestEnvironment) == 0:
         os.system('mode con: cols=80 lines=40')
         kernel32 = ctypes.windll.kernel32
