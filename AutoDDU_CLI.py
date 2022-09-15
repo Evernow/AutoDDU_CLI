@@ -31,6 +31,8 @@ import codecs
 from tqdm import tqdm
 import packaging.version 
 import multiprocessing
+import win32com.client
+
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
@@ -354,40 +356,91 @@ def cleanupAutoLogin():
 
 
 def returnpendingupdates():
-    CheckPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "CheckPendingUpdates.vbs")
-    OutputOfPendingUpdates = os.path.join(Appdata_AutoDDU_CLI, "OutputOfPendingUpdates.txt")
     # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
     # https://github.com/Evernow/AutoDDU_CLI/issues/14
-    try:
-        vbsfile = ['Set updateSession = CreateObject("Microsoft.Update.Session")\n', 
-        'Set updateSearcher = updateSession.CreateupdateSearcher()        \n', 
-        'Set searchResult = updateSearcher.Search("IsInstalled=0 and Type=\'Software\'")\n', '\n', '\n',
-        'If searchResult.Updates.Count <> 0 Then \n', '\n', 'For i = 0 To searchResult.Updates.Count - 1\n',
-        '    Set update = searchResult.Updates.Item(i)\n', '    \n', 'Next\n', 'End If\n', '\n', 'Main\n', '\n', 'Sub Main()\n',
-        '    Dim result, fso, fs\n', '    result = 1 / Cos(25)\n', '    Set fso = CreateObject("Scripting.FileSystemObject")\n',
-            '    Set fs  = fso.CreateTextFile("{output}", True)\n'.format(output=OutputOfPendingUpdates),
-            '    fs.Write searchResult.Updates.Count\n',
-            '    fs.Close\n', 'End Sub'] 
-        with open(CheckPendingUpdates, 'w') as f:
-            for item in vbsfile:
-                f.write(item)
-        os.system(CheckPendingUpdates)
-        with open(OutputOfPendingUpdates,'r') as file:
-            lines = file.readlines()     
-            if lines[0] == "0":
-                return False
-            else:
-                return True
-    except:
-        print("""
-Make sure when we launch the update assistant
-that the option to keep files and apps is selected
-when asked.""")
-        time.sleep(5)
-        logger("Failed in returnpendingupdates with error")
-        logger(str(traceback.format_exc()))
         return False
 
+def PendingUpdatesCount():
+    # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
+    # https://github.com/Evernow/AutoDDU_CLI/issues/14
+
+    try:
+        wua = win32com.client.Dispatch("Microsoft.Update.Session")    
+        avilable_update_seeker = wua.CreateUpdateSearcher()
+        search_available = avilable_update_seeker.Search("IsInstalled=0 and Type='Software'")
+        pendingupdates = int(search_available.Updates.Count )
+        logger("Got pending updates to be " + str(pendingupdates))
+        return pendingupdates
+    except:
+        logger("Failed to check Pending updates with following error")
+        logger(str(traceback.format_exc()))
+        logger("Gonna be trying to log every element of Microsoft Update Session")
+        try:
+            # I don't have a lot of data on how this fails, but know for a fact that it does in some situations,
+            # and in those situations the person usually leaves and logs don't provide useful info, so this is why
+            # I added all these logs.
+            logger("Going to try to dispatch Microsoft.Update.Session")
+            wua = win32com.client.Dispatch("Microsoft.Update.Session")
+            logger(str(wua))
+            logger("Going to try to create update searcher")
+            avilable_update_seeker = wua.CreateUpdateSearcher()
+            print(str(avilable_update_seeker))
+            logger("Going to try search with the specific variables to know which updates ain't installed")
+            search_available = avilable_update_seeker.Search("IsInstalled=0 and Type='Software'")
+            logger(str(search_available))
+            logger("Going to try to get result from previous search")
+            logger(search_available.Updates.Count)
+            if type(search_available.Updates.Count) ==int:
+                logger("No idea how but this check didn't fail??")
+            else:
+                logger("Type of Updates.Count is not the expected one, it is")
+                print(str(type(search_available.Updates.Count)))
+        except:
+            logger("Failed in logging extra info with")
+            logger(str(traceback.format_exc()))
+
+        print("Something is crucially wrong with")
+        print("your Windows Updates service.")
+        print("This is a major issue and can cause a great pain later on.")
+        print("We recommend running SFC and DISM, then restarting.")
+        print("If you don't know what this is then show this message")
+        print("to the person who sent you this, they likely know.")
+        print("If this keeps happening and you're sure there's no problems")
+        print("then here we offer the option to also continue like")
+        print("if nothing is wrong, but we only recommend doing this")
+        print("once you've corrected the problem,if to correct this")
+        print("you need to restart it's fine, AutoDDU will continue on")
+        print("when you launch it later. We'll show option to continue in 60 seconds.")
+        time.sleep(60)
+        HandleOtherLanguages()
+
+def HandlePendingUpdates():
+    print("We're checking to see if there's pending updates, this can take a few minutes.")
+    if PendingUpdatesCount() > 0:
+        print(r"""
+There's pending Windows Updates. Having pending
+Windows Updates can cause issues when rebooting into
+safe mode. For this reason we're going to pause
+and you will have to go to Windows Updates in Settings app
+and check for updates (may have to check manually multiple times)
+and apply these updates. If these updates require a restart then
+restart when asked, and then when you're back up you can
+launch AutoDDU yourself afterwards. If no restart is needed then just
+apply the updates and once applied come back here, we'll show
+an option to continue in 10 minutes.""")
+        print("")
+        time.sleep(600)
+        if PendingUpdatesCount() > 0:
+            print("""
+We are still seeing pending updates. Are you sure you
+want us to continue? This can cause great annoyances later on.
+Do the below prompt if you want to continue, if you don't then do whatever
+you need to do to not have updates pending, it is fine to close AutoDDU
+and restart if needed, we'll go from where we ended once you open 
+AutoDDU again.""") 
+
+            HandleOtherLanguages()
+    
 
 def suspendbitlocker():
     try:
@@ -1327,21 +1380,8 @@ def uptodate():
             logger("I believe it is up to date")
 
         else:
+            HandlePendingUpdates() # Unsure if we should even be doing this here but in main(), but I have to do more testing, and it is hard to reproduce the updating issues locally, so we'll need more guinea pigs.
             logger("I do not believe it is up to date")
-            if returnpendingupdates() == True:
-                print("There are pending Windows Updates.")
-                print("Please check for Windows Updates and apply updates.")
-                print("If you need to restart to apply please do so.")
-                print("In that case just reopen AutoDDU_CLI once restarted.")
-                print("If no restart is needed, we'll show option to continue in 60 seconds.")
-                time.sleep(60)
-                if BadLanguage() == False:
-                    while True:
-                        DewIt = str(input("Type in 'Continue' then press enter to begin: "))
-                        if "continue" in DewIt.lower():
-                            break
-                else:
-                    HandleOtherLanguages()
             print("System is out of date, downloading Microsoft Update Assistant.", flush=True)
             download_helper('https://go.microsoft.com/fwlink/?LinkID=799445',
                             os.path.join(Appdata, "MicrosoftUpdater.exe"))
