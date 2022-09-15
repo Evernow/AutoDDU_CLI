@@ -53,8 +53,8 @@ ddu_extracted_path = os.path.join(Appdata, "AutoDDU_CLI", "DDU_Extracted")
 Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0))
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
-Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft',
-                                           'Windows', 'Start Menu', 'Programs', 'Startup', 'AutoDDUStartup.vbs')
+
+Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0)),"AutoDDU_CLI.exe")
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
@@ -857,6 +857,7 @@ def makepersist():
     time.sleep(0.5)
     try:
         shutil.copyfile(sys.executable, exe_location)
+        shutil.copyfile(sys.executable, Script_Location_For_startup)
         logger("Successfully copied executable to Appdata directory")
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
@@ -867,12 +868,6 @@ def makepersist():
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
-    lines = ['Set WshShell = CreateObject("WScript.Shell" )',
-             'WshShell.Run """{directory}""", 1'.format(directory=exe_location), "Set WshShell = Nothing"]
-    with open(Script_Location_For_startup, 'w') as f:
-        for line in lines:
-            f.write(line)
-            f.write('\n')
 
     logger("Finished makepersist")
 
