@@ -1,1 +1,2 @@
-0.0.9
+This is old version file which was used in versions prior to 0.1.0. Now they use the json version which fixes some annoyances I was having with newspaces. 
+Just leaving this here so that old AutoDDU versions don't just error out but instead say that they're out of date.
