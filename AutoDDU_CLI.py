@@ -1893,7 +1893,6 @@ and then turn on your internet.
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
                 intel = 0
                 for driver in s:
-                    if "intel" not in driver or obtainsetting("inteldriverassistant") == 0:
                         print("Please wait, we're verifying integrity of driver.")
                         publisherofdriver = CheckPublisherOfDriver(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver))
                         if publisherofdriver == None:
@@ -1915,29 +1914,6 @@ and then turn on your internet.
                         else:
                             mimicinstalleddrivers.append(driver)
                         logger("Sucessfully finished driver executable: {}".format(driver))
-                    else:
-                        logger("I saw an Intel driver as {} to run later".format(driver))
-                        intel = 1
-                if intel == 1:
-                    print("Intel driver needed, will turn on internet (needed for installer), please wait a bit",
-                          flush=True)
-                    if len(TestEnvironment) == 0:
-                        print("Please wait ~10 seconds for us to enable the internet.")
-                        proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
-                        proc.start()
-                        time.sleep(10)
-                        proc.terminate()
-                    time.sleep(10)
-                    if os.path.exists(os.path.join(PROGRAM_FILESX86,"Intel", "Driver and Support Assistant")):
-                        print("Your Intel GPU driver will be pushed in by Windows Updates after this exists, we're done here")
-                        logger("Found already installed Intel assistant driver")
-                    else:
-                        logger("Did not find Intel assistant driver, launching our own")
-                        print("Installing Intel driver assistant")
-                        if len(TestEnvironment) == 0:
-                            subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", "inteldriver.exe")), shell=True)
-                        else:
-                            mimicinstalleddrivers.append("inteldriver.exe")
                     try:
                         os.remove(Script_Location_For_startup)
                     except:
