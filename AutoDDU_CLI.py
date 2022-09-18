@@ -38,6 +38,10 @@ import ssl
 import pathlib
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
+                                "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
+                                # For example lets say someone runs latest version but it has a problem, then they're told to try an old version,
+                                # if it's old enough it will expect this to be in config, and it will fail if it isn't, even though there was
+                                # never a public AutoDDU release that actually did something with this variable.
                                 "RemovePhysX": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
                                 "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0,
