@@ -14,7 +14,6 @@ from datetime import datetime, timezone, date
 from subprocess import CREATE_NEW_CONSOLE
 
 #import ntplib
-import requests
 import wmi
 from win32com.shell import shell, shellcon
 import winreg
