@@ -60,7 +60,7 @@ Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFIL
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 
-Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0)))
+Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_STARTUP, 0, 0)))
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
