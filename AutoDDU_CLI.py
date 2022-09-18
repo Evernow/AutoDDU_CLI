@@ -32,7 +32,10 @@ from tqdm import tqdm
 import packaging.version 
 import multiprocessing
 import win32com.client
-
+import importlib.metadata
+import dns.resolver
+import tempfile
+import ssl
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
@@ -146,20 +149,6 @@ def CheckPublisherOfDriver(driver):
     logger('Do not know who publisher is.')
     return None
 
-
-def GPUDriversFallback(url):
-        # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
-        # Credit to RandoNando for figuring this out
-        from dns import resolver
-        res = resolver.Resolver()
-        res.nameservers = ['8.8.8.8'] # Google DNS
-        answers = res.resolve('raw.githubusercontent.com')
-        for rdata in answers:
-            address = (rdata.address)
-        r = requests.get(f'http://{address}/{url}', headers={'Host' : 'raw.githubusercontent.com'})
-    #r = requests.get(f'http://{address}/24HourSupport/CommonSoftware/main/nvidia_gpu.json', headers={'Host' : 'raw.githubusercontent.com'})
-
-        return r.json()
 
 def IsKasperskyInstalled():
     software = []
@@ -867,7 +856,8 @@ def makepersist():
             logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
-        download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
+        download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
+        
 
     logger("Finished makepersist")
 
@@ -931,7 +921,7 @@ def workaroundwindowsissues():
 
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
-            download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+            download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe",
                             os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
     else:
         if os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
@@ -951,7 +941,7 @@ def workaroundwindowsissues():
             except:
                 logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
             try:
-                download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe",
                                 os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
             except:
                 logger("Failed to also download to Default folder, going to back to PSExec method.")
@@ -988,7 +978,7 @@ def workaroundwindowsissues():
                 except:
                     logger("Trying to log directories in failure failed with error " + str(traceback.format_exc()))
 
-                download_helper("https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe",
+                download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe",
                                 os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
     
     # This was old approach, leaving here for now incase we need a failback one day.
@@ -1077,19 +1067,19 @@ def GetGPUStatus(testing=None):
     DictOfGPUs = getgpuinfos(testing)
     # NVIDIA Support status loading
     time.sleep(1)
-    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/nvidia_gpu.json", os.path.join(Jsoninfofileslocation,'nvidia_gpu.json'),False)
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json", os.path.join(Jsoninfofileslocation,'nvidia_gpu.json'),False)
     with open(os.path.join(Jsoninfofileslocation,'nvidia_gpu.json')) as json_file:
         nvidia_gpu = json.load(json_file)
 
     # AMD Support status loading
     time.sleep(1)
-    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/amd_gpu.json", os.path.join(Jsoninfofileslocation,'amd_gpu.json'),False)
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/amd_gpu.json", os.path.join(Jsoninfofileslocation,'amd_gpu.json'),False)
     with open(os.path.join(Jsoninfofileslocation,'amd_gpu.json')) as json_file:
         amd_gpu = json.load(json_file)
 
     # Intel Support status loading
     time.sleep(1)
-    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/intel_gpu.json", os.path.join(Jsoninfofileslocation,'intel_gpu.json'),False)
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/intel_gpu.json", os.path.join(Jsoninfofileslocation,'intel_gpu.json'),False)
     with open(os.path.join(Jsoninfofileslocation,'intel_gpu.json')) as json_file:
         intel_gpu = json.load(json_file)
 
@@ -1260,24 +1250,68 @@ def download_helper(url, fname,showbar=True):
     logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
     if showbar==True:
         print("Downloading file {}".format(fname.split("\\")[-1]))
-    remaining_download_tries = 15
+    remaining_download_tries = 16
     while remaining_download_tries > 0:
         if os.path.exists(fname):
             os.remove(fname)
         try:
-            opener = urllib.request.build_opener()
-            opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'),
-                                ('Referer', "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt")]
-            urllib.request.install_opener(opener)
-            if showbar==True:
-                with DownloadProgressBar(unit='B', unit_scale=True,
-                                        miniters=1, desc=url.split('/')[-1]) as t:
-                    urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
-                print("\n")
+            if (remaining_download_tries % 3 == 0 or obtainsetting('dnsoverwrite') == 1) and 'microsoft' not in url.lower(): # Microsoft has this fake javascript form crap, that while urlretrieve can handle, urlopen does not.
+                # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
+                # Credit to RandoNando for figuring this out, and the referenced GitHub issues for the issues I encountered while testing this.
+
+                logger("Landed in DNSFallback")
+                HOST = url.replace('https://','').replace('http://','').replace('www.','').split('/')[0]
+                logger(str(HOST))
+                urlparsing = url.replace('https://','').replace('http://','').replace('www.','')
+                urlparsing = url.replace('https://','').replace('http://','').replace('www.','')[urlparsing.find('/')+1:]
+                logger(str(urlparsing))
+                if importlib.metadata.version('dnspython') == '2.2.1': # https://github.com/rthalley/dnspython/issues/834
+                    import dns.win32util
+                    dns.win32util._getter_class = dns.win32util._RegistryGetter
+                res = dns.resolver.Resolver()
+                res.nameservers = ['8.8.8.8'] # Google DNS
+                answers = res.resolve(HOST)
+                for rdata in answers:
+                    address = (rdata.address)
+                logger("Got the folloing IP address from resolver" + str(address))
+                url_dnsfallback = (f'http://{address}/{urlparsing}')
+                logger(url_dnsfallback)
+                headers = dict( 
+                                [
+                                    (
+                                        "User-agent",
+                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
+                                    ),
+                                    (
+                                        "Referer",
+                                        "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt",
+                                    ),
+                                    ("Host", HOST), # https://github.com/python/cpython/issues/96287 which means no progress bar for dns fallback, but not much else that comes to mind that is practical
+                                    ("test", "test"),
+                                ]
+                            )
+                request = urllib.request.Request(url=url_dnsfallback, headers=headers)
+
+                with urllib.request.urlopen(request) as response:
+                    with open(fname, "wb") as file_:
+                        shutil.copyfileobj(response, file_)
+                break
             else:
-                urllib.request.urlretrieve(url, filename=fname)
-            break
+                opener = urllib.request.build_opener()
+
+                opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'),
+                                    ('Referer', "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt")]
+                urllib.request.install_opener(opener)
+                if showbar==True:
+                    with DownloadProgressBar(unit='B', unit_scale=True,
+                                            miniters=1, desc=url.split('/')[-1]) as t:
+                        urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
+                    print("\n")
+                else:
+                    urllib.request.urlretrieve(url, filename=fname)
+                break
         except:
+            print(str(traceback.format_exc()))
             if remaining_download_tries < 0:
                 raise Exception("Could not download file after 15 tries.")
             logger("Failed to download file, {} retries left".format(remaining_download_tries))
@@ -1335,7 +1369,7 @@ def ddu_download():
 
 
 def latest_windows_version(majorversion):
-    download_helper("https://github.com/24HourSupport/CommonSoftware/raw/main/WindowsReleases.json", os.path.join(Jsoninfofileslocation,'WindowsReleases.json'),False)
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/WindowsReleases.json", os.path.join(Jsoninfofileslocation,'WindowsReleases.json'),False)
     with open(os.path.join(Jsoninfofileslocation,'WindowsReleases.json')) as json_file:
         WindowsReleases = json.load(json_file)
     return max(WindowsReleases[majorversion])
