@@ -35,7 +35,7 @@ import importlib.metadata
 import dns.resolver
 import tempfile
 import ssl
-
+import pathlib
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
@@ -56,7 +56,7 @@ Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFIL
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 
-Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0)),"AutoDDU_CLI.exe")
+Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, 0, 0)))
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
@@ -844,8 +844,15 @@ def cleanup():
 def makepersist():
     time.sleep(0.5)
     try:
-        shutil.copyfile(sys.executable, exe_location)
-        shutil.copyfile(sys.executable, Script_Location_For_startup)
+        shutil.copyfile(sys.executable, exe_location)    
+        # make shortcut to the auto startup location, reason for this is we don't want to
+        # have an actual copy of the executable here since we have to delete this file to stop
+        # auto starts up from happening, and we can't delete ourselves. 
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortCut(Path(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
+        shortcut.IconLocation = source
+        shortcut.Targetpath = source
+        shortcut.save()
         logger("Successfully copied executable to Appdata directory")
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
