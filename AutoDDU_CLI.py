@@ -1317,7 +1317,7 @@ def download_helper(url, fname,showbar=True):
                     urllib.request.urlretrieve(url, filename=fname)
                 break
         except:
-            print(str(traceback.format_exc()))
+            logger(str(traceback.format_exc()))
             if remaining_download_tries < 0:
                 raise Exception("Could not download file after 15 tries.")
             logger("Failed to download file, {} retries left".format(remaining_download_tries))
@@ -1620,15 +1620,16 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
             logger("Contents of directory contain executable: " + str("AutoDDU_CLI.exe" in os.listdir(os.path.dirname(sys.executable)))  )
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
-        if not insafemode():
-            if internet_on():
-                try:
-                    handleoutofdate()
-                except:
-                    logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
                 
         if not os.path.exists(Persistent_File_location) or getpersistent() == -1 or getpersistent() == 0:
             default_config()
+            if not insafemode():
+                if internet_on():
+                    try:
+                        handleoutofdate()
+                    except:
+                        logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
+
             if len(TestEnvironment) == 0:
                 if not internet_on(): 
                     # There is a code path for handling this in safe mode when we have an internet connection. It's when there's not an internet connection that we have a problem.
