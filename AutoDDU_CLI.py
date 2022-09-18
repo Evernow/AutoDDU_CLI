@@ -38,7 +38,7 @@ import ssl
 import pathlib
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
-                                "disabletimecheck": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
+                                "RemovePhysX": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
                                 "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0,
                                 "dnsoverwrite" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
@@ -587,7 +587,7 @@ def AdvancedMenu():
         print('1 --' + AdvancedMenu_Options(1), flush=True)  # Disable Windows Updates check
         print('2 --' + AdvancedMenu_Options(2), flush=True)  # Bypass supported GPU requirement
         print('3 --' + AdvancedMenu_Options(3), flush=True)  # Provide my own driver URLs
-        print('4 --' + AdvancedMenu_Options(4), flush=True)  # Disable time check
+        print('4 --' + AdvancedMenu_Options(4), flush=True)  # RemovePhyX
         print('5 --' + AdvancedMenu_Options(5), flush=True)  # Do not turn internet off when needed
         print('6 --' + AdvancedMenu_Options(6), flush=True)  # Do not disable overclocking/undervolts/fan curves
         print('7 --' + AdvancedMenu_Options(7), flush=True)  # Disable 20GB free storage requirement
@@ -622,10 +622,10 @@ def AdvancedMenu_Options(num):
                 return " Let AutoDDU look for drivers"
 
         if num == 4:
-            if advanced_options_dict["disabletimecheck"] == 0:
-                return " Placeholder (ignore)"
+            if advanced_options_dict["RemovePhysX"] == 0:
+                return " Remove PhysX when running DDU"
             else:
-                return " Placeholder (ignore)"
+                return " Don't remove PhysX when running DDU"
 
         if num == 5:
             if advanced_options_dict["disableinternetturnoff"] == 0:
@@ -697,10 +697,10 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["provideowngpuurl"] = []
 
         if num == "4":
-            if advanced_options_dict["disabletimecheck"] == 0:
-                advanced_options_dict["disabletimecheck"] = 1
+            if advanced_options_dict["RemovePhysX"] == 0:
+                advanced_options_dict["RemovePhysX"] = 1
             else:
-                advanced_options_dict["disabletimecheck"] = 0
+                advanced_options_dict["RemovePhysX"] = 0
 
         if num == "5":
             if advanced_options_dict["disableinternetturnoff"] == 0:
@@ -1490,9 +1490,14 @@ def safemode(ONorOFF):
 
 def DDUCommands():
     if insafemode() == True:
-        subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
-                        '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
-                        '-RemoveNvidiaDirs', '-cleannvidia', '-logging'],check=True)
+        if obtainsetting('RemovePhysX') == 0:
+            subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+                            '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
+                            '-RemoveNvidiaDirs', '-cleannvidia', '-logging'],check=True)
+        else:
+            subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
+                            '-RemoveVulkan', '-RemoveGFE', '-Remove3DTVPlay', '-RemoveNVCP', '-RemoveNVBROADCAST',
+                            '-RemoveNvidiaDirs', '-cleannvidia', '-RemovePhysx', '-logging'],check=True)
         print("1/3 finished with DDU", flush=True)
         sys.stdout.flush()
         subprocess.run([os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe'), '-silent', '-RemoveMonitors',
@@ -1914,13 +1919,7 @@ and then turn on your internet.
                         else:
                             mimicinstalleddrivers.append(driver)
                         logger("Sucessfully finished driver executable: {}".format(driver))
-                    try:
-                        os.remove(Script_Location_For_startup)
-                    except:
-                        pass
-                    changepersistent(0)
                 print("All driver installations complete. Have a good day.")
-                print("Closing in ten minutes. Feel free to close early if no problems", flush=True)
             else:
 
                 print("""
@@ -1928,6 +1927,12 @@ Due to no drivers being detected, our work is done.
 Now it is up to you to install the drivers like you normally would.
 Closing in ten minutes. Feel free to close early if no problems
                 """, flush=True)
+
+            try:
+                os.remove(Script_Location_For_startup)
+            except:
+                pass
+            changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                     proc.start()
