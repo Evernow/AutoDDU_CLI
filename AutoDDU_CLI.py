@@ -974,10 +974,11 @@ def workaroundwindowsissues():
                 download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe",
                                 os.path.join(Users_directory,"Default", "Desktop","AutoDDU_CLI.exe"))
             except:
-                logger("Failed to also download to Default folder, going to back to PSExec method.")
+                logger("Failed to also download to Default folder, going to back to old method.")
         if not os.path.exists(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe")):
         ### Old Approach but unfortunately Kaspersky (and like others) did not like PSTools. Now only here as a backup because people always seem to do fucky things with crap like this.
-            logger("Fell back to PSExec logic because this idiot did something to his user folders, probably some 'But I don't use these folders so lemme delete them' mentality")
+            logger("Fell back to old (word that must not be spoken) logic because this idiot did something to his user folders, probably some 'But I don't use these folders so lemme delete them' mentality")
+            # TODO: I think Kaspersky fucking searches for the presence of the word "PSTools" and blocks executable if it does.. so uhm.. maybe encrypt string then decrypt if we hit this code path?
             download_helper("https://download.sysinternals.com/files/PSTools.zip",
                             os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip"))
             with zipfile.ZipFile(os.path.join(Appdata_AutoDDU_CLI, "PsTools.zip")) as zip_ref:
@@ -1685,7 +1686,8 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     print("and then restart. You may need to restart, check for updates, then restart again.")
                     while True:
                         time.sleep(1)
-                HandlePendingUpdates()
+                if obtainsetting("disablewindowsupdatecheck") == 0:
+                    HandlePendingUpdates()
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
 Too little free space to continue.
@@ -1830,7 +1832,8 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                     print("and then restart. You may need to restart, check for updates, then restart again.")
                     while True:
                         time.sleep(1)
-            HandlePendingUpdates() # One last check to avoid annoying stuff, with same motivation as above check. Yes this happened in my testing.
+            if obtainsetting("disablewindowsupdatecheck") == 0:
+                    HandlePendingUpdates() # One last check to avoid annoying stuff, with same motivation as above check. Yes this happened in my testing.
 
 
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
