@@ -1308,7 +1308,7 @@ def download_helper(url, fname,showbar=True):
                             )
                 request = urllib.request.Request(url=url_dnsfallback, headers=headers)
 
-                with urllib.request.urlopen(request) as response:
+                with urllib.request.urlopen(request,timeout=3) as response:
                     with open(fname, "wb") as file_:
                         shutil.copyfileobj(response, file_)
                 break
