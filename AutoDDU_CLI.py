@@ -513,11 +513,17 @@ I tried to restart but it failed. This could cuase issues.""")
 
 
 def internet_on():
-    try:
-        urllib.request.urlopen('https://www.google.com/', timeout=3)
-        return True
-    except:
-        return False
+    remaining_tries = 5
+    while remaining_tries > 0:
+        try:
+            urllib.request.urlopen('https://www.google.com/', timeout=3)
+            return True
+        except:
+            time.sleep(1)
+            remaining_tries = remaining_tries - 1
+            logger(f"Failed to verify if we're online, gonna give it {remaining_tries} more tries.")
+            logger(str(traceback.format_exc()))
+    return False
 
 
 def time_checker():
