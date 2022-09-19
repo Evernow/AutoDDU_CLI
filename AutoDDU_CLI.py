@@ -1671,6 +1671,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     print("and then restart. You may need to restart, check for updates, then restart again.")
                     while True:
                         time.sleep(1)
+                HandlePendingUpdates()
             if not get_free_space() and len(TestEnvironment) == 0 and obtainsetting("avoidspacecheck") == 0:
                 print(r"""
 Too little free space to continue.
@@ -1807,6 +1808,17 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 time.sleep(1)
             os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe')) # Makes sure nothing like Kaspersky has fucked us over, will make AutoDDU error out before doing anything annoying to recover from.
             
+            if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
+                # User may have gotten an update since the beginning and now, so we check again right before we enable safe mode and create the DDU profile.
+                    print("There is pending Windows Updates that require a Restart")
+                    print("Due to possible issues that can occur with AutoDDU running")
+                    print("with a pending restart please check Windows Settings for updates")
+                    print("and then restart. You may need to restart, check for updates, then restart again.")
+                    while True:
+                        time.sleep(1)
+            HandlePendingUpdates() # One last check to avoid annoying stuff, with same motivation as above check. Yes this happened in my testing.
+
+
             workaroundwindowsissues()  # TODO: this is REALLY FUCKING STUPID
             
             if VerifyDDUAccountCreated() == False:
