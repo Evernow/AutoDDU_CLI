@@ -33,9 +33,8 @@ import multiprocessing
 import win32com.client
 import importlib.metadata
 import dns.resolver
-import tempfile
+import tempfile 
 import ssl
-import pathlib
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
@@ -855,14 +854,6 @@ def makepersist():
     time.sleep(0.5)
     try:
         shutil.copyfile(sys.executable, exe_location)    
-        # make shortcut to the auto startup location, reason for this is we don't want to
-        # have an actual copy of the executable here since we have to delete this file to stop
-        # auto starts up from happening, and we can't delete ourselves. 
-        shell = win32com.client.Dispatch("WScript.Shell")
-        shortcut = shell.CreateShortCut(pathlib.Path(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
-        shortcut.IconLocation = source
-        shortcut.Targetpath = source
-        shortcut.save()
         logger("Successfully copied executable to Appdata directory")
     except:
         logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
@@ -873,7 +864,30 @@ def makepersist():
         except:
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
-        
+    try:
+        # make shortcut to the auto startup location, reason for this is we don't want to
+        # have an actual copy of the executable here since we have to delete this file to stop
+        # auto starts up from happening, and we can't delete ourselves. 
+        # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortCut(os.path.join(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
+        shortcut.IconLocation = sys.executable
+        shortcut.Targetpath = sys.executable
+        shortcut.save()
+    except:
+        print("Failed to enable the ability for AutoDDU to startup by itself")
+        print("when out of safe mode. You'll have to start it manually in safe mode and")
+        print("after safe mode outside of it in your normal profile.")
+        print("The executable will be located on the desktop in safe mode, but")
+        print("when out of safe mode you will have to navigate to the following folder")
+        print(str(Appdata_AutoDDU_CLI ))
+        print("The executable will be located there. ProgramData is hidden by default,")
+        print("if you have issues finding this ask about this.")
+        print("We'll continue in 60 seconds.")
+        logger("Failed to create shortcut for autostartup")
+        logger(str(traceback.format_exc()))
+        time.sleep(60)
+
 
     logger("Finished makepersist")
 
