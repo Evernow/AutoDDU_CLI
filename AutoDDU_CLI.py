@@ -853,7 +853,7 @@ def makepersist():
         # have an actual copy of the executable here since we have to delete this file to stop
         # auto starts up from happening, and we can't delete ourselves. 
         shell = win32com.client.Dispatch("WScript.Shell")
-        shortcut = shell.CreateShortCut(Path(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
+        shortcut = shell.CreateShortCut(pathlib.Path(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
         shortcut.IconLocation = source
         shortcut.Targetpath = source
         shortcut.save()
