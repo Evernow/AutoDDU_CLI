@@ -375,7 +375,7 @@ def PendingUpdatesCount():
             logger(str(wua))
             logger("Going to try to create update searcher")
             avilable_update_seeker = wua.CreateUpdateSearcher()
-            print(str(avilable_update_seeker))
+            logger(str(avilable_update_seeker))
             logger("Going to try search with the specific variables to know which updates ain't installed")
             search_available = avilable_update_seeker.Search("IsInstalled=0 and Type='Software'")
             logger(str(search_available))
@@ -385,7 +385,7 @@ def PendingUpdatesCount():
                 logger("No idea how but this check didn't fail??")
             else:
                 logger("Type of Updates.Count is not the expected one, it is")
-                print(str(type(search_available.Updates.Count)))
+                logger(str(type(search_available.Updates.Count)))
         except:
             logger("Failed in logging extra info with")
             logger(str(traceback.format_exc()))
@@ -1856,7 +1856,9 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 print("Please wait ~10 seconds for us to disable the internet.")
                 proc = multiprocessing.Process(target=enable_internet, args=(False,)) 
                 proc.start()
-                time.sleep(10)
+                time.sleep(5)
+                if proc.is_alive():
+                    time.sleep(10)
                 proc.terminate()
                 
             changepersistent(2)
@@ -1977,7 +1979,10 @@ Closing in ten minutes. Feel free to close early if no problems
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                     proc.start()
                     print("Please wait ~10 seconds for us to enable the internet and do some cleanup.")
-                    time.sleep(10)
+                    time.sleep(5)
+                    if proc.is_alive():
+                        time.sleep(10)
+
                     proc.terminate()
 
             cleanup()
