@@ -59,7 +59,7 @@ Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFIL
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 
-Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_STARTUP, 0, 0)))
+Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_STARTUP, 0, 0)),"AutoDDU_CLI.lnk")
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
@@ -870,7 +870,7 @@ def makepersist():
         # auto starts up from happening, and we can't delete ourselves. 
         # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
         shell = win32com.client.Dispatch("WScript.Shell")
-        shortcut = shell.CreateShortCut(os.path.join(Script_Location_For_startup ,"AutoDDU_CLI.lnk"))
+        shortcut = shell.CreateShortCut(Script_Location_For_startup)
         shortcut.IconLocation = sys.executable
         shortcut.Targetpath = sys.executable
         shortcut.save()
