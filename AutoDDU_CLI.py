@@ -246,7 +246,7 @@ def get_latest_geforce_driver(dev_id):
     try:
         res = getDispDrvrByDevid(query_obj, timeout)
     except urllib.error.HTTPError as e:
-        print(e)
+        logger(e)
         if e.code == 404:
             res = None
         else:
