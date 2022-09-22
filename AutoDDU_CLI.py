@@ -1664,7 +1664,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                         logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
 
             if len(TestEnvironment) == 0:
-                if not internet_on(): 
+                if not internet_on() and insafemode(): 
                     # There is a code path for handling this in safe mode when we have an internet connection. It's when there's not an internet connection that we have a problem.
                     print("You DO NOT RUN AUTODDU IN SAFE MODE THE FIRST TIME. WE ALSO NEED AN INTERNET CONNECTION.")
                     print("AutoDDU should be first launched outside of safe mode in a normal user profile LIKE THE WIKI SAYS TO.")
@@ -1672,6 +1672,14 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                     print("instead read the wiki you were sent.")
                     print("Get out of safe mode if you're in it, login to the user profile you always use THEN LAUNCH THIS.")
                     print("MAKE SURE TO HAVE AN INTERNET CONNECTION")
+                    while True:
+                        time.sleep(1)
+                elif not internet_on():
+                    print("We are unable to connect to the internet.")
+                    print("Make sure your system time is setup correctly (including time zone)")
+                    print("And also make sure that of course you have an internet connection.")
+                    print("We need an internet connection up to a certain point (at which point we will disable the internet ourselves)")
+                    print("We're going to stop, once you figure out why you don't have internet close this then reopen")
                     while True:
                         time.sleep(1)
                 if IsKasperskyInstalled() == True:
