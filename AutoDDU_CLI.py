@@ -59,7 +59,7 @@ Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFIL
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 
-Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_STARTUP, 0, 0)),"AutoDDU_CLI.lnk")
+Script_Location_For_startup = os.path.join(os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_STARTUP, 0, 0)),"Startup", "AutoDDU_CLI.lnk")
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
@@ -418,7 +418,12 @@ and apply these updates. If these updates require a restart then
 restart when asked, and then when you're back up you can
 launch AutoDDU yourself afterwards. If no restart is needed then just
 apply the updates and once applied come back here, we'll show
-an option to continue in 10 minutes.""")
+an option to continue in 10 minutes. You usually do not
+need to install optional updates. If you're still getting
+this message and see no pending updates, check manually for updates
+by clicking the 'Check for Updates' button. If you believe you
+applied all Windows updates and don't want to wait 10 mins then close 
+and reopen AutoDDU.""")
         print("")
         time.sleep(600)
         if PendingUpdatesCount() > 0:
@@ -428,7 +433,9 @@ want us to continue? This can cause great annoyances later on.
 Do the below prompt if you want to continue, if you don't then do whatever
 you need to do to not have updates pending, it is fine to close AutoDDU
 and restart if needed, we'll go from where we ended once you open 
-AutoDDU again.""") 
+AutoDDU again. Or if you're in the process of installing them and
+they do not need a restart just do the below prompt to continue once
+they're installed.""") 
 
             HandleOtherLanguages()
     
@@ -1938,7 +1945,6 @@ and then turn on your internet.
             mimicinstalleddrivers = [] # Used for testing to see if all drivers were correctly grabbed as expected
             if os.path.exists(os.path.join(Appdata, "AutoDDU_CLI", "Drivers")):
                 s = os.listdir(os.path.join(Appdata, "AutoDDU_CLI", "Drivers"))
-                intel = 0
                 for driver in s:
                         print("Please wait, we're verifying integrity of driver.")
                         publisherofdriver = CheckPublisherOfDriver(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver))
@@ -1967,7 +1973,7 @@ and then turn on your internet.
                 print("""
 Due to no drivers being detected, our work is done.
 Now it is up to you to install the drivers like you normally would.
-Closing in ten minutes. Feel free to close early if no problems
+Going to be turning on the internet now, then closing in ten minutes.
                 """, flush=True)
 
             try:
@@ -2027,7 +2033,7 @@ Closing in ten minutes. Feel free to close early if no problems
 @#(*..*%((,  %                       *#............,///////&%////*..#,//....///*
 .*/(&//(%,    #/,               .#(........,**///////%/,&(///////*..#*//,..////&
 /,**#//&,,   ,&/%/////#&&&#/#&,...,*/////////////##*(&///#///////*,.(///,.////@@""", flush=True)
-            print("We are done!")
+            print("We are done! Internet should be on now.")
             if len(TestEnvironment) == 0:
                 time.sleep(600)
             else:
