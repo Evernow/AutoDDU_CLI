@@ -59,8 +59,7 @@ Users_directory = os.path.dirname(shell.SHGetFolderPath(0, shellcon.CSIDL_PROFIL
 
 exe_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI.exe")
 
-Script_Location_For_startup = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), 'Microsoft',
-                                           'Windows', 'Start Menu', 'Programs', 'Startup',"AutoDDU_CLI.lnk")
+Script_Location_For_startup = os.path.join(Appdata_AutoDDU_CLI ,"AutoDDU_CLI.lnk")
 
 log_file_location = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_LOG.txt")
 PROGRAM_FILESX86 = shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, 0, 0)
@@ -880,11 +879,28 @@ def makepersist():
         # have an actual copy of the executable here since we have to delete this file to stop
         # auto starts up from happening, and we can't delete ourselves. 
         # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
+
+        # Update, this technically isn't needed anymore as of 0.1.1 because we instead use registry keys to
+        # automate startup. But I leave it in so we can fallback to deleting the shortcut instead of the registry key in case of error.
+        if os.path.exists(Script_Location_For_startup):
+            os.remove(Script_Location_For_startup) 
         shell = win32com.client.Dispatch("WScript.Shell")
         shortcut = shell.CreateShortCut(Script_Location_For_startup)
         shortcut.IconLocation = exe_location
         shortcut.Targetpath = exe_location
         shortcut.save()
+        
+        try:
+            AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+            winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
+        except:
+            pass
+
+
+        # Setup registry key to enable startup
+        open = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+        winreg.SetValueEx(open,"AutoDDU_CLI",0,winreg.REG_SZ,Script_Location_For_startup)
+        winreg.CloseKey(open)
     except:
         print("Failed to enable the ability for AutoDDU to startup by itself")
         print("when out of safe mode. You'll have to start it manually in safe mode and")
@@ -1998,6 +2014,11 @@ Going to be turning on the internet now, then closing in ten minutes.
                 os.remove(Script_Location_For_startup)
             except:
                 pass
+            try:
+                AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+                winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
+            except:
+                os.remove(Script_Location_For_startup)
             changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
