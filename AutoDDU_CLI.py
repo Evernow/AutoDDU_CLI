@@ -875,20 +875,20 @@ def makepersist():
             logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
         download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
     try:
-        # make shortcut to the auto startup location, reason for this is we don't want to
-        # have an actual copy of the executable here since we have to delete this file to stop
-        # auto starts up from happening, and we can't delete ourselves. 
-        # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
+        # # make shortcut to the auto startup location, reason for this is we don't want to
+        # # have an actual copy of the executable here since we have to delete this file to stop
+        # # auto starts up from happening, and we can't delete ourselves. 
+        # # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
 
-        # Update, this technically isn't needed anymore as of 0.1.1 because we instead use registry keys to
-        # automate startup. But I leave it in so we can fallback to deleting the shortcut instead of the registry key in case of error.
-        if os.path.exists(Script_Location_For_startup):
-            os.remove(Script_Location_For_startup) 
-        shell = win32com.client.Dispatch("WScript.Shell")
-        shortcut = shell.CreateShortCut(Script_Location_For_startup)
-        shortcut.IconLocation = exe_location
-        shortcut.Targetpath = exe_location
-        shortcut.save()
+        # # Update, this technically isn't needed anymore as of 0.1.1 because we instead use registry keys to
+        # # automate startup. But I leave it in so we can fallback to deleting the shortcut instead of the registry key in case of error.
+        # if os.path.exists(Script_Location_For_startup):
+        #     os.remove(Script_Location_For_startup) 
+        # shell = win32com.client.Dispatch("WScript.Shell")
+        # shortcut = shell.CreateShortCut(Script_Location_For_startup)
+        # shortcut.IconLocation = exe_location
+        # shortcut.Targetpath = exe_location
+        # shortcut.save()
         
         try:
             AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
@@ -899,7 +899,7 @@ def makepersist():
 
         # Setup registry key to enable startup
         open = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
-        winreg.SetValueEx(open,"AutoDDU_CLI",0,winreg.REG_SZ,Script_Location_For_startup)
+        winreg.SetValueEx(open,"AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
         winreg.CloseKey(open)
     except:
         print("Failed to enable the ability for AutoDDU to startup by itself")
@@ -2018,8 +2018,14 @@ Going to be turning on the internet now, then closing in ten minutes.
                 AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
                 winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
             except:
-                if os.path.exists(Script_Location_For_startup):
-                    os.remove(Script_Location_For_startup)
+                print("We failed for some reason to make sure we aren't setup to start on restart everytime.")
+                print("If we still start on restart delete the AutoDDU executable in:")
+                print(str(exe_location))
+                print("Delete it after we are done enabling the internet.")
+                print("We;re going to start the process of enabling the internet in 15 seconds.")
+                time.sleep(15)
+                logger("Failed to remove autorun registry key")
+                logger(str(traceback.format_exc()))
             changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
