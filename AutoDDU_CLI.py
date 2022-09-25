@@ -2018,7 +2018,8 @@ Going to be turning on the internet now, then closing in ten minutes.
                 AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
                 winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
             except:
-                os.remove(Script_Location_For_startup)
+                if os.path.exists(Script_Location_For_startup):
+                    os.remove(Script_Location_For_startup)
             changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
