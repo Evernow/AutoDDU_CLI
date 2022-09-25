@@ -891,14 +891,14 @@ def makepersist():
         # shortcut.save()
         
         try:
-            AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+            AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
             winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
         except:
             pass
 
 
         # Setup registry key to enable startup
-        open = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+        open = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
         winreg.SetValueEx(open,"*AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
         winreg.CloseKey(open)
     except:
@@ -2015,7 +2015,7 @@ Going to be turning on the internet now, then closing in ten minutes.
             except:
                 pass
             try:
-                AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+                AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
                 winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
             except:
                 print("We failed for some reason to make sure we aren't setup to start on restart everytime.")
