@@ -861,6 +861,9 @@ def cleanup():
 def makepersist():
     time.sleep(0.5)
     try:
+        if os.path.exists(exe_location):
+            os.remove(exe_location) 
+                
         shutil.copyfile(sys.executable, exe_location)    
         logger("Successfully copied executable to Appdata directory")
     except:
@@ -879,8 +882,8 @@ def makepersist():
         # Inspired by https://www.codespeedy.com/create-the-shortcut-of-any-file-in-windows-using-python/
         shell = win32com.client.Dispatch("WScript.Shell")
         shortcut = shell.CreateShortCut(Script_Location_For_startup)
-        shortcut.IconLocation = sys.executable
-        shortcut.Targetpath = sys.executable
+        shortcut.IconLocation = exe_location
+        shortcut.Targetpath = exe_location
         shortcut.save()
     except:
         print("Failed to enable the ability for AutoDDU to startup by itself")
@@ -947,6 +950,8 @@ def workaroundwindowsissues():
         logger("In Safemode while working around windows issues, falling back to Default folder copying method")
         try:
             time.sleep(0.5)
+            if os.path.exists(os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe")):
+                os.remove(os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe")) 
             shutil.copyfile(sys.executable, os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
@@ -966,6 +971,8 @@ def workaroundwindowsissues():
                 os.remove(os.path.join(Users_directory,"Default","Desktop", "AutoDDU_CLI.exe"))
         try:
             time.sleep(0.5)
+            if os.path.exists(os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe")):
+                os.remove(os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe")) 
             shutil.copyfile(sys.executable, os.path.join(Users_directory, "Default","Desktop", "AutoDDU_CLI.exe"))
             logger("Successfully copied executable to new user")
         except:
@@ -1004,6 +1011,8 @@ def workaroundwindowsissues():
             logger("Did prep work for working around Windows issue")
             try:
                 time.sleep(0.5)
+                if os.path.exists(os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe")):
+                    os.remove(os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe")) 
                 shutil.copyfile(sys.executable, os.path.join(Users_directory, "{}".format(obtainsetting("ProfileUsed")), "Desktop", "AutoDDU_CLI.exe"))
                 logger("Successfully copied executable to new user")
             except:
