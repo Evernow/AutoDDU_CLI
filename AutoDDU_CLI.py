@@ -891,15 +891,15 @@ def makepersist():
         # shortcut.save()
         
         try:
-            AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
-            winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
+            AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+            winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
         except:
             pass
 
 
         # Setup registry key to enable startup
-        open = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
-        winreg.SetValueEx(open,"AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
+        open = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+        winreg.SetValueEx(open,"*AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
         winreg.CloseKey(open)
     except:
         print("Failed to enable the ability for AutoDDU to startup by itself")
@@ -2015,8 +2015,8 @@ Going to be turning on the internet now, then closing in ten minutes.
             except:
                 pass
             try:
-                AutoStartupkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
-                winreg.DeleteValue(AutoStartupkey, 'AutoDDU_CLI')
+                AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\Run",0,winreg.KEY_ALL_ACCESS)
+                winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
             except:
                 print("We failed for some reason to make sure we aren't setup to start on restart everytime.")
                 print("If we still start on restart delete the AutoDDU executable in:")
