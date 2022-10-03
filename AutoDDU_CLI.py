@@ -902,18 +902,30 @@ def makepersist():
         winreg.SetValueEx(open,"*AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
         winreg.CloseKey(open)
     except:
-        print("Failed to enable the ability for AutoDDU to startup by itself")
-        print("when out of safe mode. You'll have to start it manually in safe mode and")
-        print("after safe mode outside of it in your normal profile.")
-        print("The executable will be located on the desktop in safe mode, but")
-        print("when out of safe mode you will have to navigate to the following folder")
-        print(str(Appdata_AutoDDU_CLI ))
-        print("The executable will be located there. ProgramData is hidden by default,")
-        print("if you have issues finding this ask about this.")
-        print("We'll continue in 60 seconds.")
-        logger("Failed to create shortcut for autostartup")
-        logger(str(traceback.format_exc()))
-        time.sleep(60)
+        if insafemode() == True:
+            print("Failed to enable the ability for AutoDDU to startup by itself")
+            print("when out of safe mode.")
+            print("When out of safe mode you will have to navigate to the following folder")
+            print(str(Appdata_AutoDDU_CLI ))
+            print("The executable will be located there. ProgramData is hidden by default,")
+            print("if you have issues finding this ask about this.")
+            print("We'll continue in 60 seconds.")
+            logger("Failed to create shortcut for autostartup")
+            logger(str(traceback.format_exc()))
+            time.sleep(60)
+        else:
+            print("Failed to enable the ability for AutoDDU to startup by itself")
+            print("when in safe mode. You'll have to start it manually in safe mode and")
+            print("after safe mode outside of it in your normal profile.")
+            print("The executable will be located on the desktop in safe mode, but")
+            print("when out of safe mode you will have to navigate to the following folder")
+            print(str(Appdata_AutoDDU_CLI ))
+            print("The executable will be located there. ProgramData is hidden by default,")
+            print("if you have issues finding this ask about this.")
+            print("We'll continue in 60 seconds.")
+            logger("Failed to create shortcut for autostartup")
+            logger(str(traceback.format_exc()))
+            time.sleep(60) 
 
 
     logger("Finished makepersist")
@@ -1951,6 +1963,7 @@ Will restart in 15 seconds.
 
             if len(TestEnvironment) == 0:    
                 safemode(0)
+            makepersist()
             changepersistent(3)
             possible_error = ""
             try:
