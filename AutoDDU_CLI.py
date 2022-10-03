@@ -345,12 +345,6 @@ def cleanupAutoLogin():
         time.sleep(30)
 
 
-
-def returnpendingupdates():
-    # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
-    # https://github.com/Evernow/AutoDDU_CLI/issues/14
-        return False
-
 def PendingUpdatesCount():
     # https://stackoverflow.com/questions/70792656/how-do-i-get-pending-windows-updates-in-python
     # https://github.com/Evernow/AutoDDU_CLI/issues/14
@@ -857,23 +851,24 @@ def cleanup():
     logger("Exited cleanup()")
 
 
-def makepersist():
+def makepersist(CopyExecutablle):
     time.sleep(0.5)
-    try:
-        if os.path.exists(exe_location):
-            os.remove(exe_location) 
-                
-        shutil.copyfile(sys.executable, exe_location)    
-        logger("Successfully copied executable to Appdata directory")
-    except:
-        logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
+    if CopyExecutablle == True:
         try:
-
-            logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
-            logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+            if os.path.exists(exe_location):
+                os.remove(exe_location) 
+                    
+            shutil.copyfile(sys.executable, exe_location)    
+            logger("Successfully copied executable to Appdata directory")
         except:
-            logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
-        download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
+            logger("Falled back to downloading from github method for going to Appdata directory due to error: " + str(traceback.format_exc()))
+            try:
+
+                logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
+                logger("Contents of directory are: " + str(os.listdir(os.path.dirname(sys.executable))))
+            except:
+                logger("Failed to log info about directory where sys.executable is located with error: " +  str(traceback.format_exc()))
+            download_helper("https://raw.githubusercontent.com/Evernow/AutoDDU_CLI/main/signedexecutable/AutoDDU_CLI.exe", exe_location)
     try:
         # # make shortcut to the auto startup location, reason for this is we don't want to
         # # have an actual copy of the executable here since we have to delete this file to stop
@@ -1906,7 +1901,7 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 safemode(1)
 
             print("May seem frozen for a bit, do not worry, we're working in the background.")
-            makepersist()
+            makepersist(True)
            # BackupLocalAccount()
             if len(TestEnvironment) == 0:
                  # Found in the NVIDIA Server that a malfunctioning network card can hang WMI for all eternity. Best add a timeout for that..
@@ -1963,7 +1958,7 @@ Will restart in 15 seconds.
 
             if len(TestEnvironment) == 0:    
                 safemode(0)
-            makepersist()
+            makepersist(False)
             changepersistent(3)
             possible_error = ""
             try:
