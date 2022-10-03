@@ -1421,8 +1421,9 @@ def ddu_download():
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
-    subprocess.call((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True,
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    ExtractDDUOutput = subprocess.call((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True, check=True,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, capture_output=True)
+    logger("Output of extracting DDU " + str(ExtractDDUOutput))
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
     where_it_is = os.path.join(ddu_extracted_path, "DDU v{}".format(Latest_DDU_Version_Raw))
@@ -1863,8 +1864,11 @@ the "AutoDDU_CLI.exe" on your desktop to let us start working again.
                 else:
                     HandleOtherLanguages()
                 time.sleep(1)
-            os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe')) # Makes sure nothing like Kaspersky has fucked us over, will make AutoDDU error out before doing anything annoying to recover from.
-            
+            if os.path.exists(os.path.join(ddu_extracted_path, 'Display Driver Uninstaller.exe')) == False:# Makes sure nothing like Kaspersky has fucked us over, will make AutoDDU error out before doing anything annoying to recover from.
+                print("Something went catastrophically wrong. For some reason DDU extraction failed.")
+                print("We cannot continue like this, please report this to Evernow along with the log file in ")
+                while True:
+                    time.sleep(1)
             if RestartPending() == True and obtainsetting("disablewindowsupdatecheck") == 0:
                 # User may have gotten an update since the beginning and now, so we check again right before we enable safe mode and create the DDU profile.
                     print("There is pending Windows Updates that require a Restart")
