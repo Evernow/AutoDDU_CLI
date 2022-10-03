@@ -1,4 +1,27 @@
 Version_of_AutoDDU_CLI = "0.1.1"
+LICENSE = """
+MIT License
+
+Copyright (c) 2022-present Daniel Suarez
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
 import json
 import os
 import platform
@@ -592,7 +615,7 @@ def AdvancedMenu():
     option = -1
     while option != "11":
         clear()
-        time.sleep(1)
+        time.sleep(0.5)
         print("WARNING: THIS MAY BEHAVE UNEXPECTADLY!", flush=True)
         print('1 --' + AdvancedMenu_Options(1), flush=True)  # Disable Windows Updates check
         print('2 --' + AdvancedMenu_Options(2), flush=True)  # Bypass supported GPU requirement
@@ -763,9 +786,14 @@ def change_AdvancedMenu(num):
 def print_menu1():
     print('Press Enter Key -- Start', flush=True)
     print('2 -- Advanced Options', flush=True)
+    print('3 -- Show LICENSE', flush=True)
     option = str(input('Enter your choice: '))
     if option == "2":
         AdvancedMenu()
+    if option == "3":
+      print(LICENSE)
+      print_menu1()
+      
 
 
 def returnifduplicate():
