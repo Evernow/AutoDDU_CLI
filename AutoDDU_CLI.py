@@ -2030,14 +2030,7 @@ Going to be turning on the internet now, then closing in ten minutes.
                 AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
                 winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
             except:
-                print("We failed for some reason to make sure we aren't setup to start on restart everytime.")
-                print("If we still start on restart delete the AutoDDU executable in:")
-                print(str(exe_location))
-                print("Delete it after we are done enabling the internet.")
-                print("We;re going to start the process of enabling the internet in 15 seconds.")
-                time.sleep(15)
-                logger("Failed to remove autorun registry key")
-                logger(str(traceback.format_exc()))
+                logger("No RunOnce key found, should be ok then?")
             changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
