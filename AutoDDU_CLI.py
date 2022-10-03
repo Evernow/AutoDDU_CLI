@@ -1433,7 +1433,7 @@ def ddu_download():
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
-    ExtractDDUOutput = subprocess.call((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True, check=True,
+    ExtractDDUOutput = subprocess.run((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True, check=True,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, capture_output=True)
     logger("Output of extracting DDU " + str(ExtractDDUOutput))
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
