@@ -1977,6 +1977,7 @@ Will restart in 15 seconds.
 
         if getpersistent() == 3:
             print("Please wait 5 seconds and we'll start the last process")
+            changepersistent(0) 
             if len(TestEnvironment) == 0:
                 time.sleep(5)
             print(r"""
@@ -2031,7 +2032,6 @@ Going to be turning on the internet now, then closing in ten minutes.
                 winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
             except:
                 logger("No RunOnce key found, should be ok then?")
-            changepersistent(0)
             if len(TestEnvironment) == 0:
                     proc = multiprocessing.Process(target=enable_internet, args=(True,)) 
                     proc.start()
@@ -2043,7 +2043,6 @@ Going to be turning on the internet now, then closing in ten minutes.
                     proc.terminate()
 
             cleanup()
-            changepersistent(0)
             if os.path.exists(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe")):
                 os.remove(os.path.join(Users_directory,"Default", "AutoDDU_CLI.exe"))
             # RIP Chika ASCII Art tormenting the lives of people at the beginning
