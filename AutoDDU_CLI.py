@@ -1526,6 +1526,7 @@ def uptodate():
                            shell=True, check=True)
             print("You need to restart after Update Assistant is finished, then once logged back in open this again.",
                   flush=True)
+            makepersist(True) # So it auto starts up on restart so idiots don't think AutoDDU is done. Has happened twice, fucking dumbasses
             changepersistent(1)
             while True:
                 time.sleep(1)
