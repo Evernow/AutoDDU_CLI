@@ -131,6 +131,25 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 
+def TestMultiprocessingTarget(enable):
+        wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
+        list_of_names = list()
+        list_test = list()
+        for adapter in wrxAdapter:
+            list_of_names.append(adapter.Name)
+            if adapter.Virtual == False and adapter.LinkTechnology != 10:
+                    pass
+def TestMultiprocessing():
+    # Check because some system configurations are incompatible with multiprocessing. 
+    if len(TestEnvironment) == 0:
+        proc = multiprocessing.Process(target=TestMultiprocessingTarget, args=(True,)) 
+        proc.start()
+        time.sleep(1)
+        if proc.is_alive():
+            time.sleep(10)
+        proc.terminate()
+
+
 def VerifyDDUAccountCreated():
     listofusers = []
     for profile in wmi.WMI().Win32_UserAccount() :
@@ -1726,6 +1745,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                         logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
 
             if len(TestEnvironment) == 0:
+                TestMultiprocessing() # Check to make sure multipricessing works correctly.
                 if not internet_on() and insafemode(): 
                     # There is a code path for handling this in safe mode when we have an internet connection. It's when there's not an internet connection that we have a problem.
                     print("You DO NOT RUN AUTODDU IN SAFE MODE THE FIRST TIME. WE ALSO NEED AN INTERNET CONNECTION.")
