@@ -1,6 +1,7 @@
 wmi
 pyinstaller
 tqdm
+xmltodict
 psutil
 packaging
 dnspython

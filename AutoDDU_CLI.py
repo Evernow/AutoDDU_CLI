@@ -58,6 +58,7 @@ import importlib.metadata
 import dns.resolver
 import tempfile 
 import ssl
+import xmltodict
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
@@ -67,7 +68,7 @@ advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 
                                 "RemovePhysX": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
                                 "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0,
-                                "dnsoverwrite" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
+                                "dnsoverwrite" : 0, "pciidsfallback" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -130,6 +131,42 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+
+def GPUZINFO():
+    try:
+        try:
+            os.remove(os.path.join(Appdata_AutoDDU_CLI,'GPUOutput.xml'))
+        except:
+            pass
+        download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/GPU-Z.exe", os.path.join(Appdata_AutoDDU_CLI,'GPU-Z.exe'),False)
+        subprocess.call([os.path.join(Appdata_AutoDDU_CLI,'GPU-Z.exe'),'-minimized','-dump','GPUOutput.xml'],
+                            cwd=Appdata_AutoDDU_CLI  , stderr=subprocess.DEVNULL)
+
+        with open(os.path.join(Appdata_AutoDDU_CLI,'GPUOutput.xml'), 'r', encoding='utf-8') as file:
+            my_xml = file.read()
+        my_dict = xmltodict.parse(my_xml)
+        logger("In GPU-Z, expect a lot of verbose crap while this method is new.")
+        cardlist = []
+        logger(str(my_dict['gpuz_dump']['card']))
+        if type(my_dict['gpuz_dump']['card']) == dict: #Workaround issues relating to how multi gpu setups appear. 
+            cardlist.append(my_dict['gpuz_dump']['card'])
+            my_dict['gpuz_dump']['card'] = cardlist
+        logger(str(my_dict['gpuz_dump']['card']))
+        logger(str(my_dict))
+        GPUsFound = {}
+        for gpu in (my_dict['gpuz_dump']['card']):
+            logger(str(gpu))
+            # 1002 = AMD ; 8086 = Intel ; 10de = NVIDIA ; 121a = Voodoo (unlikely but I mean.. doesn't hurt?)
+
+            if gpu['vendorid'].lower() == '1002' or gpu['vendorid'].lower() == '8086' or gpu['vendorid'].lower() == '10de' or gpu['vendorid'].lower() == '121a':     
+                GPUsFound[str(gpu['cardname'])] = [str(gpu['gpuname']), str(gpu['vendorid']).lower(), str(gpu['deviceid']).lower()]
+        logger("Gonna return from the GPU-Z method")
+        logger(str(GPUsFound))
+        return (GPUsFound)
+    except:
+        logger("GPU-Z method failed with the following error, gonna fallback to PCIIDS method")
+        logger(str(traceback.format_exc()))
+        return {} # This triggers the fallback to the PCI-IDS method
 
 def TestMultiprocessingTarget(enable):
         wrxAdapter = wmi.WMI( namespace="StandardCimv2").query("SELECT * FROM MSFT_NetAdapter") 
@@ -632,7 +669,7 @@ def default_config():
 def AdvancedMenu():
     logger("User entered AdvancedMenu")
     option = -1
-    while option != "11":
+    while option != "12":
         clear()
         time.sleep(0.5)
         print("WARNING: THIS MAY BEHAVE UNEXPECTADLY!", flush=True)
@@ -646,7 +683,8 @@ def AdvancedMenu():
         print('8 --' + AdvancedMenu_Options(8), flush=True)  # Use AMD Enterprise driver
         print('9 --' + AdvancedMenu_Options(9), flush=True)  # Use NVIDIA Studio driver (Pascal and up)
         print('10 --' + AdvancedMenu_Options(10), flush=True)  # Manual DNS Resolving
-        print('11 -- Start', flush=True)
+        print('11 --' + AdvancedMenu_Options(11), flush=True)  # Fallback to PCI-IDS GPU Detection
+        print('12 -- Start', flush=True)
         option = str(input('Enter your choice: '))
         change_AdvancedMenu(option)
 
@@ -710,6 +748,11 @@ def AdvancedMenu_Options(num):
                 return " Do Manual DNS Resolving"
             else:
                 return " Let OS Perform DNS Resolving"
+        if num == 11:
+            if advanced_options_dict["dnsoverwrite"] == 0:
+                return " Fallback to PCI-IDS GPU Detection"
+            else:
+                return " Use GPU-Z for GPU Detection"
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
@@ -785,7 +828,11 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["dnsoverwrite"] = 1
             else:
                 advanced_options_dict["dnsoverwrite"] = 0
-
+        if num == "11":
+            if advanced_options_dict["pciidsfallback"] == 0:
+                advanced_options_dict["pciidsfallback"] = 1
+            else:
+                advanced_options_dict["pciidsfallback"] = 0
         if num == "98":
             if advanced_options_dict["inteldriverassistant"] == 0:
                 advanced_options_dict["inteldriverassistant"] = 1
@@ -854,7 +901,7 @@ def logger(log):
     if not os.path.exists(Appdata_AutoDDU_CLI):
         os.makedirs(Appdata_AutoDDU_CLI)
     file_object = open(log_file_location, 'a+')
-    file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + log)
+    file_object.write(datetime.now(timezone.utc).strftime("UTC %d/%m/%Y %H:%M:%S ") + str(log))
     file_object.write("\n")
     file_object.close()
 
@@ -1181,8 +1228,11 @@ def getgpuinfos(testing=None):
 
 def GetGPUStatus(testing=None):
     # testing = {'GeForce RTX 3080': ['GA102', '10DE', '2206']}
-
-    DictOfGPUs = getgpuinfos(testing)
+    GPUZOutPut = GPUZINFO()
+    if len(GPUZOutPut) < 1 or testing != None:
+        DictOfGPUs = getgpuinfos(testing)
+    else:
+        DictOfGPUs = GPUZOutPut
     # NVIDIA Support status loading
     time.sleep(1)
     download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/nvidia_gpu.json", os.path.join(Jsoninfofileslocation,'nvidia_gpu.json'),False)
@@ -2163,6 +2213,9 @@ Going to be turning on the internet now, then closing in ten minutes.
         else:
             return ("Exception " + str(traceback.format_exc()))
 
-if __name__ == '__main__':
-    multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
-    print(mainpain([]))
+# if __name__ == '__main__':
+#     multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+#     print(mainpain([]))
+
+
+print(GetGPUStatus())
