@@ -18,7 +18,7 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Run Pyinstaller
-        run: pyinstaller --noconfirm --onefile --console --python-option "u" --icon chikabest.ico --uac-admin AutoDDU_CLI.py
+        run: pyinstaller --noconfirm --onefile --console --python-option "u" --icon chikabest.ico --uac-admin --collect-all multiprocessing  --win-private-assemblies  --win-no-prefer-redirects AutoDDU_CLI.py
           
       - name: commit files
         run: |
