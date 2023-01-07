@@ -131,6 +131,33 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def LogBasicSysInfo():
+    # Info useful sometimes in tracking down problems, for example norwegian and german have caused issues..
+    knownCPUArchitectures = {0: 'x86', 1: 'MIPS', 2: 'Alpha', 'PowerPC': 3,
+                            5:'ARM', 6:'ia64', 9:'x64', 12:'ARM64'}
+    for profile in wmi.WMI().Win32_Processor() : # Technically someone can have more than one CPU, so worth being in a loop...
+            if profile.Architecture in knownCPUArchitectures.keys():
+                logger('CPU architecture: ' + knownCPUArchitectures[profile.Architecture])
+            else:
+                logger('CPU architecture unknown, Windows identified it as: ' + str(profile.Architecture))
+                logger('Windows identifiers for CPU architecture can be found here: https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-processor')
+            logger('CPU name is: ' + str(profile.Name))
+            logger('CPU enabled cores is: ' + str(profile.NumberOfEnabledCore))
+    locale = wmi.WMI().Win32_OperatingSystem  ()[0].Locale
+    logger('Locale: ' + str(locale))
+    language = wmi.WMI().Win32_OperatingSystem  ()[0].OSLanguage
+    logger('language: ' + str(language))
+    installdate = wmi.WMI().Win32_OperatingSystem  ()[0].InstallDate
+    logger('installdate: ' + str(installdate))
+    VersionOfWindows = wmi.WMI().Win32_OperatingSystem  ()[0].Name
+    logger('VersionOfWindows: ' + str(VersionOfWindows))
+    AreWeBootedOnaUSB = wmi.WMI().Win32_OperatingSystem  ()[0].PortableOperatingSystem
+    logger('AreWeBootedOnaUSB: ' + str(AreWeBootedOnaUSB))
+    MotherboardModel = wmi.WMI().Win32_BaseBoard   ()[0].Product
+    logger('MotherboardModel: ' + str(MotherboardModel))
+    MotherboardManuf = wmi.WMI().Win32_BaseBoard   ()[0].Manufacturer
+    logger('MotherboardManuf: ' + str(MotherboardManuf))
+
 
 def GPUZINFO():
     try:
@@ -1778,6 +1805,11 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
         logger("Running under user {}".format(os.getlogin()))
+        try:
+            LogBasicSysInfo()
+        except:
+            logger("Failed to capture all sysinfo with this error:")
+            logger(str(traceback.format_exc()))    
         try:
             logger("Directory name of where executable is located is: " + str(os.path.dirname(sys.executable)))
             logger("Contents of directory contain executable: " + str("AutoDDU_CLI.exe" in os.listdir(os.path.dirname(sys.executable)))  )
