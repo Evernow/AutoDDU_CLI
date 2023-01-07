@@ -178,13 +178,12 @@ def TestMultiprocessingTarget(enable):
                     pass
 def TestMultiprocessing():
     # Check because some system configurations are incompatible with multiprocessing. 
-    if len(TestEnvironment) == 0:
-        proc = multiprocessing.Process(target=TestMultiprocessingTarget, args=(True,)) 
-        proc.start()
-        time.sleep(1)
-        if proc.is_alive():
-            time.sleep(10)
-        proc.terminate()
+    proc = multiprocessing.Process(target=TestMultiprocessingTarget, args=(True,)) 
+    proc.start()
+    time.sleep(1)
+    if proc.is_alive():
+        time.sleep(10)
+    proc.terminate()
 
 
 def VerifyDDUAccountCreated():
