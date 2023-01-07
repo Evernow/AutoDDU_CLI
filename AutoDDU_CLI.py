@@ -157,6 +157,9 @@ def LogBasicSysInfo():
     logger('MotherboardModel: ' + str(MotherboardModel))
     MotherboardManuf = wmi.WMI().Win32_BaseBoard   ()[0].Manufacturer
     logger('MotherboardManuf: ' + str(MotherboardManuf))
+    # Invaluable to know which release was built with so we if we get a
+    # python specific error we know which line number to go to in the cpython repo.
+    logger('Python version: ' + sys.version)
 
 
 def GPUZINFO():
