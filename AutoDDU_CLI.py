@@ -1919,7 +1919,7 @@ This will update Windows if out of date, download needed drivers,
 disable internet (needed to prevent Windows from fucking it up), 
 and push you into safe mode. IT WILL DO THIS FOR YOU. 
 YOU DO NOT NEED TO DO ANYTHING EXCEPT LAUNCH THIS APP ONCE RESTARTED
-IN SAFE MODE
+IN SAFE MODE IF IT DOESN'T BY ITSELF.
 This will also disable all GPU overclocks/undervolts/custom fan curves.
 Do not worry if you do not know what this is, it won't affect you.
 When you are ready (this process can take up to 30 minutes 
@@ -1969,8 +1969,7 @@ without warning.
                 time.sleep(5)
             if obtainsetting("donotdisableoverclocks") == 0:
                 disable_clocking()
-            print(r"""
-                  
+            print(r"""          
 ----------------------------NOTICE----------------------------
 This application will now enable safe mode, disable the internet
 and then reboot you. IT WILL DO THIS FOR YOU. 
@@ -1986,8 +1985,11 @@ if you have BitLocker enabled we're going to temporarily
 disable for three reboots.
             
 {login_or_not}
-After once you are at a black wallpaper you will need to launch
-the "AutoDDU_CLI.exe" on your desktop to let us start working again.
+We will automatically login to the user and run DDU. You may see
+a blackscreen for up to 15 minutes, only force restart if this much
+passes. We will auto login, run DDU, then restart, afterwards you will
+be brought to your normal user login screen, at which you login
+and AutoDDU will launch again to install drivers.
             
 (Read what is above, window to continue will appear in 15 seconds.)
             
