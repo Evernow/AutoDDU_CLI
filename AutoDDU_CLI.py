@@ -218,9 +218,9 @@ current one.
             time.sleep(5)
     VendorChoice_dict = {1: 'amd', 2: 'intel', 3:'nvidia'}
     if user_choice_for_driver == len(drivers)+1:
-        return UserInput(VendorChoice_dict[VendorChoice])
+        return [UserInput(VendorChoice_dict[VendorChoice])]
     else:
-        return drivers[user_choice_for_driver-1]
+        return [drivers[user_choice_for_driver-1]]
 def SearchGPU(gpu_vendor,provided_name):
     download_helper(f'https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/{gpu_vendor}_gpu.json',os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json'),False)
     with open(os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json')) as json_file:
@@ -2114,7 +2114,7 @@ Please have at least 20GB of free space in C: drive.
                         time.sleep(1)
 
             print("This process will attempt to perform DDU automatically.", flush=True)
-            if obtainsetting("bypassgpureq") == 0:
+            if obtainsetting("bypassgpureq") == 0 and obtainsetting("changegpumode") == 0 :
                 try:
                     # for testing you pass something like this inside gpustatus
                     # {'NVIDIA GeForce RTX 3080': ['GA102', '10de', '2206']}
