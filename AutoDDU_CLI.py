@@ -1,4 +1,4 @@
-Version_of_AutoDDU_CLI = "0.1.1"
+Version_of_AutoDDU_CLI = "0.2.0"
 LICENSE = """
 MIT License
 
