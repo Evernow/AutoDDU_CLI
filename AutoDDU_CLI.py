@@ -180,22 +180,25 @@ instead wish to perform DDU without changing GPUs?
 Which GPU vendor are you switching to?
 In other word, which vendor made your future
 GPU?
-Your current GPU vendor is NOT IMPORTANT unless
+Your CURRENT GPU vendor is NOT IMPORTANT unless
 it just happens to be the same vendor. All these
-questions relate to your future GPU, not your 
+questions relate to your FUTURE GPU, not your 
 current one. 
 1 - AMD.
 2 - Intel.
-3 - NVIDIA.""")
+3 - NVIDIA.
+4 - I'll install drivers myself.""")
             try:
                 VendorChoice = int(input('Type the number for your response and press enter: '))
-                if VendorChoice != 1 and VendorChoice != 2 and VendorChoice != 3:
+                if VendorChoice != 1 and VendorChoice != 2 and VendorChoice != 3 and VendorChoice != 4:
                     VendorChoice = -1
                     raise ValueError
             except ValueError:
                 print("Invalid option selected. Refreshing in 5 seconds.")
                 time.sleep(5)
             clear()
+    if VendorChoice == 4:
+        return None
     time.sleep(0.1)
     stringforuser = 'Please select which GPU driver is for your future GPU: \n'
     drivers = []
