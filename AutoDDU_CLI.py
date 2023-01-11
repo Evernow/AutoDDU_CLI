@@ -59,6 +59,7 @@ import dns.resolver
 import tempfile 
 import ssl
 import xmltodict
+import difflib    
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
@@ -68,7 +69,7 @@ advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 
                                 "RemovePhysX": 0, "disableinternetturnoff": 0, "donotdisableoverclocks": 0,
                                 "disabledadapters": [], "avoidspacecheck": 0, "amdenterprise" : 0,
                                 "nvidiastudio" : 0, "startedinsafemode" : 0, "inteldriverassistant" : 0,
-                                "dnsoverwrite" : 0, "pciidsfallback" : 0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
+                                "dnsoverwrite" : 0, "pciidsfallback" : 0, 'changegpumode':0} # ONLY USE FOR INITIALIZATION IF PERSISTENTFILE IS TO 0. NEVER FOR CHECKING IF IT HAS CHANGED.
 
 clear = lambda: os.system('cls')
 
@@ -130,6 +131,230 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+
+def HandleChangingGPUProcess():
+    for vendor in ['amd','intel','nvidia']:
+        download_helper(f'https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/{vendor}_gpu.json',os.path.join(Jsoninfofileslocation,f'{vendor}_gpu.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'nvidia_gpu.json')) as json_file:
+        nvidia_gpu = json.load(json_file)
+    with open(os.path.join(Jsoninfofileslocation,'amd_gpu.json')) as json_file:
+        amd_gpu = json.load(json_file)
+    with open(os.path.join(Jsoninfofileslocation,'intel_gpu.json')) as json_file:
+        intel_gpu = json.load(json_file)
+    GPUDrivers = {1: amd_gpu, 2: intel_gpu, 3:nvidia_gpu}
+    UserResponseToContinue = -1
+    while UserResponseToContinue == -1:
+        print("""
+You are placing AutoDDU into change GPU mode.
+This is made for when you have a current GPU
+and are changing it to a different GPU.
+It will involve performing DDU in safe mode,
+and then when DDU is finished AutoDDU will
+shutdown your PC instead of restarting it,
+then when shutdown you will then change
+the GPU to your new one and boot up.
+
+Is this what you want to do or do you 
+instead wish to perform DDU without changing GPUs?
+
+1 - I wish to change my GPU after doing DDU.
+2 - I am not going to change my GPU.""")
+        try:
+            UserResponseToContinue = int(input('Type the number for your response and press enter: '))
+            if UserResponseToContinue != 1 and UserResponseToContinue != 2:
+                UserResponseToContinue = -1
+                raise ValueError
+        except ValueError:
+            print("Invalid option selected. Refreshing in 5 seconds.")
+            time.sleep(5)
+
+        clear()
+    if UserResponseToContinue == 2:
+        return 0
+    else:
+        print()
+        VendorChoice = -1
+        while VendorChoice == -1:
+            print("""
+Which GPU vendor are you switching to?
+In other word, which vendor made your future
+GPU?
+Your current GPU vendor is NOT IMPORTANT unless
+it just happens to be the same vendor. All these
+questions relate to your future GPU, not your 
+current one. 
+1 - AMD.
+2 - Intel.
+3 - NVIDIA.""")
+            try:
+                VendorChoice = int(input('Type the number for your response and press enter: '))
+                if VendorChoice != 1 and VendorChoice != 2 and VendorChoice != 3:
+                    VendorChoice = -1
+                    raise ValueError
+            except ValueError:
+                print("Invalid option selected. Refreshing in 5 seconds.")
+                time.sleep(5)
+            clear()
+    time.sleep(0.1)
+    stringforuser = 'Please select which GPU driver is for your future GPU: \n'
+    drivers = []
+    for branch in GPUDrivers[VendorChoice]:
+        stringforuser += f"""{len(drivers)+1} / {GPUDrivers[VendorChoice][branch]['description']} \n  \ {(GPUDrivers[VendorChoice][branch]['link'])[GPUDrivers[VendorChoice][branch]['link'].rfind('/')+1:]} - {GPUDrivers[VendorChoice][branch]['version']}\n\n"""
+        drivers.append(GPUDrivers[VendorChoice][branch]['link'])
+    stringforuser += f'{len(drivers)+1} / I have no idea (starts search GPU process).'
+    print(stringforuser)
+    user_choice_for_driver = None
+    while user_choice_for_driver == None:
+        try:
+            user_choice_for_driver = int(input('Your choice: '))
+            if user_choice_for_driver not in list(range(1,len(drivers)+2)):
+                raise ValueError
+        except ValueError:
+            print("Invalid option selected. Refreshing in 5 seconds.")
+            time.sleep(5)
+    VendorChoice_dict = {1: 'amd', 2: 'intel', 3:'nvidia'}
+    if user_choice_for_driver == len(drivers)+1:
+        return UserInput(VendorChoice_dict[VendorChoice])
+    else:
+        return drivers[user_choice_for_driver-1]
+def SearchGPU(gpu_vendor,provided_name):
+    download_helper(f'https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/{gpu_vendor}_gpu.json',os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json')) as json_file:
+        gpu_json = json.load(json_file)
+    download_helper("https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/PCI-IDS.json", os.path.join(Jsoninfofileslocation,'PCI-IDS.json'),False)
+    with open(os.path.join(Jsoninfofileslocation,'PCI-IDS.json')) as json_file:
+        PCIIDS_DATA = json.load(json_file)
+    vendor_id_dict = {'nvidia':'10de', 'amd':'1002', 'intel':'8086'}
+    gpu_names = {}
+    for branch in gpu_json:
+        gpu_names_wip = []
+        for gpu in gpu_json[branch]['SupportedGPUs']:
+            try:
+                gpunamefromdatabse = PCIIDS_DATA[vendor_id_dict[gpu_vendor]]['devices'][gpu.lower()]['name']
+                # Get Rid of Radeon name before the below split 
+                gpunamefromdatabse = gpunamefromdatabse.replace('Radeon','')
+                gpunamefromdatabse = gpunamefromdatabse[gpunamefromdatabse.find('[')+1:gpunamefromdatabse.find(']')]
+                if gpu_vendor == 'amd': #
+                    # AMD shares PCI IDS between GPUs almost 100% of the time
+                    # For example: Radeon RX 6700S / 6800S / 6650 XT is extremely common.
+                    # This really screws up our search results, so lets just split by / and include all of them seperately.
+                    for amd_gpu in gpunamefromdatabse.split('/'):
+                        gpu_names_wip.append(amd_gpu.strip())
+                        break # Too much madness can happen if we do the usual we do for Intel and NVIDIA, so lets leave it here.
+                # Get rid of stuff from the name that will just confuse users and doesn't affect anything here to begin with.
+                gpunamefromdatabse = gpunamefromdatabse.replace('Mobile','').replace('Max-Q','').replace('Laptop','').replace('Lite Hash Rate','').replace('Refresh','').replace('/','')
+                # Get rid of extra spaces from here: https://stackoverflow.com/a/1546883/17484902
+                gpunamefromdatabse = ' '.join(gpunamefromdatabse.split())
+                gpu_names_wip.append(gpunamefromdatabse.strip())
+                # Lets get rid of brand names since someone may type for example "RTX 3060" and not "Geforce RTX 3060", but leave quadro name as those are
+                # fairly rare and taint our results otherwise.
+                gpunamefromdatabse = gpunamefromdatabse.replace('GeForce','')
+                gpu_names_wip.append(gpunamefromdatabse.strip())
+            except KeyError:
+                pass
+                # This protects against PCI IDS not having a GPU that's in the SupportedGPUs list, which happens pretty frequently with AMD and Intel.
+        # Get rid of duplicates that can easily occur
+        gpu_names_wip = list(set(gpu_names_wip))
+
+        # We do this by priority so we can then later sort by priority so we're checker the ones that should be used for a specific
+        # GPU first. This avoids giving all NVIDIA users studio drivers or all AMD users PRO drivers.
+        gpu_names[gpu_json[branch]['priority']] = gpu_names_wip
+        gpu_names = dict(sorted(gpu_names.items())) 
+
+        # Get a list of similar strings to the one the user provided, max of 3 results per branch
+        matching_names = {}
+        for branch in gpu_names:
+            results = difflib.get_close_matches(provided_name, gpu_names[branch],3,cutoff=.5)
+            for result in results:
+                if (result not in matching_names.keys()):
+                    matching_names[result] = branch
+
+            
+    return(matching_names)
+        
+def UserInput(gpu_vendor):
+    driver = None
+    attempts = 0
+    while driver == None:
+        attempts += 1
+        if attempts %5 == 0:
+            userchoicewhetherhehasalife = None
+            while userchoicewhetherhehasalife == None:
+                print("""
+You attempted this 5 more times,
+you sure you want to continue?
+
+1 - Yes I want to continue
+2 - No I want to just install drivers myself""")
+                try:
+                    userchoicewhetherhehasalife = int(input('Your Choice:'))
+                    if userchoicewhetherhehasalife !=  1 and userchoicewhetherhehasalife !=  2:
+                        userchoicewhetherhehasalife = None
+                        raise ValueError
+                except ValueError:
+                    userchoicewhetherhehasalife = None
+                    print("Invalid option selected. Refreshing in 5 seconds.")
+                    time.sleep(5)
+                if userchoicewhetherhehasalife ==  1:
+                    continue
+                else:
+                    return None
+        print("""
+You initiated the search option.
+You can put in the name of your GPU
+as accurate as possible and we will
+list you potential matches in our
+database, from which you pick the closest
+approximation to your FUTURE gpu.""")
+        provided_name = input('Enter the name of your FUTURE GPU: ')
+        if len(provided_name) < 3 or (not provided_name.isascii()):
+            print('Please put a valid potential name that is at least 3')
+            print('characters long and contains only english characters.')
+            print('Showing prompt to enter a name again in 10 seconds.')
+            time.sleep(10)
+            clear()
+            continue
+        results_of_user_search = SearchGPU(gpu_vendor,provided_name)
+        if len(results_of_user_search) > 1:
+            user_show_results = '\nThese are the potential GPUs we know of given the name you provided.\n'
+            processed_results = []
+            for result in results_of_user_search.keys():
+                user_show_results += f'{len(processed_results)+1} / {result} \n'
+                processed_results.append(result)
+            
+            user_show_results +=(f'{len(processed_results)+1} / None of these match, I wish to enter another name.\n')
+            user_show_results +=(f'{len(processed_results)+2} / None of these match, I wish to install drivers myself.\n')
+            print(user_show_results)
+            
+            choice_from_search = None
+            while choice_from_search == None:
+                print('Enter the number of the result which most closely matches your FUTURE GPU.')
+                try:                   
+                    choice_from_search = int(input('Enter the number corresponding to the closest GPU: '))
+                    if choice_from_search not in list(range(1,len(processed_results)+3)):
+                        choice_from_search = None
+                        raise ValueError
+                except ValueError:
+                    print("Invalid option selected. Refreshing in 5 seconds.")
+                    time.sleep(5)
+            if choice_from_search == len(processed_results)+1:
+                continue
+            if choice_from_search == len(processed_results)+2:
+                return None 
+            download_helper(f'https://raw.githubusercontent.com/24HourSupport/CommonSoftware/main/{gpu_vendor}_gpu.json',os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json'),False)
+            with open(os.path.join(Jsoninfofileslocation,f'{gpu_vendor}_gpu.json')) as json_file:
+                gpu_json = json.load(json_file)
+            for branch in gpu_json:
+                if gpu_json[branch]['priority'] == results_of_user_search[processed_results[(choice_from_search-1)]]:
+                    return gpu_json[branch]['link']
+        else: # No results
+            print("No results came from your search, try again.")
+            print("Try to be as clear as possible, if you fail 5 times")
+            print("We will offer an option to provide your own drivers.")
+            print("Gonna ask again for the name of the FUTURE GPU in 15 seconds")
+            time.sleep(15)
+
 
 def LogBasicSysInfo():
     # Info useful sometimes in tracking down problems, for example norwegian and german have caused issues..
@@ -788,7 +1013,7 @@ def AdvancedMenu_Options(num):
         logger("Advanced options are now: " + str(advanced_options_dict))
 
 
-def change_AdvancedMenu(num):
+def change_AdvancedMenu(num, ExtraArgument=[]):
     with open(AutoDDU_CLI_Settings, 'r+') as f:
         advanced_options_dict = json.load(f)
         if num == "1":
@@ -862,6 +1087,8 @@ def change_AdvancedMenu(num):
                 advanced_options_dict["pciidsfallback"] = 1
             else:
                 advanced_options_dict["pciidsfallback"] = 0
+        if num == "97":
+            advanced_options_dict["changegpumode"] = ExtraArgument
         if num == "98":
             if advanced_options_dict["inteldriverassistant"] == 0:
                 advanced_options_dict["inteldriverassistant"] = 1
@@ -879,13 +1106,16 @@ def change_AdvancedMenu(num):
 
 
 def print_menu1():
-    print('Press Enter Key -- Start', flush=True)
-    print('2 -- Advanced Options', flush=True)
-    print('3 -- Show LICENSE', flush=True)
+    print('Press Enter Key -- Start normally', flush=True)
+    print('2 -- I am changing my GPU', flush=True)
+    print('3 -- Advanced Options', flush=True)
+    print('4 -- Show LICENSE', flush=True)
     option = str(input('Enter your choice: '))
     if option == "2":
-        AdvancedMenu()
+        change_AdvancedMenu('97', HandleChangingGPUProcess())
     if option == "3":
+        AdvancedMenu()
+    if option == "4":
       print(LICENSE)
       print_menu1()
       
@@ -1937,11 +2167,14 @@ without warning.
                 else:
                     HandleOtherLanguages()
                 time.sleep(5)
-            if len(obtainsetting("provideowngpuurl")) != 0:
-                download_drivers(obtainsetting("provideowngpuurl"))
-
-            elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
-                download_drivers(mainshit[1])
+            if obtainsetting("changegpumode") == 0:
+                if len(obtainsetting("provideowngpuurl")) != 0:
+                    download_drivers(obtainsetting("provideowngpuurl"))
+                elif len(obtainsetting("provideowngpuurl")) == 0 and obtainsetting("bypassgpureq") == 0:
+                    download_drivers(mainshit[1])
+            else: # For changing GPU crap
+                if type(obtainsetting("changegpumode")) == list:
+                    download_drivers(obtainsetting("changegpumode"))
             if obtainsetting("disablewindowsupdatecheck") == 0 and not insafemode():
                 if len(TestEnvironment) == 0:
                     uptodate()
@@ -2079,7 +2312,8 @@ and AutoDDU will launch again to install drivers.
                     return("DDU file missing")
             print("DDU has been ran!", flush=True)
             cleanupAutoLogin()
-            print(r"""
+            if obtainsetting("changegpumode") == 0:
+                print(r"""
 This will now boot you back into normal mode.
               
 You can login to your normal user profile, no need for DDU.
@@ -2090,7 +2324,28 @@ NOTE AUTODDU WILL OPEN BY ITSELF AFTER YOU LOGIN, JUST WAIT TILL IT DOES.
 Will restart in 15 seconds.
               
                     """, flush=True)
+            else:
+                print(r"""
+We will now completely SHUTDOWN your computer so that you can 
+change the GPUs installed in your system to your new GPU.
 
+Once you have installed your new GPU you can boot up your PC
+like normal, then login login to your normal user profile, 
+no need for DDU profile to be used.
+              
+Once you login you run this one last time where we will install
+the drivers properly (if provided), then once finished turn 
+on your internet. NOTE AUTODDU WILL OPEN BY ITSELF AFTER YOU 
+LOGIN, JUST WAIT TILL IT DOES.              
+              
+                    """, flush=True)
+                if BadLanguage() == False:
+                    while True:
+                        DewIt = str(input("Type in 'Do it' then press enter to begin: "))
+                        if "do it" in DewIt.lower():
+                            break
+                else:
+                    HandleOtherLanguages()
             if len(TestEnvironment) == 0:    
                 safemode(0)
             makepersist(False)
@@ -2105,7 +2360,10 @@ Will restart in 15 seconds.
                 logger(str(possible_error))
             if len(TestEnvironment) == 0:
                 time.sleep(5)
-                subprocess.call('shutdown /r -t 10', shell=True)
+                if obtainsetting("changegpumode") == 0:
+                    subprocess.call('shutdown /r -t 10', shell=True)
+                else:
+                    subprocess.call('shutdown /s -t 10', shell=True)
                 print("Command to restart has been sent.")
                 while True:
                     time.sleep(1)
