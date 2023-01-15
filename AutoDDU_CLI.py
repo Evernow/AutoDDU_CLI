@@ -132,6 +132,27 @@ AutoDDU_CLI_Settings = os.path.join(Appdata_AutoDDU_CLI, "AutoDDU_CLI_Settings.j
 # Suggestion by Arron to bypass fucked PATH environment variable
 powershelldirectory = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+def TestForStupidityPart43():
+    # This protects against people willy nilly going to the github repo
+    # and just grabbing the python file and running it, which won't bloody
+    # work due to numerious assumptions specific to PyInstaller.
+
+    # This has happened twice now.
+    if not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')):
+        print("""
+You did not run AutoDDU_CLI correctly. You likely
+grabbed the python file from the GitHub instead
+of downloading the executable. Do not run
+the python file raw, as numerious code paths are
+made with the expectation of it running as a 
+frozen executable.
+
+Opening browser to download executable now.
+        """)
+        webbrowser.open('https://github.com/Evernow/AutoDDU_CLI/raw/main/signedexecutable/AutoDDU_CLI.exe')
+        time.sleep(1)
+        os._exit(1)
+
 
 def HandleChangingGPUProcess():
     for vendor in ['amd','intel','nvidia']:
@@ -2062,6 +2083,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
                         logger("Failed to check if up to date with error " + str(traceback.format_exc()) )
 
             if len(TestEnvironment) == 0:
+                TestForStupidityPart43() # Checks to make sure user isn't running this raw (ie outside of a pyinstaller exe)
                 TestMultiprocessing() # Check to make sure multipricessing works correctly.
                 if not internet_on() and insafemode(): 
                     # There is a code path for handling this in safe mode when we have an internet connection. It's when there's not an internet connection that we have a problem.
