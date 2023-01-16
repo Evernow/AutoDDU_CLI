@@ -968,7 +968,6 @@ def AdvancedMenu():
 
 
 def AdvancedMenu_Options(num):
-    logger("User is changing option " + str(num))
     with open(AutoDDU_CLI_Settings, 'r+') as f:
         advanced_options_dict = json.load(f)
         if num == 1:
@@ -1038,6 +1037,7 @@ def AdvancedMenu_Options(num):
 
 
 def change_AdvancedMenu(num, ExtraArgument=[]):
+    logger("User is changing option " + str(num))
     with open(AutoDDU_CLI_Settings, 'r+') as f:
         advanced_options_dict = json.load(f)
         if num == "1":
@@ -1127,6 +1127,7 @@ def change_AdvancedMenu(num, ExtraArgument=[]):
         f.seek(0)
         json.dump(advanced_options_dict, f, indent=4)
         f.truncate()
+        logger("Advanced options is now " + str(advanced_options_dict))
 
 
 def print_menu1():
