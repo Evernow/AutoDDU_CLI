@@ -2233,10 +2233,8 @@ This application will now enable safe mode, disable the internet
 and then reboot you. IT WILL DO THIS FOR YOU. 
 Safe mode is a state of Windows where no GPU Drivers are loaded,
 this is needed so they we can do a proper clean install.
-            
 You wallpaper will be black, the resolution will look
 messed up, this is normal.
-            
 In addition we're going to turn off the internet so
 Windows cannot install drivers while we're installing them. Also
 if you have BitLocker enabled we're going to temporarily
@@ -2245,7 +2243,9 @@ disable for three reboots.
 {login_or_not}
 We will automatically login to the user and run DDU. You may see
 a blackscreen for up to 15 minutes, only force restart if this much
-passes. We will auto login, run DDU, then restart, afterwards you will
+passes. Also note if you have multiple monitors and have issues with 
+black screen you may want to disconnect all but one monitor.
+We will auto login, run DDU, then restart, afterwards you will
 be brought to your normal user login screen, at which you login
 and AutoDDU will launch again to install drivers.
             
