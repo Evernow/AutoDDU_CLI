@@ -60,6 +60,7 @@ import tempfile
 import ssl
 import xmltodict
 import difflib    
+import zlib
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
@@ -398,8 +399,13 @@ def LogBasicSysInfo():
     logger('language: ' + str(language))
     installdate = wmi.WMI().Win32_OperatingSystem  ()[0].InstallDate
     logger('installdate: ' + str(installdate))
-    VersionOfWindows = wmi.WMI().Win32_OperatingSystem  ()[0].Name
+    NameOfWindows = wmi.WMI().Win32_OperatingSystem  ()[0].Name
+    logger('NameOfWindows: ' + str(NameOfWindows))
+    # This allows us to see the full build number which is VERY useful for determining
+    # which channel of insider someone is on.
+    VersionOfWindows = os.system('ver')
     logger('VersionOfWindows: ' + str(VersionOfWindows))
+
     AreWeBootedOnaUSB = wmi.WMI().Win32_OperatingSystem  ()[0].PortableOperatingSystem
     logger('AreWeBootedOnaUSB: ' + str(AreWeBootedOnaUSB))
     MotherboardModel = wmi.WMI().Win32_BaseBoard   ()[0].Product
@@ -409,6 +415,19 @@ def LogBasicSysInfo():
     # Invaluable to know which release was built with so we if we get a
     # python specific error we know which line number to go to in the cpython repo.
     logger('Python version: ' + sys.version)
+    # Tells us whether Windows is currently in debug mode, useful as behavior is slightly different and can explain performance issues
+    DebugMode = wmi.WMI().Win32_OperatingSystem()[0].Debug
+    logger('DebugMode: ' + str(DebugMode))
+    # Logs all open processes
+    processes = list()
+    for process in wmi.WMI().Win32_Process((["Name"])): # This guy is a genius: https://stackoverflow.com/questions/61762991/counting-number-of-running-processes-with-wmi-python-is-slow
+        processes.append(process.Name)
+    processes = str(processes)
+    # Sucks, I know, but like, holy shit I am going insane debugging some of these issues 
+    # which I am convinced are caused by some wacky app
+    zlibz = str(zlib.compress(str(processes).encode()))
+    logger("Below is the a list of all open processes put as a string and then compressed with zlib")
+    logger(zlibz)
 
 
 def GPUZINFO():
