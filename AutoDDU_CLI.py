@@ -61,8 +61,8 @@ import ssl
 import xmltodict
 import difflib    
 import zlib
-# import socket
-# import struct
+import socket
+import struct
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
