@@ -61,6 +61,9 @@ import ssl
 import xmltodict
 import difflib    
 import zlib
+# import socket
+# import struct
+
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
                                 "disabletimecheck": 0, # Kept here even though it does nothing. This is for backwards compatibility reason
@@ -2028,6 +2031,17 @@ def enable_internet(enable):
                 f.truncate()
         logger("Working with these adapters in enable_internet")
         logger(str(list_of_names))
+
+# def RequestTimefromNtp(addr='pool.ntp.org'):
+#     REF_TIME_1970 = 2208988800  # Reference time
+#     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#     data = b'\x1b' + 47 * b'\0'
+#     client.sendto(data, (addr, 123))
+#     data, address = client.recvfrom(1024)
+#     if data:
+#         t = struct.unpack('!12I', data)[10]
+#         t -= REF_TIME_1970
+#     return t
 
 
 # For testing you pass in a list with
