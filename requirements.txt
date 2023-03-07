@@ -3,6 +3,7 @@ pyinstaller
 tqdm
 xmltodict
 psutil
+httpx
 packaging
 dnspython
 

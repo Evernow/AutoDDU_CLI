@@ -660,8 +660,9 @@ def checkifvaliddownload(url):
         else:
             return True
    except:
-    logger("Failed valid check with error " +str(traceback.format_exc())  )
-    return False
+        logger("Failed valid check with error " +str(traceback.format_exc())  )
+        return False
+
 
 
 
@@ -895,10 +896,9 @@ def internet_on():
     remaining_tries = 5
     while remaining_tries > 0:
         try:
-            urllib.request.urlopen('https://www.google.com/', timeout=3)
+            download_helper('https://www.google.com/', 'Internet_Check_Directory_Unneeded',False,0,verify=True,True)
             return True
         except:
-            time.sleep(1)
             remaining_tries = remaining_tries - 1
             logger(f"Failed to verify if we're online, gonna give it {remaining_tries} more tries.")
             logger(str(traceback.format_exc()))
@@ -1707,92 +1707,95 @@ def BackupProfile():
         logger("Failed creating backup profile with error: " + str(f))
         logger("Failed to create DDU account, likely already existed")
 
-
-class DownloadProgressBar(tqdm):
-    def update_to(self, b=1, bsize=1, tsize=None):
-        if tsize is not None:
-            self.total = tsize
-        self.update(b * bsize - self.n)
-
-def download_helper(url, fname,showbar=True):
-    while not internet_on():
-        logger("Saw no internet, asking user to connect")
-        print("No internet connection")
-        print("Please make sure internet is enabled")
-        print("Retrying in 30 seconds")
-        time.sleep(30)
-    logger("Downloading  file from {url} to location {fname}".format(url=url, fname=fname))
+def download_helper(url, fname,showbar=True,RecursionDepth=0,verify=True,skip_download=False):
+    if RecursionDepth > 10:
+        # A precaution against endless recursion which could potentially happen if the certificate workaround doesn't work correctly.
+        logger('Hit max recursion depth, something has gone wrong. Terminating.')
+        raise Exception("Hit max recursion depth when attempting to download something, here lies hell. ") 
+    logger(f'Downloading file {url} to {fname} with arguments {str([showbar,RecursionDepth, verify])}')
+    if skip_download == False:
+        while not internet_on():
+            logger("Saw no internet, asking user to connect")
+            print("No internet connection")
+            print("Please make sure internet is enabled")
+            print("Retrying in 30 seconds")
+            time.sleep(30)
     if showbar==True:
         print("Downloading file {}".format(fname.split("\\")[-1]))
     remaining_download_tries = 16
+    SecurityVerification = verify
     while remaining_download_tries > 0:
-        if os.path.exists(fname):
-            os.remove(fname)
         try:
-            if (remaining_download_tries % 3 == 0 or obtainsetting('dnsoverwrite') == 1) and 'microsoft' not in url.lower(): # Microsoft has this fake javascript form crap, that while urlretrieve can handle, urlopen does not.
-                # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
-                # Credit to RandoNando for figuring this out, and the referenced GitHub issues for the issues I encountered while testing this.
-
-                logger("Landed in DNSFallback")
-                HOST = url.replace('https://','').replace('http://','').replace('www.','').split('/')[0]
-                logger(str(HOST))
-                urlparsing = url.replace('https://','').replace('http://','').replace('www.','')
-                urlparsing = url.replace('https://','').replace('http://','').replace('www.','')[urlparsing.find('/')+1:]
-                logger(str(urlparsing))
-                if importlib.metadata.version('dnspython') == '2.2.1': # https://github.com/rthalley/dnspython/issues/834
-                    import dns.win32util
-                    dns.win32util._getter_class = dns.win32util._RegistryGetter
-                res = dns.resolver.Resolver()
-                res.nameservers = ['8.8.8.8'] # Google DNS
-                answers = res.resolve(HOST)
-                for rdata in answers:
-                    address = (rdata.address)
-                logger("Got the folloing IP address from resolver" + str(address))
-                url_dnsfallback = (f'http://{address}/{urlparsing}')
-                logger(url_dnsfallback)
-                headers = dict( 
-                                [
-                                    (
-                                        "User-agent",
-                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
-                                    ),
-                                    (
-                                        "Referer",
-                                        "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt",
-                                    ),
-                                    ("Host", HOST), # https://github.com/python/cpython/issues/96287 which means no progress bar for dns fallback, but not much else that comes to mind that is practical
+            if os.path.exists(fname):
+                os.remove(fname)
+            with open(fname, "wb")  as download_file:
+                if (remaining_download_tries % 3 == 0 or obtainsetting('dnsoverwrite') == 1) : 
+                    # For bad DNS issues encountered on NVIDIA server, very rare but never hurts to have a fallback for this event.
+                    # Credit to RandoNando for figuring this out, and the referenced GitHub issues for the issues I encountered while testing this.
+                    logger("Landed in DNSFallback")
+                    HOST = urllib.parse.urlsplit(url)[1]
+                    PATH = urllib.parse.urlsplit(url)[2]
+                    QUERY = urllib.parse.urlsplit(url)[3] # Used by Microsoft updater URLs
+                    logger(f'Parsed from URL {HOST} and {PATH} and {QUERY}')
+                    res = dns.resolver.Resolver()
+                    res.nameservers = ['8.8.8.8'] # Google DNS
+                    answers = res.resolve(HOST)
+                    for rdata in answers:
+                        address = (rdata.address)
+                    logger("Got the folloing IP address from resolver " + str(address))
+                    if QUERY == '':
+                        url_dnsfallback = (f'http://{address}{PATH}')
+                    else:
+                        url_dnsfallback = (f'http://{address}{PATH}?{QUERY}') # Not entirely sure if this is universal persay, but it's used by Microsoft's update domain which is the only one that uses this.
+                    logger(url_dnsfallback)
+                    if 'amd.com' in url.lower():
+                        headers = dict( [
+                                    ("User-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",),
+                                    ("Referer", "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt",),
+                                    ("Host", HOST), # https://github.com/python/cpython/issues/96287 I have not looked into the implications of this when using httpx now, but if it ain't broke don't fix it right?
                                     ("test", "test"),
                                 ]
                             )
-                request = urllib.request.Request(url=url_dnsfallback, headers=headers)
-
-                with urllib.request.urlopen(request,timeout=3) as response:
-                    with open(fname, "wb") as file_:
-                        shutil.copyfileobj(response, file_)
-                break
-            else:
-                opener = urllib.request.build_opener()
-
-                opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'),
-                                    ('Referer', "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt")]
-                urllib.request.install_opener(opener)
-                if showbar==True:
-                    with DownloadProgressBar(unit='B', unit_scale=True,
-                                            miniters=1, desc=url.split('/')[-1]) as t:
-                        urllib.request.urlretrieve(url, filename=fname, reporthook=t.update_to)
-                    print("\n")
+                    else:
+                        headers = dict( [
+                                    ("User-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",),
+                                    ("Host", HOST), # https://github.com/python/cpython/issues/96287 I have not looked into the implications of this when using httpx now, but if it ain't broke don't fix it right?
+                                    ("test", "test"),
+                                ]
+                            )
+                    httpx_arguments = httpx.stream("GET", url_dnsfallback,verify=False,headers=headers,follow_redirects=True)
+                elif 'amd.com' in url.lower():
+                    headers = dict( [
+                                ("User-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",),
+                                ("Referer", "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt",),
+                            ]
+                        )
+                    httpx_arguments = httpx.stream("GET", url,verify=SecurityVerification, headers=headers,follow_redirects=True)
                 else:
-                    urllib.request.urlretrieve(url, filename=fname)
-                break
-        except:
-            logger(str(traceback.format_exc()))
-            if remaining_download_tries < 0:
-                raise Exception("Could not download file after 15 tries.")
-            logger("Failed to download file, {} retries left".format(remaining_download_tries))
+                    headers = dict( [
+                                ("User-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",),
+                            ]
+                        )
+                    httpx_arguments = httpx.stream("GET", url,verify=SecurityVerification, headers=headers,follow_redirects=True)
+                with httpx_arguments as response:
+                    total = int(response.headers["Content-Length"])
+                    progress = tqdm(total=total, unit_scale=True, unit_divisor=1024, unit="B", disable=not showbar)
+                    if skip_download == False:
+                        num_bytes_downloaded = response.num_bytes_downloaded
+                        for chunk in response.iter_bytes():
+                            download_file.write(chunk)
+                            progress.update(response.num_bytes_downloaded - num_bytes_downloaded)
+                            num_bytes_downloaded = response.num_bytes_downloaded
+            break
+        except Exception as e:
+            SecurityVerification = verify
+            logger(f'Failed to download {url} with error {str(traceback.format_exc())} and have {str(remaining_download_tries)} remaining attempts')
+            if 'certificate' in str(e).lower():
+                download_helper('https://curl.se/ca/cacert.pem', os.path.join(Appdata_AutoDDU_CLI,'cacert.pem'),False,RecursionDepth+1,False)
+                SecurityVerification = os.path.join(Appdata_AutoDDU_CLI,'cacert.pem')
+            remaining_download_tries -= 1
             print("Download failed, retrying in 5 seconds")
             time.sleep(5)
-            remaining_download_tries = remaining_download_tries - 1
-    
     logger("Successfully finished download")
 
 
