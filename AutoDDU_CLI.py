@@ -63,6 +63,9 @@ import difflib
 import zlib
 import socket
 import struct
+import httpx
+import urllib.parse
+
 
 
 advanced_options_dict_global = {"disablewindowsupdatecheck": 0, "bypassgpureq": 0, "provideowngpuurl": [],
