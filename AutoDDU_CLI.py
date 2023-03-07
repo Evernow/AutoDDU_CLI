@@ -1154,9 +1154,11 @@ def change_AdvancedMenu(num, ExtraArgument=[]):
 
 def print_menu1():
     print('Press Enter Key -- Start normally', flush=True)
-    print('2 -- I am changing my GPU', flush=True)
-    print('3 -- Advanced Options', flush=True)
+    print('2 -- I am changing my GPU (Experimental)', flush=True)
+    print('3 -- Advanced Options (Experimental)', flush=True)
     print('4 -- Show LICENSE', flush=True)
+    print('If you do not know what to do,')
+    print('press your enter key and that is it.')
     option = str(input('Enter your choice: '))
     if option == "2":
         change_AdvancedMenu('97', HandleChangingGPUProcess())
