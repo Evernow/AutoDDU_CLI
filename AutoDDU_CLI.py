@@ -1794,6 +1794,8 @@ def download_helper(url, fname,showbar=True,RecursionDepth=0,verify=True,skip_do
                 download_helper('https://curl.se/ca/cacert.pem', os.path.join(Appdata_AutoDDU_CLI,'cacert.pem'),False,RecursionDepth+1,False)
                 SecurityVerification = os.path.join(Appdata_AutoDDU_CLI,'cacert.pem')
             remaining_download_tries -= 1
+            if remaining_download_tries < 0:
+                raise Exception("Could not download file after 15 tries.")
             print("Download failed, retrying in 5 seconds")
             time.sleep(5)
     logger("Successfully finished download")
