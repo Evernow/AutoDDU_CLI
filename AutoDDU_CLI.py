@@ -1790,11 +1790,11 @@ def download_helper(url, fname,showbar=True,RecursionDepth=0,verify=True,skip_do
                     with httpx_arguments as response:
                         total = int(response.headers["Content-Length"])
                         progress = tqdm(total=total, unit_scale=True, unit_divisor=1024, unit="B", disable=not showbar)
+                        num_bytes_downloaded = response.num_bytes_downloaded
+                        for chunk in response.iter_bytes():
+                            download_file.write(chunk)
+                            progress.update(response.num_bytes_downloaded - num_bytes_downloaded)
                             num_bytes_downloaded = response.num_bytes_downloaded
-                            for chunk in response.iter_bytes():
-                                download_file.write(chunk)
-                                progress.update(response.num_bytes_downloaded - num_bytes_downloaded)
-                                num_bytes_downloaded = response.num_bytes_downloaded
             break
         except Exception as e:
             SecurityVerification = verify
