@@ -899,7 +899,7 @@ def internet_on():
     remaining_tries = 5
     while remaining_tries > 0:
         try:
-            download_helper('https://www.google.com/', 'Internet_Check_Directory_Unneeded',False,0,True,True)
+            download_helper('https://www.google.com/', os.path.join(Appdata_AutoDDU_CLI,'Internet_Check_Ignore_This'),False,0,True,True)
             return True
         except:
             remaining_tries = remaining_tries - 1
