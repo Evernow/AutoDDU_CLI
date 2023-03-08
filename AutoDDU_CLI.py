@@ -409,7 +409,7 @@ def LogBasicSysInfo():
     logger('NameOfWindows: ' + str(NameOfWindows))
     # This allows us to see the full build number which is VERY useful for determining
     # which channel of insider someone is on.
-    VersionOfWindows = os.system('ver')
+    VersionOfWindows = subprocess.check_output('ver', shell=True )
     logger('VersionOfWindows: ' + str(VersionOfWindows))
 
     AreWeBootedOnaUSB = wmi.WMI().Win32_OperatingSystem  ()[0].PortableOperatingSystem
