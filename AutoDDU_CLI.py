@@ -2581,6 +2581,5 @@ Going to be turning on the internet now, then closing in ten minutes.
             return ("Exception " + str(traceback.format_exc()))
 
 if __name__ == '__main__':
-    # multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
-    # print(mainpain([]))
-    internet_on()
+    multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+    print(mainpain([]))
