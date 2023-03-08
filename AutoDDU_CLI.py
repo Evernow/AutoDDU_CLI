@@ -1782,15 +1782,19 @@ def download_helper(url, fname,showbar=True,RecursionDepth=0,verify=True,skip_do
                             ]
                         )
                     httpx_arguments = httpx.stream("GET", url,verify=SecurityVerification, headers=headers,follow_redirects=True)
-                with httpx_arguments as response:
-                    total = int(response.headers["Content-Length"])
-                    progress = tqdm(total=total, unit_scale=True, unit_divisor=1024, unit="B", disable=not showbar)
-                    if skip_download == False:
-                        num_bytes_downloaded = response.num_bytes_downloaded
-                        for chunk in response.iter_bytes():
-                            download_file.write(chunk)
-                            progress.update(response.num_bytes_downloaded - num_bytes_downloaded)
+                if skip_download == True:
+                    with httpx_arguments as r:
+                        for text in r.iter_text():
+                            randomstring = text
+                else:
+                    with httpx_arguments as response:
+                        total = int(response.headers["Content-Length"])
+                        progress = tqdm(total=total, unit_scale=True, unit_divisor=1024, unit="B", disable=not showbar)
                             num_bytes_downloaded = response.num_bytes_downloaded
+                            for chunk in response.iter_bytes():
+                                download_file.write(chunk)
+                                progress.update(response.num_bytes_downloaded - num_bytes_downloaded)
+                                num_bytes_downloaded = response.num_bytes_downloaded
             break
         except Exception as e:
             SecurityVerification = verify
@@ -2577,5 +2581,6 @@ Going to be turning on the internet now, then closing in ten minutes.
             return ("Exception " + str(traceback.format_exc()))
 
 if __name__ == '__main__':
-    multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
-    print(mainpain([]))
+    # multiprocessing.freeze_support() # Used for networking bullshit, required for frozen exes: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Multiprocessing
+    # print(mainpain([]))
+    internet_on()
