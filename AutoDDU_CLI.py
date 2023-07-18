@@ -65,6 +65,8 @@ import socket
 import struct
 import httpx
 import urllib.parse
+import signify.authenticode
+import re
 
 
 
@@ -515,23 +517,39 @@ def RestartPending():
         logger(str(traceback.format_exc()))
         return False
 
-def CheckPublisherOfDriver(driver):
-    logger("Dealing with driver {} in CheckPublisherOfDriver".format(driver))
-    p = str(subprocess.Popen(
-            "{powershell} (Get-AuthenticodeSignature '{driver}').SignerCertificate.subject".format(powershell=powershelldirectory, driver=driver),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
-    logger("Got output {} which I'm going to assume is:".format(p))
-    if 'NVIDIA' in p.upper():
-        logger('NVIDIA')
-        return 'NVIDIA'
-    if 'AMD' in p.upper() or 'advanced micro devices' in p.lower():
-        logger('AMD')
-        return 'AMD'
-    if 'intel' in p.lower():
-        logger('intel')
-        return 'Intel'
-    logger('Do not know who publisher is.')
-    return None
+def extract_issuer(string):
+    pattern = r'CN=([^,]+)'
+    match = re.search(pattern, string)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+def CheckPublisherOfDriver(filename):
+        logger(f"Checking the signature of the file {filename}")
+        with open(filename, "rb") as file_obj:
+            try:
+                signees = [] # An executable can be signed by multiple
+                            # For example NVIDIA executables are signed by NVIDIA and Digicert. Not sure why it appears this way, doesn't on Windows explorer. 
+                pe = signify.authenticode.SignedPEFile(file_obj)
+                for signed_data in pe.signed_datas:
+                    for cert in signed_data.certificates:
+                        signees.append(extract_issuer(cert.subject.dn))
+                        logger(f"A signee for this file is {cert.subject.dn}")
+                result, e = pe.explain_verify()
+                if result != signify.authenticode.AuthenticodeVerificationResult.OK: # Cert failed to verify
+                    logger(f"Result of the verification is {e}")
+                    logger(f"Unable to verify signature of file.")
+                    return None
+                if 'NVIDIA Corporation' in signees:
+                    return 'NVIDIA'
+                if 'Advanced Micro Devices Inc.' in signees:
+                    return 'AMD'
+                if 'Intel Corporation' in signees:
+                    return 'intel'
+            except Exception as e:
+                logger("Error while parsing: " + str(e))
+                return None
 
 
 def IsKasperskyInstalled():
