@@ -538,7 +538,7 @@ def CheckPublisherOfDriver(filename):
                         logger(f"A signee for this file is {cert.subject.dn}")
                 result, e = pe.explain_verify()
                 if result != signify.authenticode.AuthenticodeVerificationResult.OK: # Cert failed to verify
-                    logger(f"Result of the verification is {e}")
+                    logger(f"Result of the verification is {result, e}")
                     logger(f"Unable to verify signature of file.")
                     return None
                 if 'NVIDIA Corporation' in signees:
@@ -2495,6 +2495,13 @@ and then turn on your internet.
                             print("it can take up to 10 minutes to install.")
                         if len(TestEnvironment) == 0:
                             subprocess.call(str(os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)), shell=True)
+
+                            # Reported and fixed by CommandMC
+                            # The AMD installer opens a different process and ends the original one, causing AutoDDU to think the installation
+                            # finished early. Now it uses the powershell module for starting a process with the '-wait' option which makes
+                            # AutoDDU wait for the entire process tree to finish.
+                            subprocess.call([powershelldirectory, 'Start-Process', '-wait', '-Filepath', os.path.join(Appdata, "AutoDDU_CLI", "Drivers", driver)], shell=True)
+
                         else:
                             mimicinstalleddrivers.append(driver)
                         logger("Sucessfully finished driver executable: {}".format(driver))
