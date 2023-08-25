@@ -1,6 +1,13 @@
 # AutoDDU_CLI
 
+# Guide
+
 **FOR A GUIDE** on how to use this tool, please go here: https://github.com/Evernow/AutoDDU_CLI/wiki
+
+
+
+
+
 
 ![](Chikaftw_upscaled.png)
 
