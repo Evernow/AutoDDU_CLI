@@ -6,4 +6,6 @@ psutil
 httpx
 packaging
 dnspython
+mscerts
 signify
+
