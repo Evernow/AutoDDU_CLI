@@ -233,7 +233,7 @@ current one.
     stringforuser = 'Please select which GPU driver is for your future GPU: \n'
     drivers = []
     for branch in GPUDrivers[VendorChoice]:
-        stringforuser += f"""{len(drivers)+1} / {GPUDrivers[VendorChoice][branch]['description']} \n  \ {(GPUDrivers[VendorChoice][branch]['link'])[GPUDrivers[VendorChoice][branch]['link'].rfind('/')+1:]} - {GPUDrivers[VendorChoice][branch]['version']}\n\n"""
+        stringforuser += f"""{len(drivers)+1} / {GPUDrivers[VendorChoice][branch]['description']} \n  \\ {(GPUDrivers[VendorChoice][branch]['link'])[GPUDrivers[VendorChoice][branch]['link'].rfind('/')+1:]} - {GPUDrivers[VendorChoice][branch]['version']}\n\n"""
         drivers.append(GPUDrivers[VendorChoice][branch]['link'])
     stringforuser += f'{len(drivers)+1} / I have no idea (starts search GPU process).'
     print(stringforuser)
@@ -428,7 +428,7 @@ def LogBasicSysInfo():
     logger('DebugMode: ' + str(DebugMode))
     # Logs all open processes
     processes = list()
-    for process in wmi.WMI().Win32_Process((["Name"])): # This guy is a genius: https://stackoverflow.com/questions/61762991/counting-number-of-running-processes-with-wmi-python-is-slow
+    for process in wmi.WMI().Win32_Process(["Name"]): # This guy is a genius: https://stackoverflow.com/questions/61762991/counting-number-of-running-processes-with-wmi-python-is-slow
         processes.append(process.Name)
     processes = str(processes)
     # Sucks, I know, but like, holy shit I am going insane debugging some of these issues 
@@ -448,7 +448,7 @@ def GPUZINFO():
         subprocess.call([os.path.join(Appdata_AutoDDU_CLI,'GPU-Z.exe'),'-minimized','-dump','GPUOutput.xml'],
                             cwd=Appdata_AutoDDU_CLI  , stderr=subprocess.DEVNULL)
 
-        with open(os.path.join(Appdata_AutoDDU_CLI,'GPUOutput.xml'), 'r', encoding='utf-8') as file:
+        with open(os.path.join(Appdata_AutoDDU_CLI,'GPUOutput.xml'), encoding='utf-8') as file:
             my_xml = file.read()
         my_dict = xmltodict.parse(my_xml)
         logger("In GPU-Z, expect a lot of verbose crap while this method is new.")
@@ -578,7 +578,7 @@ def BackupLocalAccount():
     # Due to MS requiring an internet connection.
     if CheckIfBackupAccountExists() == False:
         firstcommand = "net user /add BackupDDUProfile"
-        secondcommand = "net localgroup {administrators} BackupDDUProfile /add".format(administrators=AdminGroupName())
+        secondcommand = f"net localgroup {AdminGroupName()} BackupDDUProfile /add"
         subprocess.run(firstcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(secondcommand, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
@@ -668,14 +668,14 @@ def FindOutOfBranchDriver(vendorid_deviceid):
 
 
 def checkifvaliddownload(url):
-   logger("Checking if custom URL {} is valid".format(str(url)))
+   logger(f"Checking if custom URL {str(url)} is valid")
    try:
         my_referer = "https://www.amd.com/en/support/graphics/amd-radeon-6000-series/amd-radeon-6700-series/amd-radeon-rx-6700-xt"
         file = urllib.request.Request(url)
         file.add_header('Referer', my_referer)
         file.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0')
         file = urllib.request.urlopen(file, timeout=5)
-        logger("Got size of custom URL to be {}".format(str(file.length)))
+        logger(f"Got size of custom URL to be {str(file.length)}")
         if file.length < 6000000: # 6MB, which is size of intel driver assistant
             return False
         else:
@@ -838,7 +838,7 @@ they're installed.""")
 def suspendbitlocker():
     try:
         p = str(subprocess.Popen(
-            "{powershell} Suspend-BitLocker -MountPoint 'C:' -RebootCount 3".format(powershell=powershelldirectory),
+            f"{powershelldirectory} Suspend-BitLocker -MountPoint 'C:' -RebootCount 3",
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=CREATE_NEW_CONSOLE).communicate())
         logger("Suspended bitlocker with output " + str(p))
     except:
@@ -1217,7 +1217,7 @@ def HandleOtherLanguages():
     logger("Did other language workaround")
     howmany = 0
     while howmany < 2:
-        input("Press your enter key {n} more time(s)".format(n=2 - howmany))
+        input(f"Press your enter key {2 - howmany} more time(s)")
         howmany += 1
     print("Starting!")
 
@@ -1309,14 +1309,14 @@ def makepersist(CopyExecutablle):
         # shortcut.save()
         
         try:
-            AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
+            AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
             winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
         except:
             pass
 
 
         # Setup registry key to enable startup
-        open = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
+        open = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
         winreg.SetValueEx(open,"*AutoDDU_CLI",0,winreg.REG_SZ,exe_location)
         winreg.CloseKey(open)
     except:
@@ -1687,7 +1687,7 @@ Chika is mad and confused at the same time."""
 def changepersistent(num):
     logger("Changing persistent file to: " + str(num))
     open(Persistent_File_location, 'w').close()
-    with open(Persistent_File_location, 'r') as file:
+    with open(Persistent_File_location) as file:
         data = file.readlines()
 
     data.append(str(num))
@@ -1863,12 +1863,12 @@ def ddu_download():
 
     if not os.path.exists(ddu_extracted_path):
         os.makedirs(ddu_extracted_path)
-    ExtractDDUOutput = subprocess.run((ddu_zip_path + " -o{}".format(ddu_extracted_path) + " -y"), shell=True, check=True,
+    ExtractDDUOutput = subprocess.run((ddu_zip_path + f" -o{ddu_extracted_path}" + " -y"), shell=True, check=True,
                  capture_output=True)
     logger("Output of extracting DDU " + str(ExtractDDUOutput))
     # Moves everything one directory up, mainly just to avoid crap with versioning, don't want to have to deal with
     # version numbers in the DDU method doing the command calling.
-    where_it_is = os.path.join(ddu_extracted_path, "DDU v{}".format(Latest_DDU_Version_Raw))
+    where_it_is = os.path.join(ddu_extracted_path, f"DDU v{Latest_DDU_Version_Raw}")
     file_names = os.listdir(where_it_is)
 
     for file_name in file_names:
@@ -1887,7 +1887,7 @@ def uptodate():
     current_major_version = wmi.WMI().Win32_OperatingSystem()[0].Caption.encode("ascii", "ignore").decode(
             "utf-8")
     if "8" in current_major_version or "7" in current_major_version:  # AutoDDU only works on Windows 10 and above.
-        logger("Got a Windows {} user".format(current_major_version))
+        logger(f"Got a Windows {current_major_version} user")
         print("AutoDDU only works on Windows 10 and above. Updating you to Windows 10.")
         download_helper('https://go.microsoft.com/fwlink/?LinkId=691209',
                             os.path.join(Appdata, "MicrosoftUpdater.exe"))
@@ -1950,31 +1950,31 @@ def uptodate():
 def disable_clocking():
     try:
         subprocess.call(
-            '{powershell}  Unregister-ScheduledTask -TaskName "MSIAfterburner" -Confirm:$false'.format(powershell=powershelldirectory),
+            f'{powershelldirectory}  Unregister-ScheduledTask -TaskName "MSIAfterburner" -Confirm:$false',
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'{powershell}  Remove-Item -Path HKLM:\SYSTEM\CurrentControlSet\Services\RTCore64'.format(powershell=powershelldirectory),
+            fr'{powershelldirectory}  Remove-Item -Path HKLM:\SYSTEM\CurrentControlSet\Services\RTCore64',
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'{powershell} Unregister-ScheduledTask -TaskName "EVGAPrecisionX" -Confirm:$false'.format(powershell=powershelldirectory),
+            fr'{powershelldirectory} Unregister-ScheduledTask -TaskName "EVGAPrecisionX" -Confirm:$false',
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'{powershell} Unregister-ScheduledTask -TaskName "GPU Tweak II" -Confirm:$false'.format(powershell=powershelldirectory),
+            fr'{powershelldirectory} Unregister-ScheduledTask -TaskName "GPU Tweak II" -Confirm:$false',
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
     try:
         subprocess.call(
-            r'{powershell} Unregister-ScheduledTask -TaskName "Launcher GIGABYTE AORUS GRAPHICS ENGINE" -Confirm:$false'.format(powershell=powershelldirectory),
+            fr'{powershelldirectory} Unregister-ScheduledTask -TaskName "Launcher GIGABYTE AORUS GRAPHICS ENGINE" -Confirm:$false',
             shell=True, creationflags=CREATE_NEW_CONSOLE)
     except:
         pass
@@ -2127,7 +2127,7 @@ CLOSE THIS WINDOW AS IT IS VERY RISKY TO HAVE MORE THAN ONE OPEN.
         os.mkdir(Jsoninfofileslocation)
     try:
         logger("Version " + Version_of_AutoDDU_CLI)
-        logger("Running under user {}".format(os.getlogin()))
+        logger(f"Running under user {os.getlogin()}")
         try:
             LogBasicSysInfo()
         except:
@@ -2487,7 +2487,7 @@ and then turn on your internet.
                             continue
                         print("Launching driver installer, please install. If you are asked to restart click 'Restart later' then restart after AutoDDU is finished")
                         time.sleep(1)
-                        logger("Opening driver executable: {}".format(driver))
+                        logger(f"Opening driver executable: {driver}")
                         if "igfx" in driver:
                             print("Note Intel driver installer can take")
                             print("up to 5 minutes just to appear")
@@ -2504,7 +2504,7 @@ and then turn on your internet.
 
                         else:
                             mimicinstalleddrivers.append(driver)
-                        logger("Sucessfully finished driver executable: {}".format(driver))
+                        logger(f"Sucessfully finished driver executable: {driver}")
                 print("All driver installations complete. Have a good day.")
             else:
 
@@ -2519,7 +2519,7 @@ Going to be turning on the internet now, then closing in ten minutes.
             except:
                 pass
             try:
-                AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
+                AutoStartupkey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"Software\Microsoft\Windows\CurrentVersion\RunOnce",0,winreg.KEY_ALL_ACCESS)
                 winreg.DeleteValue(AutoStartupkey, '*AutoDDU_CLI')
             except:
                 logger("No RunOnce key found, should be ok then?")
